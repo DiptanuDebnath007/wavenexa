@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — ThreadCraft</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--bg); }
+    .orders-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .order-confirm-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 56px 48px; max-width: 600px; width: 100%;
+      text-align: center; backdrop-filter: blur(20px); animation: scaleIn 0.5s ease;
+    }
+    .confirm-icon {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem; margin: 0 auto 28px;
+      box-shadow: 0 0 40px rgba(76,175,80,0.4);
+      animation: float 3s ease infinite;
+    }
+    .confirm-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 10px; }
+    .confirm-sub { color: var(--text-muted); margin-bottom: 32px; }
+    .order-id-box {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px;
+    }
+    .order-id-label { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .order-id-val { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; }
+    .order-details-table { width: 100%; margin: 0 0 28px; border-collapse: collapse; text-align: left; }
+    .order-details-table td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    .order-details-table td:last-child { text-align: right; font-weight: 600; }
+    .order-details-table tr:last-child td { border-bottom: none; }
+    .order-items-title { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; text-align: left; }
+    .order-item-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .order-item-img { width: 52px; height: 52px; border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-2); }
+    .order-item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .order-item-info { flex: 1; text-align: left; }
+    .order-item-info strong { display: block; font-size: 0.88rem; }
+    .order-item-info small { color: var(--text-dim); font-size: 0.78rem; }
+    .order-item-price { font-weight: 700; font-size: 0.9rem; }
+    .confirm-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+    .whatsapp-hint { 
+      background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.3);
+      border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; font-size: 0.85rem;
+      color: #25D366;
+    }
+    .confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  </style>
+</head>
+<body>
+<canvas class="confetti" id="confetti"></canvas>
+<div class="orders-page" style="position:relative;z-index:1">
+  <div class="order-confirm-card" id="confirmCard">
+    <div class="confirm-icon">✅</div>
+    <h1 class="confirm-title">Order Placed! 🎉</h1>
+    <p class="confirm-sub">Thank you for your order! We'll process it shortly.</p>
+
+    <div class="order-id-box">
+      <div class="order-id-label">Your Order ID</div>
+      <div class="order-id-val" id="orderIdDisplay">—</div>
+    </div>
+
+    <div class="order-items-title">Items Ordered</div>
+    <div id="orderItemsList" style="margin-bottom:24px"></div>
+
+    <table class="order-details-table" id="orderDetailsTable"></table>
+
+    <div class="whatsapp-hint">
+      📲 Save your Order ID. We'll contact you on WhatsApp/Phone to confirm delivery.
+    </div>
+
+    <div class="confirm-actions">
+      <a href="shop.html" class="btn btn-primary">🛍 Shop More</a>
+      <a href="index.html" class="btn btn-outline">🏠 Home</a>
+    </div>
+  </div>
+</div>
+<script src="js/store.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (!id) { window.location.href = 'index.html'; return; }
+  const order = Store.getOrder(id);
+  if (!order) { window.location.href = 'index.html'; return; }
+
+  document.getElementById('orderIdDisplay').textContent = order.id;
+
+  // Items
+  const itemsList = document.getElementById('orderItemsList');
+  itemsList.innerHTML = order.items.map(item => `
+    <div class="order-item-row">
+      <div class="order-item-img"><img src="${item.image}" alt="${item.title}"></div>
+      <div class="order-item-info">
+        <strong>${item.title}</strong>
+        <small>Size: ${item.size} · Qty: ${item.qty}</small>
+      </div>
+      <div class="order-item-price">${formatPrice(item.price * item.qty)}</div>
+    </div>
+  `).join('');
+
+  // Details table
+  const table = document.getElementById('orderDetailsTable');
+  const settings = Store.getSettings();
+  table.innerHTML = `
+    <tr><td>Customer</td><td>${order.customer.name}</td></tr>
+    <tr><td>Phone</td><td>${order.customer.phone}</td></tr>
+    <tr><td>Address</td><td>${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pin}</td></tr>
+    <tr><td>Payment</td><td>${order.customer.paymentMethod === 'qr' ? '📱 UPI/QR Code' : '💵 Cash on Delivery'}</td></tr>
+    <tr><td>Subtotal</td><td>${formatPrice(order.subtotal)}</td></tr>
+    <tr><td>Shipping</td><td>${order.shipping === 0 ? 'FREE 🎉' : formatPrice(order.shipping)}</td></tr>
+    <tr><td><strong>Total Paid</strong></td><td><strong style="color:var(--primary);font-size:1.05rem">${formatPrice(order.total)}</strong></td></tr>
+  `;
+
+  // Confetti
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const pieces = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
+    size: Math.random() * 8 + 4,
+    color: ['#6C63FF','#FF6584','#FFD700','#4CAF50','#2196F3'][Math.floor(Math.random()*5)],
+    speed: Math.random() * 3 + 1,
+    angle: Math.random() * 360,
+    spin: Math.random() * 4 - 2
+  }));
+  let frames = 0;
+  function confettiLoop() {
+    if (frames++ > 200) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y += p.speed; p.angle += p.spin;
+      if (p.y > canvas.height) p.y = -20;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle * Math.PI / 180);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+      ctx.restore();
+    });
+    requestAnimationFrame(confettiLoop);
+  }
+  confettiLoop();
+})();
+</script>
+</body>
+</html>

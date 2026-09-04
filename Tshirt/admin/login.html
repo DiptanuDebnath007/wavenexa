@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — ThreadCraft</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); overflow: hidden; }
+    .login-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(108,99,255,0.25) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(255,101,132,0.15) 0%, transparent 50%);
+    }
+    .login-bg::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(108,99,255,0.03) 40px, rgba(108,99,255,0.03) 41px),
+                        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(108,99,255,0.03) 40px, rgba(108,99,255,0.03) 41px);
+    }
+    .login-card {
+      position: relative; z-index: 1;
+      background: rgba(15,15,26,0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 48px 44px;
+      width: 100%; max-width: 420px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(108,99,255,0.1);
+      animation: scaleIn 0.5s ease;
+    }
+    .login-logo { text-align: center; margin-bottom: 32px; }
+    .login-logo .nav-logo { font-size: 1.8rem; }
+    .login-logo p { font-size: 0.85rem; color: var(--text-dim); margin-top: 6px; }
+    .login-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+    .login-sub { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 32px; }
+    .login-error {
+      padding: 12px 16px; border-radius: var(--radius);
+      background: rgba(255,101,132,0.1); border: 1px solid rgba(255,101,132,0.3);
+      color: var(--accent); font-size: 0.88rem; display: none; margin-bottom: 16px;
+    }
+    .back-link { display: block; text-align: center; margin-top: 24px; font-size: 0.85rem; color: var(--text-dim); transition: var(--transition); }
+    .back-link:hover { color: var(--primary); }
+    .pw-wrap { position: relative; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; font-size: 1.1rem; color: var(--text-dim);
+      background: none; border: none; transition: var(--transition);
+    }
+    .pw-toggle:hover { color: var(--primary); }
+  </style>
+</head>
+<body>
+<div class="login-bg"></div>
+<div class="login-card">
+  <div class="login-logo">
+    <div class="nav-logo">Thread<span>Craft</span></div>
+    <p>Admin Portal</p>
+  </div>
+  <h2 class="login-title">Welcome Back 👋</h2>
+  <p class="login-sub">Sign in to manage your store</p>
+
+  <div class="login-error" id="loginError">❌ Invalid credentials. Please try again.</div>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-control" id="adminEmail" placeholder="Enter admin email" autocomplete="email" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="pw-wrap">
+        <input type="password" class="form-control" id="adminPw" placeholder="Enter your password" autocomplete="current-password" required>
+        <button type="button" class="pw-toggle" id="pwToggle">👁</button>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginBtn">
+      🔐 Sign In to Dashboard
+    </button>
+  </form>
+
+  <a href="../index.html" class="back-link">← Back to Store</a>
+</div>
+
+<script src="../js/store.js"></script>
+<script>
+(function () {
+  if (Store.isAdminLoggedIn()) {
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  document.getElementById('pwToggle')?.addEventListener('click', () => {
+    const inp    = document.getElementById('adminPw');
+    const toggle = document.getElementById('pwToggle');
+    if (inp.type === 'password') { inp.type = 'text'; toggle.textContent = '🙈'; }
+    else { inp.type = 'password'; toggle.textContent = '👁'; }
+  });
+
+  document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('adminEmail').value.trim();
+    const pw    = document.getElementById('adminPw').value;
+    const btn   = document.getElementById('loginBtn');
+    const err   = document.getElementById('loginError');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Verifying...';
+    err.style.display = 'none';
+
+    try {
+      const result = await Store.customerLogin(email, pw);
+      if (result.ok && result.role === 'admin') {
+        btn.textContent = '✅ Access Granted!';
+        setTimeout(() => window.location.href = 'dashboard.html', 600);
+      } else {
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '🔐 Sign In to Dashboard';
+        document.getElementById('adminPw').value = '';
+        document.getElementById('adminPw').focus();
+      }
+    } catch (ex) {
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🔐 Sign In to Dashboard';
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThreadCraft — Wear Your Story</title>
+  <meta name="description" content="ThreadCraft — Premium T-shirts crafted with passion. Shop our exclusive collections of graphic tees, streetwear, and vintage styles.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<!-- ═══ Promo Ad Banner ══════════════════════ -->
+<section class="promo-ad-banner" id="promoBanner">
+  <button class="promo-ad-close" id="promoClose" title="Close">✕</button>
+  <div class="promo-ad-inner">
+    <!-- Left: Image -->
+    <div class="promo-ad-visual">
+      <img src="assets/promo_banner.jpg" alt="Summer Sale – Up to 50% Off at ThreadCraft" class="promo-ad-img">
+      <div class="promo-ad-img-glow"></div>
+    </div>
+    <!-- Right: Content -->
+    <div class="promo-ad-content">
+      <div class="promo-ad-eyebrow">🔥 Limited Time Offer</div>
+      <h2 class="promo-ad-title">Summer Sale<br><span class="promo-ad-highlight">Up to 50% Off</span></h2>
+      <p class="promo-ad-sub">Premium tees at unbeatable prices. Don't miss out — offer ends soon!</p>
+      <!-- Countdown Timer -->
+      <div class="promo-countdown" id="promoCountdown">
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cdDays">02</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cdHrs">14</span>
+          <span class="countdown-label">Hrs</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cdMin">48</span>
+          <span class="countdown-label">Min</span>
+        </div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cdSec">00</span>
+          <span class="countdown-label">Sec</span>
+        </div>
+      </div>
+      <div class="promo-ad-actions">
+        <a href="shop.html" class="btn btn-accent btn-lg promo-cta">Shop the Sale →</a>
+        <div class="promo-ad-badge">
+          <span>FREE</span>
+          <span>Shipping</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Decorative glows -->
+  <div class="promo-glow promo-glow-1"></div>
+  <div class="promo-glow promo-glow-2"></div>
+</section>
+
+<!-- ═══ Navigation ══════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Thread<span>Craft</span></a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="shop.html#collections">Collections</a>
+      <a href="#about">About</a>
+    </div>
+    <div class="nav-actions">
+      <a href="cart.html" class="nav-cart-btn" id="cart-btn" title="Cart">
+        🛒 <span class="cart-badge" id="cart-badge">0</span>
+      </a>
+      <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="openAuthModal()">🔑 Login</button>
+      <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-close" id="menuClose">✕</div>
+  <a href="index.html">Home</a>
+  <a href="shop.html">Shop</a>
+  <a href="shop.html#collections">Collections</a>
+  <a href="#about">About</a>
+  <a href="cart.html">Cart 🛒</a>
+  <a href="javascript:void(0)" onclick="openAuthModal();document.querySelector('.mobile-menu').classList.remove('open')">🔑 Login</a>
+</div>
+
+<!-- ═══ Hero Section ════════════════════════ -->
+<section class="hero" id="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      New Collection 2026
+      <span class="eyebrow-dot"></span>
+    </div>
+    <h1 class="hero-title">
+      Wear Your<br>
+      <span class="gradient-text hero-title-accent">Story</span>
+    </h1>
+    <p class="hero-subtitle">Premium T-shirts crafted for those who dare to be different. Limited drops. Unlimited style.</p>
+    <div class="hero-actions">
+      <a href="shop.html" class="btn btn-primary btn-lg">
+        <span>Shop Now</span> <span>→</span>
+      </a>
+      <a href="#featured" class="btn btn-outline btn-lg">View Collections</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">7+</span>
+        <span class="hero-stat-label">Collections</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">100%</span>
+        <span class="hero-stat-label">Premium Cotton</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">500+</span>
+        <span class="hero-stat-label">Happy Customers</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ═══ Marquee Strip ═══════════════════════ -->
+<div class="marquee-strip">
+  <div class="marquee-track">
+    <span>✦ Free Shipping Above ₹999</span>
+    <span>✦ 100% Premium Cotton</span>
+    <span>✦ Exclusive Drops</span>
+    <span>✦ Easy Returns</span>
+    <span>✦ UPI Payments</span>
+    <span>✦ Premium Quality</span>
+    <span>✦ Free Shipping Above ₹999</span>
+    <span>✦ 100% Premium Cotton</span>
+    <span>✦ Exclusive Drops</span>
+    <span>✦ Easy Returns</span>
+    <span>✦ UPI Payments</span>
+    <span>✦ Premium Quality</span>
+  </div>
+</div>
+
+<!-- ═══ Featured Products ═══════════════════ -->
+<section class="section" id="featured">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-eyebrow">Most Loved</div>
+      <h2 class="section-title">Featured <span class="gradient-text">Drops</span></h2>
+      <p class="section-subtitle">Handpicked favorites from our newest collections — wear-ready and limited.</p>
+    </div>
+    <div class="products-grid" id="featuredGrid"></div>
+    <div class="section-cta reveal">
+      <a href="shop.html" class="btn btn-outline btn-lg">View All Products →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Categories ═══════════════════════════ -->
+<section class="section categories-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-eyebrow">Browse By</div>
+      <h2 class="section-title">Shop by <span class="gradient-text">Category</span></h2>
+    </div>
+    <div class="categories-grid reveal">
+      <a href="shop.html?cat=Street" class="cat-card cat-street">
+        <div class="cat-icon">🏙️</div>
+        <h3>Street</h3>
+        <p>Bold & Urban</p>
+        <span class="cat-arrow">→</span>
+      </a>
+      <a href="shop.html?cat=Vintage" class="cat-card cat-vintage">
+        <div class="cat-icon">📼</div>
+        <h3>Vintage</h3>
+        <p>Retro Vibes</p>
+        <span class="cat-arrow">→</span>
+      </a>
+      <a href="shop.html?cat=Essentials" class="cat-card cat-essentials">
+        <div class="cat-icon">⚡</div>
+        <h3>Essentials</h3>
+        <p>Daily Staples</p>
+        <span class="cat-arrow">→</span>
+      </a>
+      <a href="shop.html?cat=Luxury" class="cat-card cat-luxury">
+        <div class="cat-icon">👑</div>
+        <h3>Luxury</h3>
+        <p>Premium Drops</p>
+        <span class="cat-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ About / Story ════════════════════════ -->
+<section class="section about-section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-visual reveal-left">
+        <div class="about-img-wrap">
+          <img src="assets/tshirt_purple.jpg" alt="ThreadCraft Premium Quality" class="about-img">
+          <div class="about-badge">
+            <span class="about-badge-num">100%</span>
+            <span class="about-badge-text">Premium Cotton</span>
+          </div>
+        </div>
+      </div>
+      <div class="about-text reveal-right">
+        <div class="section-eyebrow">Our Story</div>
+        <h2>Crafted with <span class="gradient-text">Passion</span></h2>
+        <p>At ThreadCraft, we believe a great t-shirt is more than just fabric — it's a canvas for self-expression. Every tee in our collection is designed with purpose, printed with precision, and tailored for those who refuse to be ordinary.</p>
+        <div class="about-features">
+          <div class="about-feature">
+            <span class="about-feature-icon">🌿</span>
+            <div>
+              <h4>Ethical Sourcing</h4>
+              <p>100% responsibly sourced cotton from certified farms</p>
+            </div>
+          </div>
+          <div class="about-feature">
+            <span class="about-feature-icon">🎨</span>
+            <div>
+              <h4>Artisan Printing</h4>
+              <p>High-density screen printing built to last 100+ washes</p>
+            </div>
+          </div>
+          <div class="about-feature">
+            <span class="about-feature-icon">🚀</span>
+            <div>
+              <h4>Fast Delivery</h4>
+              <p>Dispatched within 24 hours, delivered in 3-5 days</p>
+            </div>
+          </div>
+        </div>
+        <a href="shop.html" class="btn btn-primary">Explore Collection →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Testimonials ═════════════════════════ -->
+<section class="section testimonials-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-eyebrow">Reviews</div>
+      <h2 class="section-title">What People <span class="gradient-text">Say</span></h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <p>"The Midnight Noir tee is absolutely insane. Quality is top notch and the fit is perfect. Already ordered 3 more!"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">R</div>
+          <div><strong>Rahul M.</strong><span>Delhi</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <p>"Finally found a brand that delivers on quality. The Urban Pulse tee turns heads everywhere I wear it. Highly recommend!"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">P</div>
+          <div><strong>Priya S.</strong><span>Mumbai</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <p>"The Royal Cipher is worth every rupee. Packaging was premium, shipping was fast. ThreadCraft is now my go-to brand."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">A</div>
+          <div><strong>Arjun K.</strong><span>Bangalore</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA Banner ═══════════════════════════ -->
+<section class="cta-banner">
+  <div class="cta-banner-bg"></div>
+  <div class="container cta-content reveal">
+    <h2>Ready to Upgrade <span class="gradient-text">Your Style?</span></h2>
+    <p>Get free shipping on orders above ₹999. New drops every week.</p>
+    <a href="shop.html" class="btn btn-primary btn-lg">Shop Now →</a>
+  </div>
+</section>
+
+<!-- ═══ Footer ═══════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="font-size:1.4rem;">Thread<span style="font-weight:300">Craft</span></div>
+        <p>Premium T-shirts for those who wear their story with pride. Crafted with passion, delivered with care.</p>
+        <div class="footer-social" style="margin-top:20px">
+          <a href="#" class="social-btn" title="Instagram">📸</a>
+          <a href="#" class="social-btn" title="WhatsApp">💬</a>
+          <a href="#" class="social-btn" title="Twitter">🐦</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Shop</h5>
+        <ul>
+          <li><a href="shop.html?cat=Street">Street</a></li>
+          <li><a href="shop.html?cat=Vintage">Vintage</a></li>
+          <li><a href="shop.html?cat=Essentials">Essentials</a></li>
+          <li><a href="shop.html?cat=Luxury">Luxury</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Help</h5>
+        <ul>
+          <li><a href="#">Size Guide</a></li>
+          <li><a href="#">Shipping Info</a></li>
+          <li><a href="#">Return Policy</a></li>
+          <li><a href="#">Track Order</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="#">📧 hello@threadcraft.in</a></li>
+          <li><a href="#">📞 +91 98765 43210</a></li>
+          <li><a href="#">📍 India</a></li>
+          <li><a href="admin/login.html">🔐 Owner Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 ThreadCraft. All rights reserved.</p>
+      <p>Made with ❤️ in India</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/store.js"></script>
+<script src="js/home.js"></script>
+
+<!-- ═══ Auth Modal ═══════════════════════════ -->
+<div class="auth-modal-overlay" id="authModal" onclick="handleAuthOverlayClick(event)">
+  <div class="auth-modal-card" id="authModalCard">
+
+    <!-- Close -->
+    <button class="auth-modal-close" onclick="closeAuthModal()" title="Close">✕</button>
+
+    <!-- Logo -->
+    <div class="auth-modal-logo">
+      <div class="nav-logo">Thread<span>Craft</span></div>
+      <p>Your premium T-shirt destination</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Create Account</button>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="auth-error" id="authError"></div>
+    <!-- Success Banner -->
+    <div class="auth-success" id="authSuccess"></div>
+
+    <!-- ── LOGIN FORM ── -->
+    <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="loginEmail" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="pw-wrap">
+          <input type="password" class="form-control" id="loginPw" placeholder="Enter your password" autocomplete="current-password" required>
+          <button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginSubmitBtn">
+        🔑 Sign In
+      </button>
+    </form>
+
+    <!-- ── REGISTER FORM ── -->
+    <form class="auth-form" id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="regName" placeholder="Your name" autocomplete="name" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="regEmail" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="pw-wrap">
+          <input type="password" class="form-control" id="regPw" placeholder="Min 6 characters" autocomplete="new-password" required minlength="6">
+          <button type="button" class="pw-toggle" onclick="togglePw('regPw',this)">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="regSubmitBtn">
+        ✨ Create Account
+      </button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+/* ── Auth Modal Logic ────────────────────────── */
+
+function openAuthModal() {
+  document.getElementById('authModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  clearAuthMessages();
+}
+function closeAuthModal() {
+  document.getElementById('authModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleAuthOverlayClick(e) {
+  if (e.target === document.getElementById('authModal')) closeAuthModal();
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display   = tab === 'login'    ? '' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  clearAuthMessages();
+}
+
+function togglePw(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = '✅ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('authError').style.display = 'none';
+}
+function clearAuthMessages() {
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  const btn   = document.getElementById('loginSubmitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Signing in...';
+  try {
+    const result = await Store.customerLogin(email, pw);
+    if (result.ok) {
+      if (result.role === 'admin') {
+        showAuthSuccess('Access granted! Redirecting...');
+        setTimeout(() => window.location.href = 'admin/dashboard.html', 800);
+      } else {
+        showAuthSuccess('Welcome back, ' + result.user.name.split(' ')[0] + '! 🎉');
+        setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+      }
+    } else {
+      showAuthError(result.error);
+      btn.disabled = false; btn.textContent = '🔑 Sign In';
+    }
+  } catch(err) {
+    showAuthError('Something went wrong. Please try again.');
+    btn.disabled = false; btn.textContent = '🔑 Sign In';
+  }
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pw    = document.getElementById('regPw').value;
+  const btn   = document.getElementById('regSubmitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Creating...';
+  setTimeout(() => {
+    const result = Store.registerCustomer(name, email, pw);
+    if (result.ok) {
+      // Auto-login after register
+      Store.customerLogin(email, pw);
+      showAuthSuccess('Account created! Welcome, ' + name.split(' ')[0] + '! 🎉');
+      setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+    } else {
+      showAuthError(result.error);
+      btn.disabled = false; btn.textContent = '✨ Create Account';
+    }
+  }, 600);
+}
+
+function updateAuthNavBtn() {
+  const btn  = document.getElementById('authNavBtn');
+  const user = Store.getCurrentUser();
+  if (!btn) return;
+  if (user) {
+    btn.textContent = '👤 ' + user.name.split(' ')[0];
+    btn.onclick = handleAuthBtnClick;
+  } else {
+    btn.innerHTML = '🔑 Login';
+    btn.onclick = openAuthModal;
+  }
+}
+
+function handleAuthBtnClick() {
+  if (confirm('Sign out of your account?')) {
+    Store.customerLogout();
+    updateAuthNavBtn();
+    showToast('Signed out successfully.', 'info');
+  }
+}
+
+// Init on page load
+window.addEventListener('load', updateAuthNavBtn);
+
+// Close on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
+</script>
+
+</body>
+</html>

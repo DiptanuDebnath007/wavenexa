@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders — ThreadCraft Admin</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">`n  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-logo">
+      <div class="nav-logo">Thread<span>Craft</span></div>
+      <p>Admin Panel</p>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Main</div>
+      <a href="dashboard.html" class="admin-nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="orders.html" class="admin-nav-link active"><span class="nav-icon">📦</span> Orders</a>
+      <div class="admin-nav-section">Store</div>
+      <a href="upload.html" class="admin-nav-link"><span class="nav-icon">➕</span> Add Product</a>
+      <a href="payment.html" class="admin-nav-link"><span class="nav-icon">📱</span> Payment QR</a>
+      <div class="admin-nav-section">Account</div>
+      <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Store</a>
+      <a href="#" class="admin-nav-link" id="logoutLink"><span class="nav-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user">
+        <div class="admin-avatar">👑</div>
+        <div class="admin-user-info"><strong>Store Owner</strong><span>ThreadCraft Admin</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="admin-page-title">📦 All Orders</div>
+      <div class="admin-topbar-right">
+        <button class="btn btn-outline btn-sm" id="exportBtn">📥 Export CSV</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Filters -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+        <div class="filter-tags" id="statusFilters">
+          <button class="tag active" data-status="all">All</button>
+          <button class="tag" data-status="pending">⏳ Pending</button>
+          <button class="tag" data-status="confirmed">✅ Confirmed</button>
+          <button class="tag" data-status="shipped">🚚 Shipped</button>
+          <button class="tag" data-status="delivered">📬 Delivered</button>
+          <button class="tag" data-status="cancelled">❌ Cancelled</button>
+        </div>
+        <input type="text" class="form-control" id="orderSearch" placeholder="Search by name or ID..." style="padding:10px 16px;width:240px;margin-left:auto">
+      </div>
+
+      <div id="ordersCount" style="font-size:0.88rem;color:var(--text-dim);margin-bottom:14px">Loading orders...</div>
+
+      <div class="orders-table-wrap" id="ordersTableWrap">
+        <table class="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" id="ordersEmpty" style="display:none">
+        <div class="empty-icon">📦</div>
+        <h3>No orders yet</h3>
+        <p>Orders will appear here once customers start buying</p>
+      </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div class="modal-overlay" id="orderModal" onclick="if(event.target===this)this.style.display='none'">
+      <div class="modal-box" style="max-width:640px">
+        <div class="modal-header">
+          <h3>📦 Order Details</h3>
+          <button onclick="document.getElementById('orderModal').style.display='none'" class="modal-close">✕</button>
+        </div>
+        <div id="orderModalBody"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/store.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+(function () {
+  requireAdmin();
+  let currentStatus = 'all';
+
+  function renderOrders(filter = '') {
+    let orders = Store.getOrders();
+    if (currentStatus !== 'all') orders = orders.filter(o => o.status === currentStatus);
+    if (filter) {
+      const q = filter.toLowerCase();
+      orders = orders.filter(o => o.id.toLowerCase().includes(q) || o.customer.name.toLowerCase().includes(q) || o.customer.phone.includes(q));
+    }
+
+    document.getElementById('ordersCount').textContent = `Showing ${orders.length} order${orders.length !== 1 ? 's' : ''}`;
+
+    const tbody = document.getElementById('ordersBody');
+    const empty = document.getElementById('ordersEmpty');
+    const wrap  = document.getElementById('ordersTableWrap');
+
+    if (orders.length === 0) {
+      wrap.style.display  = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    wrap.style.display  = 'block';
+    empty.style.display = 'none';
+
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td><strong style="color:var(--primary);font-size:0.85rem">${o.id}</strong></td>
+        <td><strong>${o.customer.name}</strong><br><small style="color:var(--text-dim)">${o.customer.city}, ${o.customer.state}</small></td>
+        <td><small>${o.customer.phone}</small>${o.customer.email ? `<br><small style="color:var(--text-dim)">${o.customer.email}</small>` : ''}</td>
+        <td>${o.items.length} item(s)<br><small style="color:var(--text-dim)">${o.items.map(i => `${i.title}(${i.size})`).join(', ')}</small></td>
+        <td><strong>${formatPrice(o.total)}</strong><br><small style="color:var(--text-dim)">${o.shipping === 0 ? 'Free Ship' : `+${formatPrice(o.shipping)} ship`}</small></td>
+        <td><span style="font-size:0.82rem">${o.customer.paymentMethod === 'qr' ? '📱 UPI' : '💵 COD'}</span></td>
+        <td>
+          <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
+            ${['pending','confirmed','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}
+          </select>
+        </td>
+        <td style="color:var(--text-dim);font-size:0.8rem">${new Date(o.createdAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})}<br>${new Date(o.createdAt).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="viewOrder('${o.id}')">👁 View</button></td>
+      </tr>
+    `).join('');
+  }
+
+  window.updateStatus = function(id, status) {
+    Store.updateOrderStatus(id, status);
+    showToast(`Order status updated to "${status}"`, 'success');
+  };
+
+  window.viewOrder = function(id) {
+    const o = Store.getOrder(id);
+    if (!o) return;
+    document.getElementById('orderModalBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <div><p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px">ORDER ID</p><strong style="color:var(--primary)">${o.id}</strong></div>
+        <div><p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:4px">DATE</p><strong>${new Date(o.createdAt).toLocaleString('en-IN')}</strong></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+        <h4 style="margin-bottom:14px;font-size:0.88rem">👤 Customer Info</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.88rem">
+          <div><span style="color:var(--text-dim)">Name: </span><strong>${o.customer.name}</strong></div>
+          <div><span style="color:var(--text-dim)">Phone: </span><strong>${o.customer.phone}</strong></div>
+          <div style="grid-column:1/-1"><span style="color:var(--text-dim)">Address: </span><strong>${o.customer.address}, ${o.customer.city}, ${o.customer.state} - ${o.customer.pin}</strong></div>
+          <div><span style="color:var(--text-dim)">Payment: </span><strong>${o.customer.paymentMethod === 'qr' ? '📱 UPI/QR' : '💵 COD'}</strong></div>
+          ${o.customer.notes ? `<div style="grid-column:1/-1"><span style="color:var(--text-dim)">Notes: </span><strong>${o.customer.notes}</strong></div>` : ''}
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+        <h4 style="margin-bottom:14px;font-size:0.88rem">🛍 Order Items</h4>
+        ${o.items.map(item => `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <img src="${imgPath(item.image)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover">
+            <div style="flex:1">
+              <strong style="font-size:0.88rem">${item.title}</strong>
+              <p style="font-size:0.78rem;color:var(--text-dim)">Size: ${item.size} · Color: ${item.color} · Qty: ${item.qty}</p>
+            </div>
+            <strong>${formatPrice(item.price * item.qty)}</strong>
+          </div>
+        `).join('')}
+        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:0.88rem">
+          <span style="color:var(--text-dim)">Subtotal</span><span>${formatPrice(o.subtotal)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.88rem">
+          <span style="color:var(--text-dim)">Shipping</span><span>${o.shipping === 0 ? 'FREE' : formatPrice(o.shipping)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:900;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <span>Total</span><span style="color:var(--primary)">${formatPrice(o.total)}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select class="form-control" id="modalStatusSel" style="flex:1">
+          ${['pending','confirmed','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary" onclick="Store.updateOrderStatus('${o.id}', document.getElementById('modalStatusSel').value); showToast('Status updated', 'success'); renderOrders(); document.getElementById('orderModal').style.display='none';">Update Status</button>
+      </div>
+    `;
+    document.getElementById('orderModal').style.display = 'flex';
+  };
+
+  window.renderOrders = renderOrders;
+
+  // Status filter tabs
+  document.querySelectorAll('[data-status]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentStatus = btn.dataset.status;
+      renderOrders(document.getElementById('orderSearch').value);
+    });
+  });
+
+  let searchTimeout;
+  document.getElementById('orderSearch')?.addEventListener('input', e => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => renderOrders(e.target.value), 300);
+  });
+
+  // Export CSV
+  document.getElementById('exportBtn')?.addEventListener('click', () => {
+    const orders = Store.getOrders();
+    const rows = [['Order ID','Customer','Phone','City','State','Items','Subtotal','Shipping','Total','Payment','Status','Date']];
+    orders.forEach(o => rows.push([
+      o.id, o.customer.name, o.customer.phone, o.customer.city, o.customer.state,
+      o.items.map(i => `${i.title}(${i.size}x${i.qty})`).join(' | '),
+      o.subtotal, o.shipping, o.total,
+      o.customer.paymentMethod === 'qr' ? 'UPI/QR' : 'COD',
+      o.status, new Date(o.createdAt).toLocaleString('en-IN')
+    ]));
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `threadcraft-orders-${Date.now()}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast('Orders exported as CSV!', 'success');
+  });
+
+  renderOrders();
+})();
+</script>
+</body>
+</html>
+

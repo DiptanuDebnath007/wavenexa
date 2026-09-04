@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — ThreadCraft Admin</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">`n  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-logo">
+      <div class="nav-logo">Thread<span>Craft</span></div>
+      <p>Admin Panel</p>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Main</div>
+      <a href="dashboard.html" class="admin-nav-link active"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="orders.html" class="admin-nav-link"><span class="nav-icon">📦</span> Orders <span id="pendingBadge" style="margin-left:auto;background:var(--accent);color:white;font-size:0.7rem;padding:2px 7px;border-radius:10px;"></span></a>
+      <div class="admin-nav-section">Store</div>
+      <a href="upload.html" class="admin-nav-link"><span class="nav-icon">➕</span> Add Product</a>
+      <a href="payment.html" class="admin-nav-link"><span class="nav-icon">📱</span> Payment QR</a>
+      <div class="admin-nav-section">Account</div>
+      <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Store</a>
+      <a href="#" class="admin-nav-link" id="logoutLink"><span class="nav-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user">
+        <div class="admin-avatar">👑</div>
+        <div class="admin-user-info">
+          <strong>Store Owner</strong>
+          <span>ThreadCraft Admin</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="admin-page-title">📊 Dashboard</div>
+      <div class="admin-topbar-right">
+        <span id="todayDate" style="font-size:0.82rem;color:var(--text-dim)"></span>
+        <a href="upload.html" class="btn btn-primary btn-sm">+ Add Product</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card" style="--card-color:#6C63FF">
+          <div class="stat-card-icon">📦</div>
+          <div class="stat-card-label">Total Orders</div>
+          <div class="stat-card-val" id="statOrders">0</div>
+          <div class="stat-card-sub">All time</div>
+        </div>
+        <div class="stat-card" style="--card-color:#FF6584">
+          <div class="stat-card-icon">⏳</div>
+          <div class="stat-card-label">Pending Orders</div>
+          <div class="stat-card-val" id="statPending">0</div>
+          <div class="stat-card-sub">Needs attention</div>
+        </div>
+        <div class="stat-card" style="--card-color:#4CAF50">
+          <div class="stat-card-icon">💰</div>
+          <div class="stat-card-label">Total Revenue</div>
+          <div class="stat-card-val" id="statRevenue">₹0</div>
+          <div class="stat-card-sub">All orders</div>
+        </div>
+        <div class="stat-card" style="--card-color:#FFD700">
+          <div class="stat-card-icon">👕</div>
+          <div class="stat-card-label">Products</div>
+          <div class="stat-card-val" id="statProducts">0</div>
+          <div class="stat-card-sub">In catalogue</div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="admin-section-title">
+        <h3>Recent Orders</h3>
+        <a href="orders.html" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <div class="orders-table-wrap" style="margin-bottom:36px">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="recentOrdersBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Quick Products -->
+      <div class="admin-section-title">
+        <h3>Your Products</h3>
+        <a href="upload.html" class="btn btn-primary btn-sm">+ Add New</a>
+      </div>
+      <div class="admin-products-grid" id="adminProductsGrid"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/store.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+(function () {
+  requireAdmin();
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Stats
+  const stats = Store.getStats();
+  document.getElementById('statOrders').textContent  = stats.totalOrders;
+  document.getElementById('statPending').textContent = stats.pendingOrders;
+  document.getElementById('statRevenue').textContent = formatPrice(stats.totalRevenue);
+  document.getElementById('statProducts').textContent = stats.totalProducts;
+  const pb = document.getElementById('pendingBadge');
+  if (stats.pendingOrders > 0) pb.textContent = stats.pendingOrders;
+
+  // Recent Orders
+  const orders = Store.getOrders().slice(0, 6);
+  const tbody = document.getElementById('recentOrdersBody');
+  tbody.innerHTML = orders.length === 0
+    ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:32px">No orders yet</td></tr>'
+    : orders.map(o => `
+        <tr>
+          <td><strong style="color:var(--primary)">${o.id}</strong></td>
+          <td>${o.customer.name}<br><small style="color:var(--text-dim)">${o.customer.phone}</small></td>
+          <td>${o.items.length} item(s)</td>
+          <td><strong>${formatPrice(o.total)}</strong></td>
+          <td><span class="order-status status-${o.status}">${o.status}</span></td>
+          <td style="color:var(--text-dim)">${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
+        </tr>
+      `).join('');
+
+  // Products grid
+  const products = Store.getProducts().slice(0, 6);
+  const grid = document.getElementById('adminProductsGrid');
+  grid.innerHTML = products.map(p => `
+    <div class="admin-product-card">
+      <div class="admin-product-card-img"><img src="${imgPath(p.images[0])}" alt="${p.title}"></div>
+      <div class="admin-product-card-body">
+        <div class="admin-product-card-name">${p.title}</div>
+        <div class="admin-product-card-meta">${p.category} · Stock: ${p.stock}</div>
+        <div class="admin-product-card-price">${formatPrice(p.price)}</div>
+        <div class="admin-product-actions">
+          <button class="btn btn-ghost btn-sm" onclick="deleteProduct('${p.id}')">🗑 Delete</button>
+          <span class="order-status ${p.featured ? 'status-confirmed' : 'status-pending'}">${p.featured ? 'Featured' : 'Hidden'}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+})();
+</script>
+</body>
+</html>
+

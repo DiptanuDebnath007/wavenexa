@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart & Checkout — ThreadCraft</title>
+  <meta name="description" content="Review your cart and complete your order.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cart.css">
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Thread<span>Craft</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+    </div>
+    <div class="nav-actions">
+      <a href="cart.html" class="nav-cart-btn active-nav" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
+      <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-close" id="menuClose">✕</div>
+  <a href="index.html">Home</a>
+  <a href="shop.html">Shop</a>
+</div>
+
+<!-- Progress Steps -->
+<div class="checkout-progress">
+  <div class="container">
+    <div class="progress-steps">
+      <div class="progress-step active" id="step1"><span class="step-num">1</span><span class="step-label">Cart</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step" id="step2"><span class="step-num">2</span><span class="step-label">Details</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step" id="step3"><span class="step-num">3</span><span class="step-label">Payment</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cart-page container">
+
+  <!-- ═══ Step 1: Cart ═══════════════════════ -->
+  <div class="cart-step" id="cartStep">
+    <div class="cart-layout">
+      <!-- Cart Items -->
+      <div class="cart-items-col">
+        <div class="cart-header">
+          <h2>Your Cart</h2>
+          <button class="btn btn-ghost btn-sm" id="clearCartBtn">Clear All</button>
+        </div>
+        <div id="cartItemsList"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="cartEmpty" style="display:none">
+          <div class="empty-icon">🛒</div>
+          <h3>Your cart is empty</h3>
+          <p>Looks like you haven't added anything yet</p>
+          <a href="shop.html" class="btn btn-primary" style="margin-top:20px">Shop Now →</a>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="cart-summary-col" id="cartSummaryCol">
+        <div class="order-summary card">
+          <h3 class="summary-title">Order Summary</h3>
+          <div class="summary-rows" id="summaryRows"></div>
+          <div class="divider"></div>
+          <div class="summary-total">
+            <span>Total</span>
+            <span id="summaryTotal">₹0</span>
+          </div>
+          <div class="shipping-note" id="shippingNote"></div>
+          <button class="btn btn-primary btn-full btn-lg" id="proceedToCheckout">
+            Proceed to Checkout →
+          </button>
+          <a href="shop.html" class="btn btn-ghost btn-full" style="margin-top:10px;text-align:center">← Continue Shopping</a>
+        </div>
+
+        <!-- Coupon -->
+        <div class="coupon-box card">
+          <h4>🏷️ Have a Coupon?</h4>
+          <div class="coupon-input-row">
+            <input type="text" class="form-control" id="couponInput" placeholder="Enter code">
+            <button class="btn btn-outline btn-sm" id="applyCoupon">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Step 2: Customer Details ═══════════ -->
+  <div class="cart-step" id="detailsStep" style="display:none">
+    <div class="checkout-form-layout">
+      <div class="checkout-form-col">
+        <div class="checkout-form-header">
+          <button class="btn btn-ghost btn-sm" id="backToCart">← Back to Cart</button>
+          <h2>Delivery Details</h2>
+        </div>
+        <form id="checkoutForm" class="checkout-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" class="form-control" id="custName" placeholder="Your full name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-control" id="custPhone" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="custEmail" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Delivery Address *</label>
+            <textarea class="form-control" id="custAddress" rows="3" placeholder="House No., Street, Locality" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <input type="text" class="form-control" id="custCity" placeholder="City" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">PIN Code *</label>
+              <input type="text" class="form-control" id="custPin" placeholder="400001" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">State *</label>
+            <select class="form-control" id="custState" required>
+              <option value="">Select State</option>
+              <option>Maharashtra</option><option>Delhi</option><option>Karnataka</option>
+              <option>Tamil Nadu</option><option>Uttar Pradesh</option><option>Gujarat</option>
+              <option>Rajasthan</option><option>West Bengal</option><option>Telangana</option>
+              <option>Andhra Pradesh</option><option>Kerala</option><option>Punjab</option>
+              <option>Madhya Pradesh</option><option>Bihar</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Order Notes (optional)</label>
+            <textarea class="form-control" id="custNotes" rows="2" placeholder="Special instructions..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full btn-lg">Proceed to Payment →</button>
+        </form>
+      </div>
+      <div class="checkout-sidebar">
+        <div class="mini-cart-summary card" id="miniCartSummary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Step 3: Payment ═════════════════════ -->
+  <div class="cart-step" id="paymentStep" style="display:none">
+    <div class="payment-layout">
+      <div class="payment-col">
+        <div class="checkout-form-header">
+          <button class="btn btn-ghost btn-sm" id="backToDetails">← Back</button>
+          <h2>Payment</h2>
+        </div>
+        <div class="payment-methods">
+          <div class="payment-method-card active" id="payQR">
+            <div class="payment-method-radio"></div>
+            <span class="payment-icon">📱</span>
+            <div>
+              <strong>UPI / QR Code</strong>
+              <p>Scan QR code to pay instantly</p>
+            </div>
+          </div>
+          <div class="payment-method-card" id="payCOD">
+            <div class="payment-method-radio"></div>
+            <span class="payment-icon">💵</span>
+            <div>
+              <strong>Cash on Delivery</strong>
+              <p>Pay when your order arrives</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Section -->
+        <div class="qr-payment-section" id="qrSection">
+          <div class="qr-box">
+            <div id="qrImgWrap">
+              <div class="qr-placeholder">
+                <span>📱</span>
+                <p>QR Code not set up yet</p>
+                <small>Owner needs to add QR code from admin panel</small>
+              </div>
+            </div>
+            <p class="qr-note" id="qrNote">Scan to pay via UPI</p>
+          </div>
+          <div class="qr-steps">
+            <div class="qr-step"><span>1</span> Open any UPI app (PhonePe, GPay, Paytm)</div>
+            <div class="qr-step"><span>2</span> Scan the QR code above</div>
+            <div class="qr-step"><span>3</span> Enter the exact order amount</div>
+            <div class="qr-step"><span>4</span> Click "Confirm Order" below</div>
+          </div>
+        </div>
+
+        <!-- COD Section -->
+        <div class="cod-section" id="codSection" style="display:none">
+          <div class="cod-info card">
+            <span style="font-size:3rem">💵</span>
+            <h3>Cash on Delivery</h3>
+            <p>Pay cash when your order is delivered to your doorstep. No extra charges.</p>
+          </div>
+        </div>
+
+        <button class="btn btn-accent btn-full btn-lg" id="confirmOrderBtn">
+          ✅ Confirm Order
+        </button>
+      </div>
+      <div class="checkout-sidebar">
+        <div class="mini-cart-summary card" id="paymentMiniCart"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="font-size:1.4rem;">Thread<span style="font-weight:300">Craft</span></div>
+        <p>Premium T-shirts for those who wear their story with pride.</p>
+      </div>
+      <div class="footer-col"><h5>Shop</h5><ul>
+        <li><a href="shop.html?cat=Street">Street</a></li>
+        <li><a href="shop.html?cat=Vintage">Vintage</a></li>
+        <li><a href="shop.html?cat=Essentials">Essentials</a></li>
+        <li><a href="shop.html?cat=Luxury">Luxury</a></li>
+      </ul></div>
+      <div class="footer-col"><h5>Help</h5><ul>
+        <li><a href="#">Size Guide</a></li>
+        <li><a href="#">Shipping Info</a></li>
+        <li><a href="#">Return Policy</a></li>
+      </ul></div>
+      <div class="footer-col"><h5>Contact</h5><ul>
+        <li><a href="#">📧 hello@threadcraft.in</a></li>
+        <li><a href="#">📞 +91 98765 43210</a></li>
+        <li><a href="admin/login.html">🔐 Owner Login</a></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 ThreadCraft. All rights reserved.</p><p>Made with ❤️ in India</p></div>
+  </div>
+</footer>
+
+<script src="js/store.js"></script>
+<script src="js/cart.js"></script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment QR — ThreadCraft Admin</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">`n  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-logo">
+      <div class="nav-logo">Thread<span>Craft</span></div>
+      <p>Admin Panel</p>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Main</div>
+      <a href="dashboard.html" class="admin-nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="orders.html" class="admin-nav-link"><span class="nav-icon">📦</span> Orders</a>
+      <div class="admin-nav-section">Store</div>
+      <a href="upload.html" class="admin-nav-link"><span class="nav-icon">➕</span> Add Product</a>
+      <a href="payment.html" class="admin-nav-link active"><span class="nav-icon">📱</span> Payment QR</a>
+      <div class="admin-nav-section">Account</div>
+      <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Store</a>
+      <a href="#" class="admin-nav-link" id="logoutLink"><span class="nav-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user">
+        <div class="admin-avatar">👑</div>
+        <div class="admin-user-info"><strong>Store Owner</strong><span>ThreadCraft Admin</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="admin-page-title">📱 Payment QR Setup</div>
+      <div class="admin-topbar-right">
+        <a href="dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;max-width:900px">
+
+        <!-- QR Upload Panel -->
+        <div class="card" style="padding:32px">
+          <h3 style="margin-bottom:6px">Upload Your QR Code</h3>
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:28px">
+            Customers will see this QR code at checkout to make UPI payments directly to you.
+          </p>
+
+          <!-- Current QR Display -->
+          <div class="qr-upload-section">
+            <div class="qr-upload-wrap" id="qrUploadWrap" onclick="document.getElementById('qrFileInput').click()">
+              <div id="qrPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text-dim)">
+                <span style="font-size:3.5rem">📱</span>
+                <span style="font-size:0.88rem;font-weight:600">Click to upload QR Code</span>
+                <span style="font-size:0.75rem">JPG, PNG, WEBP · Max 2MB</span>
+              </div>
+              <div class="qr-upload-overlay">📸</div>
+            </div>
+            <input type="file" id="qrFileInput" accept="image/*" style="display:none">
+          </div>
+
+          <div class="form-group" style="margin-top:20px">
+            <label class="form-label">QR Note / UPI ID (shown to customer)</label>
+            <input type="text" class="form-control" id="qrNoteInput" placeholder="e.g. Scan to pay via GPay / PhonePe — UPI: yourname@upi">
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btn-primary btn-full" id="saveQRBtn">💾 Save QR Code</button>
+            <button class="btn btn-outline" id="removeQRBtn" style="white-space:nowrap">🗑 Remove</button>
+          </div>
+
+          <div id="qrSaveSuccess" style="display:none;margin-top:16px;padding:12px 16px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:var(--radius);font-size:0.88rem;color:#4CAF50">
+            ✅ QR Code saved! Customers will see this at checkout.
+          </div>
+        </div>
+
+        <!-- Preview + Settings -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <!-- Live Preview -->
+          <div class="card" style="padding:28px">
+            <h4 style="margin-bottom:16px">👁 Customer Preview</h4>
+            <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;text-align:center">
+              <div id="previewQRWrap" style="margin-bottom:16px">
+                <div style="width:160px;height:160px;border:2px dashed var(--border);border-radius:12px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-dim)">
+                  <span style="font-size:2.5rem">📱</span>
+                </div>
+              </div>
+              <p id="previewNote" style="font-size:0.85rem;color:var(--text-muted)">Scan to pay via UPI</p>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;text-align:left">
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--text-muted)">
+                  <span style="width:20px;height:20px;background:var(--primary);border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0">1</span>
+                  Open any UPI app (PhonePe, GPay, Paytm)
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--text-muted)">
+                  <span style="width:20px;height:20px;background:var(--primary);border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0">2</span>
+                  Scan the QR code above
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--text-muted)">
+                  <span style="width:20px;height:20px;background:var(--primary);border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0">3</span>
+                  Enter the order amount &amp; confirm
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Store Settings -->
+          <div class="card" style="padding:28px">
+            <h4 style="margin-bottom:20px">⚙️ Store Settings</h4>
+            <div class="form-group">
+              <label class="form-label">Shipping Fee (₹)</label>
+              <input type="number" class="form-control" id="shippingFee" placeholder="49" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Free Shipping Above (₹)</label>
+              <input type="number" class="form-control" id="freeShippingAbove" placeholder="999" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Change Admin Password</label>
+              <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+            </div>
+            <button class="btn btn-primary btn-full" id="saveSettingsBtn">💾 Save Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Section -->
+      <div class="card" style="max-width:900px;margin-top:24px;padding:28px">
+        <h4 style="margin-bottom:16px">💡 How to get your UPI QR Code?</h4>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+          <div style="padding:20px;background:var(--bg-2);border-radius:var(--radius);text-align:center">
+            <span style="font-size:2.5rem">📱</span>
+            <h5 style="margin:10px 0 6px;font-size:0.9rem">PhonePe / GPay</h5>
+            <p style="font-size:0.8rem;color:var(--text-dim)">Go to Profile → My QR Code → Screenshot it → Upload here</p>
+          </div>
+          <div style="padding:20px;background:var(--bg-2);border-radius:var(--radius);text-align:center">
+            <span style="font-size:2.5rem">🏦</span>
+            <h5 style="margin:10px 0 6px;font-size:0.9rem">Bank UPI Apps</h5>
+            <p style="font-size:0.8rem;color:var(--text-dim)">Open your bank app → Receive Money → Show QR → Save image</p>
+          </div>
+          <div style="padding:20px;background:var(--bg-2);border-radius:var(--radius);text-align:center">
+            <span style="font-size:2.5rem">🌐</span>
+            <h5 style="margin:10px 0 6px;font-size:0.9rem">Online Generator</h5>
+            <p style="font-size:0.8rem;color:var(--text-dim)">Visit upiidqr.com → Enter your UPI ID → Download QR image</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/store.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+(function () {
+  requireAdmin();
+  const settings = Store.getSettings();
+
+  // Load existing QR
+  if (settings.qrCode) loadQRPreview(settings.qrCode);
+  if (settings.qrNote) document.getElementById('qrNoteInput').value = settings.qrNote;
+  if (settings.shippingFee !== undefined) document.getElementById('shippingFee').value = settings.shippingFee;
+  if (settings.freeShippingAbove !== undefined) document.getElementById('freeShippingAbove').value = settings.freeShippingAbove;
+
+  // File upload
+  const fileInput = document.getElementById('qrFileInput');
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { showToast('File too large! Max 2MB', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      loadQRPreview(e.target.result);
+      showToast('QR image loaded! Click Save to apply.', 'info');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function loadQRPreview(dataUrl) {
+    const wrap = document.getElementById('qrUploadWrap');
+    const placeholder = document.getElementById('qrPlaceholder');
+    const previewWrap = document.getElementById('previewQRWrap');
+
+    // Upload area
+    placeholder.style.display = 'none';
+    const existing = wrap.querySelector('.qr-preview-img');
+    if (existing) existing.remove();
+    const img = document.createElement('img');
+    img.className = 'qr-preview-img';
+    img.src = dataUrl;
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12px';
+    wrap.appendChild(img);
+
+    // Customer preview
+    previewWrap.innerHTML = `<img src="${dataUrl}" style="width:160px;height:160px;object-fit:contain;border:1px solid var(--border);border-radius:12px;margin:0 auto;display:block">`;
+  }
+
+  // Live note preview
+  document.getElementById('qrNoteInput')?.addEventListener('input', (e) => {
+    document.getElementById('previewNote').textContent = e.target.value || 'Scan to pay via UPI';
+  });
+
+  // Save QR
+  document.getElementById('saveQRBtn')?.addEventListener('click', () => {
+    const previewImg = document.getElementById('qrUploadWrap').querySelector('.qr-preview-img');
+    const note = document.getElementById('qrNoteInput').value.trim();
+
+    if (!previewImg) { showToast('Please upload a QR code image first!', 'error'); return; }
+
+    const btn = document.getElementById('saveQRBtn');
+    btn.disabled = true; btn.textContent = '⏳ Saving...';
+
+    Store.updateSettings({ qrCode: previewImg.src, qrNote: note || 'Scan to pay via UPI' });
+
+    setTimeout(() => {
+      btn.disabled = false; btn.textContent = '💾 Save QR Code';
+      document.getElementById('qrSaveSuccess').style.display = 'block';
+      showToast('QR Code saved successfully!', 'success');
+    }, 600);
+  });
+
+  // Remove QR
+  document.getElementById('removeQRBtn')?.addEventListener('click', () => {
+    Store.updateSettings({ qrCode: null });
+    const wrap = document.getElementById('qrUploadWrap');
+    const img = wrap.querySelector('.qr-preview-img');
+    if (img) img.remove();
+    document.getElementById('qrPlaceholder').style.display = 'flex';
+    document.getElementById('previewQRWrap').innerHTML = `<div style="width:160px;height:160px;border:2px dashed var(--border);border-radius:12px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-dim)"><span style="font-size:2.5rem">📱</span></div>`;
+    document.getElementById('qrSaveSuccess').style.display = 'none';
+    showToast('QR Code removed', 'info');
+  });
+
+  // Save settings
+  document.getElementById('saveSettingsBtn')?.addEventListener('click', () => {
+    const updates = {};
+    const fee = parseInt(document.getElementById('shippingFee').value);
+    const freeAbove = parseInt(document.getElementById('freeShippingAbove').value);
+    const newPw = document.getElementById('newPassword').value.trim();
+
+    if (!isNaN(fee)) updates.shippingFee = fee;
+    if (!isNaN(freeAbove)) updates.freeShippingAbove = freeAbove;
+    if (newPw.length >= 6) {
+      updates.adminPassword = newPw;
+      showToast('Password changed! You will need to log in again.', 'info');
+    } else if (newPw.length > 0 && newPw.length < 6) {
+      showToast('Password must be at least 6 characters', 'error');
+      return;
+    }
+
+    Store.updateSettings(updates);
+    document.getElementById('newPassword').value = '';
+    showToast('Settings saved successfully!', 'success');
+  });
+})();
+</script>
+</body>
+</html>
+
