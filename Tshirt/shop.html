@@ -1,175 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop All T-Shirts — ThreadCraft</title>
-  <meta name="description" content="Browse our complete collection of premium T-shirts. Filter by category, size, and price.">
+  <title>Shop All T-Shirts — WaveNexa</title>
+  <meta name="description"
+    content="Browse our complete collection of premium T-shirts. Filter by category, size, and price.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/shop.css">
 </head>
+
 <body>
 
-<!-- Navigation -->
-<nav class="navbar" id="navbar">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">Thread<span>Craft</span></a>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="shop.html" class="active">Shop</a>
-      <a href="shop.html#collections">Collections</a>
-      <a href="index.html#about">About</a>
-    </div>
-    <div class="nav-actions">
-      <a href="cart.html" class="nav-cart-btn" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
-      <a href="admin/login.html" class="btn btn-outline btn-sm">Owner</a>
-      <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
-    </div>
-  </div>
-</nav>
-<div class="mobile-menu" id="mobileMenu">
-  <div class="mobile-menu-close" id="menuClose">✕</div>
-  <a href="index.html">Home</a>
-  <a href="shop.html">Shop</a>
-  <a href="cart.html">Cart 🛒</a>
-</div>
-
-<!-- Page Hero -->
-<div class="shop-hero">
-  <div class="shop-hero-bg"></div>
-  <div class="container">
-    <div class="shop-hero-content">
-      <div class="section-eyebrow">Explore</div>
-      <h1>All <span class="gradient-text">Collections</span></h1>
-      <p>Discover our complete range of premium T-shirts</p>
-    </div>
-  </div>
-</div>
-
-<!-- Main Shop Layout -->
-<div class="shop-layout container" id="collections">
-  <!-- Sidebar Filters -->
-  <aside class="shop-sidebar" id="shopSidebar">
-    <div class="sidebar-header">
-      <h3>Filters</h3>
-      <button class="btn btn-ghost btn-sm" id="clearFilters">Clear All</button>
-    </div>
-
-    <!-- Search -->
-    <div class="filter-group">
-      <h4>Search</h4>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" class="form-control search-input" id="searchInput" placeholder="Search t-shirts...">
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Wave<span>Nexa</span></a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html" class="active">Shop</a>
+        <a href="shop.html#collections">Collections</a>
+        <a href="index.html#about">About</a>
+      </div>
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
+        <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="openAuthModal()">🔑 Login</button>
+        <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-close" id="menuClose">✕</div>
+    <a href="index.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="cart.html">Cart 🛒</a>
+    <a href="javascript:void(0)"
+      onclick="openAuthModal();document.querySelector('.mobile-menu').classList.remove('open')">🔑 Login</a>
+  </div>
 
-    <!-- Categories -->
-    <div class="filter-group">
-      <h4>Category</h4>
-      <div class="filter-tags" id="catFilters">
-        <button class="tag active" data-cat="all">All</button>
-        <button class="tag" data-cat="Street">Street</button>
-        <button class="tag" data-cat="Vintage">Vintage</button>
-        <button class="tag" data-cat="Essentials">Essentials</button>
-        <button class="tag" data-cat="Luxury">Luxury</button>
-        <button class="tag" data-cat="Signature">Signature</button>
+  <!-- Page Hero -->
+  <div class="shop-hero">
+    <div class="shop-hero-bg"></div>
+    <div class="container">
+      <div class="shop-hero-content">
+        <div class="section-eyebrow">Explore</div>
+        <h1>All <span class="gradient-text">Collections</span></h1>
+        <p>Discover our complete range of premium T-shirts</p>
       </div>
     </div>
+  </div>
 
-    <!-- Price Range -->
-    <div class="filter-group">
-      <h4>Price Range</h4>
-      <div class="price-range">
-        <div class="price-inputs">
-          <input type="number" class="form-control" id="minPrice" placeholder="Min ₹" min="0">
-          <span>—</span>
-          <input type="number" class="form-control" id="maxPrice" placeholder="Max ₹" min="0">
+  <!-- Backdrop for mobile filter drawer -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Main Shop Layout -->
+  <div class="shop-layout container" id="collections">
+    <!-- Sidebar Filters -->
+    <aside class="shop-sidebar" id="shopSidebar">
+      <div class="sidebar-header">
+        <h3>Filters</h3>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn-ghost btn-sm" id="clearFilters">Clear All</button>
+          <button class="filter-close-btn" id="filterClose" title="Close Filters">✕</button>
         </div>
       </div>
-    </div>
 
-    <!-- Size Filter -->
-    <div class="filter-group">
-      <h4>Size</h4>
-      <div class="size-filter" id="sizeFilters">
-        <button class="size-btn" data-size="XS">XS</button>
-        <button class="size-btn" data-size="S">S</button>
-        <button class="size-btn" data-size="M">M</button>
-        <button class="size-btn" data-size="L">L</button>
-        <button class="size-btn" data-size="XL">XL</button>
-        <button class="size-btn" data-size="XXL">XXL</button>
-      </div>
-    </div>
-
-    <button class="btn btn-primary btn-full" id="applyFilters">Apply Filters</button>
-  </aside>
-
-  <!-- Products Area -->
-  <div class="shop-main">
-    <!-- Toolbar -->
-    <div class="shop-toolbar">
-      <div class="shop-results">
-        <span id="resultCount">0</span> products found
-      </div>
-      <div class="shop-toolbar-right">
-        <select class="form-control sort-select" id="sortSelect" style="width:auto;padding:10px 16px;">
-          <option value="default">Sort: Default</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="newest">Newest First</option>
-        </select>
-        <div class="view-toggle">
-          <button class="view-btn active" id="gridView" title="Grid">⊞</button>
-          <button class="view-btn" id="listView" title="List">☰</button>
+      <!-- Search -->
+      <div class="filter-group">
+        <h4>Search</h4>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-control search-input" id="searchInput" placeholder="Search t-shirts...">
         </div>
-        <button class="btn btn-ghost btn-sm filter-toggle-btn" id="filterToggle">⚙ Filters</button>
+      </div>
+
+      <!-- Categories -->
+      <div class="filter-group">
+        <h4>Category</h4>
+        <div class="filter-tags" id="catFilters">
+          <button class="tag active" data-cat="all">All</button>
+          <button class="tag" data-cat="Street">Street</button>
+          <button class="tag" data-cat="Vintage">Vintage</button>
+          <button class="tag" data-cat="Essentials">Essentials</button>
+          <button class="tag" data-cat="Luxury">Luxury</button>
+          <button class="tag" data-cat="Signature">Signature</button>
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-group">
+        <h4>Price Range</h4>
+        <div class="price-range">
+          <div class="price-inputs">
+            <input type="number" class="form-control" id="minPrice" placeholder="Min ₹" min="0">
+            <span>—</span>
+            <input type="number" class="form-control" id="maxPrice" placeholder="Max ₹" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Size Filter -->
+      <div class="filter-group">
+        <h4>Size</h4>
+        <div class="size-filter" id="sizeFilters">
+          <button class="size-btn" data-size="XS">XS</button>
+          <button class="size-btn" data-size="S">S</button>
+          <button class="size-btn" data-size="M">M</button>
+          <button class="size-btn" data-size="L">L</button>
+          <button class="size-btn" data-size="XL">XL</button>
+          <button class="size-btn" data-size="XXL">XXL</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="applyFilters">Apply Filters</button>
+    </aside>
+
+    <!-- Products Area -->
+    <div class="shop-main">
+      <!-- Toolbar -->
+      <div class="shop-toolbar">
+        <div class="shop-results">
+          <span id="resultCount">0</span> products found
+        </div>
+        <div class="shop-toolbar-right">
+          <select class="form-control sort-select" id="sortSelect" style="width:auto;padding:10px 16px;">
+            <option value="default">Sort: Default</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="newest">Newest First</option>
+          </select>
+          <div class="view-toggle">
+            <button class="view-btn active" id="gridView" title="Grid">⊞</button>
+            <button class="view-btn" id="listView" title="List">☰</button>
+          </div>
+          <button class="btn btn-ghost btn-sm filter-toggle-btn" id="filterToggle">⚙ Filters</button>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="shop-products-grid" id="productsGrid"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display:none">
+        <div class="empty-icon">👕</div>
+        <h3>No products found</h3>
+        <p>Try adjusting your filters or search term</p>
+        <button class="btn btn-outline" onclick="document.getElementById('clearFilters').click()">Clear Filters</button>
       </div>
     </div>
-
-    <!-- Products Grid -->
-    <div class="shop-products-grid" id="productsGrid"></div>
-
-    <!-- Empty State -->
-    <div class="empty-state" id="emptyState" style="display:none">
-      <div class="empty-icon">👕</div>
-      <h3>No products found</h3>
-      <p>Try adjusting your filters or search term</p>
-      <button class="btn btn-outline" onclick="document.getElementById('clearFilters').click()">Clear Filters</button>
-    </div>
   </div>
-</div>
 
-<!-- Footer -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="nav-logo" style="font-size:1.4rem;">Thread<span style="font-weight:300">Craft</span></div>
-        <p>Premium T-shirts for those who wear their story with pride.</p>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo" style="font-size:1.4rem;">Wave<span style="font-weight:300">Nexa</span></div>
+          <p>Premium T-shirts for those who wear their story with pride.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Shop</h5>
+          <ul>
+            <li><a href="shop.html?cat=Street">Street</a></li>
+            <li><a href="shop.html?cat=Vintage">Vintage</a></li>
+            <li><a href="shop.html?cat=Essentials">Essentials</a></li>
+            <li><a href="shop.html?cat=Luxury">Luxury</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Help</h5>
+          <ul>
+            <li><a href="#">Size Guide</a></li>
+            <li><a href="#">Shipping Info</a></li>
+            <li><a href="#">Return Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Contact</h5>
+          <ul>
+            <li><a href="#">📧 hello@wavenexa.in</a></li>
+            <li><a href="javascript:void(0)" onclick="openAuthModal()">🔑 Sign In / Register</a></li>
+            <li><a href="admin/login.html">🔐 Admin Portal</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="footer-col"><h5>Shop</h5><ul>
-        <li><a href="shop.html?cat=Street">Street</a></li>
-        <li><a href="shop.html?cat=Vintage">Vintage</a></li>
-        <li><a href="shop.html?cat=Essentials">Essentials</a></li>
-        <li><a href="shop.html?cat=Luxury">Luxury</a></li>
-      </ul></div>
-      <div class="footer-col"><h5>Help</h5><ul>
-        <li><a href="#">Size Guide</a></li>
-        <li><a href="#">Shipping Info</a></li>
-        <li><a href="#">Return Policy</a></li>
-      </ul></div>
-      <div class="footer-col"><h5>Contact</h5><ul>
-        <li><a href="#">📧 hello@threadcraft.in</a></li>
-        <li><a href="admin/login.html">🔐 Owner Login</a></li>
-      </ul></div>
+      <div class="footer-bottom">
+        <p>© 2026 WaveNexa. All rights reserved.</p>
+      </div>
     </div>
-    <div class="footer-bottom"><p>© 2026 ThreadCraft. All rights reserved.</p></div>
-  </div>
-</footer>
+  </footer>
 
-<script src="js/store.js"></script>
-<script src="js/shop.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/shop.js"></script>
+
+  <!-- ═══ Auth Modal ═══════════════════════════ -->
+  <div class="auth-modal-overlay" id="authModal" onclick="handleAuthOverlayClick(event)">
+    <div class="auth-modal-card" id="authModalCard">
+      <button class="auth-modal-close" onclick="closeAuthModal()" title="Close">✕</button>
+      <div class="auth-modal-logo">
+        <div class="nav-logo">Wave<span>Nexa</span></div>
+        <p>Your premium T-shirt destination</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
+
+      <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address / Admin ID</label>
+          <input type="text" class="form-control" id="loginEmail" placeholder="Email or admin ID"
+            autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-control" id="loginPw" placeholder="Enter your password"
+              autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginSubmitBtn">
+          🔑 Sign In
+        </button>
+      </form>
+
+      <form class="auth-form" id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="regName" placeholder="Your name" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="regEmail" placeholder="you@example.com" autocomplete="email"
+            required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-control" id="regPw" placeholder="Min 6 characters"
+              autocomplete="new-password" required minlength="6">
+            <button type="button" class="pw-toggle" onclick="togglePw('regPw',this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="regSubmitBtn">
+          ✨ Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openAuthModal() {
+      document.getElementById('authModal').classList.add('open');
+      document.body.classList.add('no-scroll');
+      clearAuthMessages();
+    }
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.remove('open');
+      document.body.classList.remove('no-scroll');
+    }
+    function handleAuthOverlayClick(e) {
+      if (e.target === document.getElementById('authModal')) closeAuthModal();
+    }
+    function switchAuthTab(tab) {
+      document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+      clearAuthMessages();
+    }
+    function togglePw(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+    function showAuthError(msg) {
+      const el = document.getElementById('authError');
+      el.textContent = '❌ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+    function showAuthSuccess(msg) {
+      const el = document.getElementById('authSuccess');
+      el.textContent = '✅ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('authError').style.display = 'none';
+    }
+    function clearAuthMessages() {
+      document.getElementById('authError').style.display = 'none';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.disabled = true; btn.textContent = '⏳ Signing in...';
+      try {
+        const result = await Store.customerLogin(email, pw);
+        if (result.ok) {
+          if (result.role === 'admin') {
+            showAuthSuccess('Access granted! Redirecting...');
+            setTimeout(() => window.location.href = 'admin/dashboard.html', 800);
+          } else {
+            showAuthSuccess('Welcome back, ' + result.user.name.split(' ')[0] + '! 🎉');
+            setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+          }
+        } else {
+          showAuthError(result.error);
+          btn.disabled = false; btn.textContent = '🔑 Sign In';
+        }
+      } catch (err) {
+        showAuthError('Something went wrong. Please try again.');
+        btn.disabled = false; btn.textContent = '🔑 Sign In';
+      }
+    }
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pw = document.getElementById('regPw').value;
+      const btn = document.getElementById('regSubmitBtn');
+      btn.disabled = true; btn.textContent = '⏳ Creating...';
+      setTimeout(() => {
+        const result = Store.registerCustomer(name, email, pw);
+        if (result.ok) {
+          Store.customerLogin(email, pw);
+          showAuthSuccess('Account created! Welcome, ' + name.split(' ')[0] + '! 🎉');
+          setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+        } else {
+          showAuthError(result.error);
+          btn.disabled = false; btn.textContent = '✨ Create Account';
+        }
+      }, 600);
+    }
+    function updateAuthNavBtn() {
+      const btn = document.getElementById('authNavBtn');
+      const user = Store.getCurrentUser();
+      if (!btn) return;
+      if (user) {
+        btn.textContent = '👤 ' + user.name.split(' ')[0];
+        btn.onclick = handleAuthBtnClick;
+      } else {
+        btn.innerHTML = '🔑 Login';
+        btn.onclick = openAuthModal;
+      }
+    }
+    function handleAuthBtnClick() {
+      if (confirm('Sign out of your account?')) {
+        Store.customerLogout();
+        updateAuthNavBtn();
+        showToast('Signed out successfully.', 'info');
+      }
+    }
+    window.addEventListener('load', updateAuthNavBtn);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
+  </script>
 </body>
+
 </html>

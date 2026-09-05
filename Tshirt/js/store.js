@@ -1,5 +1,5 @@
 /* =============================================
-   THREADCRAFT — Store (Data Layer)
+   WAVENEXA — Store (Data Layer)
    ============================================= */
 
 // ── Secure Admin Verifier (do not modify) ─────
@@ -7,12 +7,12 @@ const _ADMIN = (() => {
   // Credentials stored only as XOR-encoded char codes.
   // Key: 13. Plaintext is never present in this source.
   const _k = 13;
-  const _ec = [108,105,60,63,62,62,57,56,52,61,77,106,96,108,100,97,35,110,98,96];
-  const _pc = [76,99,102,108,99,63,62,57,56,60];
-  const _d  = a => String.fromCharCode(...a.map(c => c ^ _k));
+  const _ec = [108, 99, 102, 108, 99, 77, 108, 105, 96, 100, 99, 60];
+  const _pc = [76, 125, 99, 108, 105, 120, 102, 108, 99, 60, 63, 62, 77, 44];
+  const _d = a => String.fromCharCode(...a.map(c => c ^ _k));
   async function _h(s) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-    return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join('');
+    return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, '0')).join('');
   }
   let _he, _hp;
   // Pre-compute hashes at module load — plaintext is immediately discarded
@@ -33,10 +33,10 @@ const Store = (() => {
   // ── Keys ──────────────────────────────────────
   const KEYS = {
     products: 'tc_products',
-    orders:   'tc_orders',
-    cart:     'tc_cart',
+    orders: 'tc_orders',
+    cart: 'tc_cart',
     settings: 'tc_settings',
-    auth:     'tc_auth'
+    auth: 'tc_auth'
   };
 
   // ── Sample Products ───────────────────────────
@@ -47,8 +47,8 @@ const Store = (() => {
       description: 'Our signature oversized tee crafted from 100% premium ring-spun cotton. Features a subtle geometric pattern printed with high-density ink for a tonal stealth look. Relaxed silhouette with dropped shoulders.',
       price: 699,
       originalPrice: 1199,
-      sizes: ['XS','S','M','L','XL','XXL'],
-      colors: ['#1A1A1A','#2D2D2D','#3D3D3D'],
+      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+      colors: ['#1A1A1A', '#2D2D2D', '#3D3D3D'],
       images: ['assets/tshirt_black.jpg'],
       category: 'Signature',
       stock: 45,
@@ -65,8 +65,8 @@ const Store = (() => {
       description: 'Timeless white tee that goes with everything. Crafted from ultra-soft Supima cotton with a clean minimal embroidered logo on the chest. Perfect for everyday wear or layering.',
       price: 549,
       originalPrice: 849,
-      sizes: ['XS','S','M','L','XL','XXL'],
-      colors: ['#FFFFFF','#F5F5F0','#E8E8E0'],
+      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+      colors: ['#FFFFFF', '#F5F5F0', '#E8E8E0'],
       images: ['assets/tshirt_white.jpg'],
       category: 'Essentials',
       stock: 60,
@@ -83,8 +83,8 @@ const Store = (() => {
       description: 'Make a bold statement with our Urban Pulse tee. Vibrant coral base with an eye-catching street art inspired graphic print. Durable screen print built to last wash after wash.',
       price: 799,
       originalPrice: 1299,
-      sizes: ['S','M','L','XL','XXL'],
-      colors: ['#FF6B6B','#FF8E53','#FF6584'],
+      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      colors: ['#FF6B6B', '#FF8E53', '#FF6584'],
       images: ['assets/tshirt_coral.jpg'],
       category: 'Street',
       stock: 30,
@@ -101,8 +101,8 @@ const Store = (() => {
       description: 'Ride the wave with this electric blue masterpiece. Abstract wave artwork is screen-printed with multi-layered inks giving depth and dimension. An instant conversation starter.',
       price: 849,
       originalPrice: 1399,
-      sizes: ['S','M','L','XL','XXL'],
-      colors: ['#2962FF','#1565C0','#0D47A1'],
+      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      colors: ['#2962FF', '#1565C0', '#0D47A1'],
       images: ['assets/tshirt_blue.jpg'],
       category: 'Street',
       stock: 25,
@@ -119,8 +119,8 @@ const Store = (() => {
       description: 'Inspired by tactical military aesthetics. Washed olive green with a subtle coordinate print. Garment-dyed for a premium vintage look. Built tough for the explorer in you.',
       price: 749,
       originalPrice: 1149,
-      sizes: ['XS','S','M','L','XL','XXL'],
-      colors: ['#6B7C45','#556B2F','#4A5E2A'],
+      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+      colors: ['#6B7C45', '#556B2F', '#4A5E2A'],
       images: ['assets/tshirt_olive.jpg'],
       category: 'Vintage',
       stock: 35,
@@ -137,8 +137,8 @@ const Store = (() => {
       description: 'A love letter to the 90s. This distressed grey tee features worn-in faded typography with a vintage chalk print effect. Pre-shrunk and ultra-soft from day one.',
       price: 899,
       originalPrice: 1499,
-      sizes: ['S','M','L','XL','XXL'],
-      colors: ['#9E9E9E','#757575','#616161'],
+      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      colors: ['#9E9E9E', '#757575', '#616161'],
       images: ['assets/tshirt_vintage.jpg'],
       category: 'Vintage',
       stock: 20,
@@ -155,8 +155,8 @@ const Store = (() => {
       description: 'Luxury streetwear at its finest. Deep royal purple with a stunning gold-foil geometric print. The premium tee for those who dare to stand out. Limited edition drop.',
       price: 1099,
       originalPrice: 1799,
-      sizes: ['S','M','L','XL'],
-      colors: ['#6A1B9A','#7B1FA2','#4A148C'],
+      sizes: ['S', 'M', 'L', 'XL'],
+      colors: ['#6A1B9A', '#7B1FA2', '#4A148C'],
       images: ['assets/tshirt_purple.jpg'],
       category: 'Luxury',
       stock: 15,
@@ -170,7 +170,7 @@ const Store = (() => {
   ];
 
   const DEFAULT_SETTINGS = {
-    storeName: 'ThreadCraft',
+    storeName: 'WaveNexa',
     tagline: 'Wear Your Story',
     qrCode: null,
     qrNote: 'Scan to pay via UPI',
@@ -197,7 +197,7 @@ const Store = (() => {
     try {
       const s = JSON.parse(localStorage.getItem(KEYS.settings));
       if (s && s.adminPassword) { delete s.adminPassword; localStorage.setItem(KEYS.settings, JSON.stringify(s)); }
-    } catch(e) {}
+    } catch (e) { }
   }
 
   // ── Helpers ───────────────────────────────────
@@ -313,7 +313,12 @@ const Store = (() => {
   // ── Settings ──────────────────────────────────
   function getSettings() {
     const s = localStorage.getItem(KEYS.settings);
-    return s ? JSON.parse(s) : DEFAULT_SETTINGS;
+    const settings = s ? JSON.parse(s) : DEFAULT_SETTINGS;
+    if (settings.storeName === 'ThreadCraft') {
+      settings.storeName = 'WaveNexa';
+      localStorage.setItem(KEYS.settings, JSON.stringify(settings));
+    }
+    return settings;
   }
   function updateSettings(updates) {
     const settings = { ...getSettings(), ...updates };
@@ -346,7 +351,7 @@ const Store = (() => {
   }
 
   // ── Customer Auth ─────────────────────────────
-  const CUST_KEY  = 'tc_customers';
+  const CUST_KEY = 'tc_customers';
   const CUSER_KEY = 'tc_current_user';
 
   function getCustomers() {
@@ -445,16 +450,30 @@ function updateCartBadge() {
 function initNavbar() {
   const navbar = document.querySelector('.navbar');
   if (!navbar) return;
-  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50));
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50), { passive: true });
 
-  // Hamburger
+  // Hamburger & Mobile Menu
   const hamburger = document.querySelector('.nav-hamburger');
   const mobileMenu = document.querySelector('.mobile-menu');
   const closeBtn = document.querySelector('.mobile-menu-close');
   if (hamburger && mobileMenu) {
-    hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
-    closeBtn?.addEventListener('click', () => mobileMenu.classList.remove('open'));
-    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.remove('open')));
+    const openMenu = () => {
+      mobileMenu.classList.add('open');
+      document.body.classList.add('no-scroll');
+    };
+    const closeMenu = () => {
+      mobileMenu.classList.remove('open');
+      document.body.classList.remove('no-scroll');
+    };
+    hamburger.addEventListener('click', openMenu);
+    closeBtn?.addEventListener('click', closeMenu);
+    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    mobileMenu.addEventListener('click', (e) => {
+      if (e.target === mobileMenu) closeMenu();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileMenu.classList.contains('open')) closeMenu();
+    });
   }
 }
 

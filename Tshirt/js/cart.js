@@ -1,5 +1,5 @@
 /* =============================================
-   THREADCRAFT — Cart / Checkout JS
+   WAVENEXA — Cart / Checkout JS
    ============================================= */
 
 (function () {
@@ -103,16 +103,16 @@
     `;
   }
 
-  window.updateQty = function(key, newQty) {
+  window.updateQty = function (key, newQty) {
     if (newQty < 1) return;
     Store.updateCartQty(key, Math.min(newQty, 10));
     renderCart();
     updateCartBadge();
   };
-  window.updateQtyVal = function(key, val) {
+  window.updateQtyVal = function (key, val) {
     window.updateQty(key, parseInt(val) || 1);
   };
-  window.removeItem = function(key) {
+  window.removeItem = function (key) {
     Store.removeFromCart(key);
     renderCart();
     updateCartBadge();
@@ -153,14 +153,14 @@
   document.getElementById('checkoutForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
     customerData = {
-      name:    document.getElementById('custName').value.trim(),
-      phone:   document.getElementById('custPhone').value.trim(),
-      email:   document.getElementById('custEmail').value.trim(),
+      name: document.getElementById('custName').value.trim(),
+      phone: document.getElementById('custPhone').value.trim(),
+      email: document.getElementById('custEmail').value.trim(),
       address: document.getElementById('custAddress').value.trim(),
-      city:    document.getElementById('custCity').value.trim(),
-      pin:     document.getElementById('custPin').value.trim(),
-      state:   document.getElementById('custState').value,
-      notes:   document.getElementById('custNotes').value.trim()
+      city: document.getElementById('custCity').value.trim(),
+      pin: document.getElementById('custPin').value.trim(),
+      state: document.getElementById('custState').value,
+      notes: document.getElementById('custNotes').value.trim()
     };
     goToStep(3);
   });
@@ -210,7 +210,7 @@
   // ── Coupon (demo) ─────────────────────────────
   document.getElementById('applyCoupon')?.addEventListener('click', () => {
     const code = document.getElementById('couponInput').value.trim().toUpperCase();
-    if (code === 'THREAD10') showToast('Coupon applied! (Demo only)', 'success');
+    if (code === 'WAVENEXA10' || code === 'THREAD10') showToast('Coupon applied! (Demo only)', 'success');
     else showToast('Invalid coupon code', 'error');
   });
 

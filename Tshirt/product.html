@@ -1,202 +1,414 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitle">Product — ThreadCraft</title>
+  <title id="pageTitle">Product — WaveNexa</title>
   <meta name="description" content="View detailed product information and order your T-shirt.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/product.css">
 </head>
+
 <body>
 
-<nav class="navbar" id="navbar">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">Thread<span>Craft</span></a>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="shop.html" class="active">Shop</a>
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Wave<span>Nexa</span></a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html" class="active">Shop</a>
+      </div>
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
+        <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="openAuthModal()">🔑 Login</button>
+        <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+      </div>
     </div>
-    <div class="nav-actions">
-      <a href="cart.html" class="nav-cart-btn" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
-      <a href="admin/login.html" class="btn btn-outline btn-sm">Owner</a>
-      <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
-    </div>
-  </div>
-</nav>
-<div class="mobile-menu" id="mobileMenu">
-  <div class="mobile-menu-close" id="menuClose">✕</div>
-  <a href="index.html">Home</a>
-  <a href="shop.html">Shop</a>
-  <a href="cart.html">Cart 🛒</a>
-</div>
-
-<div class="product-page container" id="productPage">
-  <!-- Breadcrumb -->
-  <div class="breadcrumb">
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-close" id="menuClose">✕</div>
     <a href="index.html">Home</a>
-    <span>/</span>
     <a href="shop.html">Shop</a>
-    <span>/</span>
-    <span id="breadProduct">Loading...</span>
+    <a href="cart.html">Cart 🛒</a>
+    <a href="javascript:void(0)"
+      onclick="openAuthModal();document.querySelector('.mobile-menu').classList.remove('open')">🔑 Login</a>
   </div>
 
-  <div class="product-layout" id="productLayout">
-    <!-- Left: Gallery -->
-    <div class="product-gallery">
-      <div class="gallery-main">
-        <div class="gallery-main-img" id="mainImgWrap">
-          <img id="mainImg" src="" alt="">
-          <div class="gallery-zoom-hint">🔍 Hover to zoom</div>
-        </div>
-      </div>
-      <div class="gallery-thumbs" id="thumbs"></div>
+  <div class="product-page container" id="productPage">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span>/</span>
+      <a href="shop.html">Shop</a>
+      <span>/</span>
+      <span id="breadProduct">Loading...</span>
     </div>
 
-    <!-- Right: Details -->
-    <div class="product-details">
-      <div class="product-details-top">
-        <div class="product-cat" id="prodCat">Category</div>
-        <h1 class="product-name" id="prodName">Loading...</h1>
-        <div class="product-ratings">
-          <span class="stars">⭐⭐⭐⭐⭐</span>
-          <span class="rating-count">(48 reviews)</span>
+    <div class="product-layout" id="productLayout">
+      <!-- Left: Gallery -->
+      <div class="product-gallery">
+        <div class="gallery-main">
+          <div class="gallery-main-img" id="mainImgWrap">
+            <img id="mainImg" src="" alt="">
+            <div class="gallery-zoom-hint">🔍 Hover to zoom</div>
+          </div>
+        </div>
+        <div class="gallery-thumbs" id="thumbs"></div>
+      </div>
+
+      <!-- Right: Details -->
+      <div class="product-details">
+        <div class="product-details-top">
+          <div class="product-cat" id="prodCat">Category</div>
+          <h1 class="product-name" id="prodName">Loading...</h1>
+          <div class="product-ratings">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="rating-count">(48 reviews)</span>
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="product-price-wrap">
+          <span class="product-price-current" id="prodPrice">₹0</span>
+          <span class="product-price-original" id="prodOrigPrice"></span>
+          <span class="product-price-discount" id="prodDiscount"></span>
+        </div>
+
+        <!-- Stock -->
+        <div class="product-stock" id="prodStock">
+          <span class="stock-dot"></span> <span id="stockText">In Stock</span>
+        </div>
+
+        <div class="divider-gradient"></div>
+
+        <!-- Description -->
+        <p class="product-description" id="prodDesc"></p>
+
+        <div class="divider-gradient"></div>
+
+        <!-- Size Selector -->
+        <div class="selector-group">
+          <div class="selector-label">
+            <span>Select Size</span>
+            <span class="selected-val" id="selectedSize">None</span>
+          </div>
+          <div class="size-selector" id="sizePicker"></div>
+          <div class="size-guide-link" onclick="document.getElementById('sizeGuideModal').style.display='flex'">📏 Size
+            Guide</div>
+        </div>
+
+        <!-- Color Selector -->
+        <div class="selector-group">
+          <div class="selector-label">
+            <span>Select Color</span>
+            <span class="selected-val" id="selectedColorLabel">None</span>
+          </div>
+          <div class="color-selector" id="colorPicker"></div>
+        </div>
+
+        <!-- Quantity -->
+        <div class="selector-group">
+          <div class="selector-label"><span>Quantity</span></div>
+          <div class="qty-control">
+            <button class="qty-btn" id="qtyMinus">−</button>
+            <input type="number" class="qty-input" id="qtyInput" value="1" min="1" max="10">
+            <button class="qty-btn" id="qtyPlus">+</button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="product-actions">
+          <button class="btn btn-primary btn-lg" id="addToCartBtn">
+            🛒 Add to Cart
+          </button>
+          <a href="cart.html" class="btn btn-accent btn-lg" id="buyNowBtn">
+            ⚡ Buy Now
+          </a>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="product-meta" id="prodMeta">
+          <div class="product-meta-item">
+            <span class="meta-icon">🧵</span>
+            <div>
+              <span class="meta-label">Material</span>
+              <span class="meta-val" id="prodMaterial">—</span>
+            </div>
+          </div>
+          <div class="product-meta-item">
+            <span class="meta-icon">👕</span>
+            <div>
+              <span class="meta-label">Fit</span>
+              <span class="meta-val" id="prodFit">—</span>
+            </div>
+          </div>
+          <div class="product-meta-item">
+            <span class="meta-icon">🫧</span>
+            <div>
+              <span class="meta-label">Care</span>
+              <span class="meta-val" id="prodCare">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+          <div class="trust-badge"><span>🚚</span><span>Free Shipping ₹999+</span></div>
+          <div class="trust-badge"><span>↩️</span><span>Easy Returns</span></div>
+          <div class="trust-badge"><span>🔒</span><span>Secure Payment</span></div>
         </div>
       </div>
+    </div>
 
-      <!-- Price -->
-      <div class="product-price-wrap">
-        <span class="product-price-current" id="prodPrice">₹0</span>
-        <span class="product-price-original" id="prodOrigPrice"></span>
-        <span class="product-price-discount" id="prodDiscount"></span>
+    <!-- Related Products -->
+    <div class="related-section">
+      <div class="section-header">
+        <h2>You May Also <span class="gradient-text">Like</span></h2>
       </div>
+      <div class="related-grid" id="relatedGrid"></div>
+    </div>
+  </div>
 
-      <!-- Stock -->
-      <div class="product-stock" id="prodStock">
-        <span class="stock-dot"></span> <span id="stockText">In Stock</span>
+  <!-- Size Guide Modal -->
+  <div class="modal-overlay" id="sizeGuideModal" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>📏 Size Guide</h3>
+        <button onclick="document.getElementById('sizeGuideModal').style.display='none'" class="modal-close">✕</button>
       </div>
+      <div class="size-table-wrap">
+        <table class="size-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Chest (in)</th>
+              <th>Length (in)</th>
+              <th>Shoulders (in)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>XS</td>
+              <td>34-36</td>
+              <td>26</td>
+              <td>15.5</td>
+            </tr>
+            <tr>
+              <td>S</td>
+              <td>36-38</td>
+              <td>27</td>
+              <td>16.5</td>
+            </tr>
+            <tr>
+              <td>M</td>
+              <td>38-40</td>
+              <td>28</td>
+              <td>17.5</td>
+            </tr>
+            <tr>
+              <td>L</td>
+              <td>40-42</td>
+              <td>29</td>
+              <td>18.5</td>
+            </tr>
+            <tr>
+              <td>XL</td>
+              <td>42-44</td>
+              <td>30</td>
+              <td>19.5</td>
+            </tr>
+            <tr>
+              <td>XXL</td>
+              <td>44-46</td>
+              <td>31</td>
+              <td>20.5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-      <div class="divider-gradient"></div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:1px solid var(--border);padding-top:28px;margin-top:0">
+        <p>© 2026 WaveNexa. All rights reserved.</p>
+        <a href="shop.html" class="btn btn-outline btn-sm">← Back to Shop</a>
+      </div>
+    </div>
+  </footer>
 
-      <!-- Description -->
-      <p class="product-description" id="prodDesc"></p>
+  <script src="js/store.js"></script>
+  <script src="js/product.js"></script>
 
-      <div class="divider-gradient"></div>
+  <!-- ═══ Auth Modal ═══════════════════════════ -->
+  <div class="auth-modal-overlay" id="authModal" onclick="handleAuthOverlayClick(event)">
+    <div class="auth-modal-card" id="authModalCard">
+      <button class="auth-modal-close" onclick="closeAuthModal()" title="Close">✕</button>
+      <div class="auth-modal-logo">
+        <div class="nav-logo">Wave<span>Nexa</span></div>
+        <p>Your premium T-shirt destination</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
 
-      <!-- Size Selector -->
-      <div class="selector-group">
-        <div class="selector-label">
-          <span>Select Size</span>
-          <span class="selected-val" id="selectedSize">None</span>
+      <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address / Admin ID</label>
+          <input type="text" class="form-control" id="loginEmail" placeholder="Email or admin ID"
+            autocomplete="username" required>
         </div>
-        <div class="size-selector" id="sizePicker"></div>
-        <div class="size-guide-link" onclick="document.getElementById('sizeGuideModal').style.display='flex'">📏 Size Guide</div>
-      </div>
-
-      <!-- Color Selector -->
-      <div class="selector-group">
-        <div class="selector-label">
-          <span>Select Color</span>
-          <span class="selected-val" id="selectedColorLabel">None</span>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-control" id="loginPw" placeholder="Enter your password"
+              autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">👁</button>
+          </div>
         </div>
-        <div class="color-selector" id="colorPicker"></div>
-      </div>
-
-      <!-- Quantity -->
-      <div class="selector-group">
-        <div class="selector-label"><span>Quantity</span></div>
-        <div class="qty-control">
-          <button class="qty-btn" id="qtyMinus">−</button>
-          <input type="number" class="qty-input" id="qtyInput" value="1" min="1" max="10">
-          <button class="qty-btn" id="qtyPlus">+</button>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="product-actions">
-        <button class="btn btn-primary btn-lg" id="addToCartBtn">
-          🛒 Add to Cart
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginSubmitBtn">
+          🔑 Sign In
         </button>
-        <a href="cart.html" class="btn btn-accent btn-lg" id="buyNowBtn">
-          ⚡ Buy Now
-        </a>
-      </div>
+      </form>
 
-      <!-- Meta Info -->
-      <div class="product-meta" id="prodMeta">
-        <div class="product-meta-item">
-          <span class="meta-icon">🧵</span>
-          <div>
-            <span class="meta-label">Material</span>
-            <span class="meta-val" id="prodMaterial">—</span>
+      <form class="auth-form" id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="regName" placeholder="Your name" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="regEmail" placeholder="you@example.com" autocomplete="email"
+            required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-control" id="regPw" placeholder="Min 6 characters"
+              autocomplete="new-password" required minlength="6">
+            <button type="button" class="pw-toggle" onclick="togglePw('regPw',this)">👁</button>
           </div>
         </div>
-        <div class="product-meta-item">
-          <span class="meta-icon">👕</span>
-          <div>
-            <span class="meta-label">Fit</span>
-            <span class="meta-val" id="prodFit">—</span>
-          </div>
-        </div>
-        <div class="product-meta-item">
-          <span class="meta-icon">🫧</span>
-          <div>
-            <span class="meta-label">Care</span>
-            <span class="meta-val" id="prodCare">—</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Trust Badges -->
-      <div class="trust-badges">
-        <div class="trust-badge"><span>🚚</span><span>Free Shipping ₹999+</span></div>
-        <div class="trust-badge"><span>↩️</span><span>Easy Returns</span></div>
-        <div class="trust-badge"><span>🔒</span><span>Secure Payment</span></div>
-      </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="regSubmitBtn">
+          ✨ Create Account
+        </button>
+      </form>
     </div>
   </div>
 
-  <!-- Related Products -->
-  <div class="related-section">
-    <div class="section-header">
-      <h2>You May Also <span class="gradient-text">Like</span></h2>
-    </div>
-    <div class="related-grid" id="relatedGrid"></div>
-  </div>
-</div>
-
-<!-- Size Guide Modal -->
-<div class="modal-overlay" id="sizeGuideModal" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3>📏 Size Guide</h3>
-      <button onclick="document.getElementById('sizeGuideModal').style.display='none'" class="modal-close">✕</button>
-    </div>
-    <table class="size-table">
-      <thead><tr><th>Size</th><th>Chest (in)</th><th>Length (in)</th><th>Shoulders (in)</th></tr></thead>
-      <tbody>
-        <tr><td>XS</td><td>34-36</td><td>26</td><td>15.5</td></tr>
-        <tr><td>S</td><td>36-38</td><td>27</td><td>16.5</td></tr>
-        <tr><td>M</td><td>38-40</td><td>28</td><td>17.5</td></tr>
-        <tr><td>L</td><td>40-42</td><td>29</td><td>18.5</td></tr>
-        <tr><td>XL</td><td>42-44</td><td>30</td><td>19.5</td></tr>
-        <tr><td>XXL</td><td>44-46</td><td>31</td><td>20.5</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<footer class="footer">
-  <div class="container">
-    <div class="footer-bottom" style="border-top:1px solid var(--border);padding-top:28px;margin-top:0">
-      <p>© 2026 ThreadCraft. All rights reserved.</p>
-      <a href="shop.html" class="btn btn-outline btn-sm">← Back to Shop</a>
-    </div>
-  </div>
-</footer>
-
-<script src="js/store.js"></script>
-<script src="js/product.js"></script>
+  <script>
+    function openAuthModal() {
+      document.getElementById('authModal').classList.add('open');
+      document.body.classList.add('no-scroll');
+      clearAuthMessages();
+    }
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.remove('open');
+      document.body.classList.remove('no-scroll');
+    }
+    function handleAuthOverlayClick(e) {
+      if (e.target === document.getElementById('authModal')) closeAuthModal();
+    }
+    function switchAuthTab(tab) {
+      document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+      clearAuthMessages();
+    }
+    function togglePw(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+    function showAuthError(msg) {
+      const el = document.getElementById('authError');
+      el.textContent = '❌ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+    function showAuthSuccess(msg) {
+      const el = document.getElementById('authSuccess');
+      el.textContent = '✅ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('authError').style.display = 'none';
+    }
+    function clearAuthMessages() {
+      document.getElementById('authError').style.display = 'none';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.disabled = true; btn.textContent = '⏳ Signing in...';
+      try {
+        const result = await Store.customerLogin(email, pw);
+        if (result.ok) {
+          if (result.role === 'admin') {
+            showAuthSuccess('Access granted! Redirecting...');
+            setTimeout(() => window.location.href = 'admin/dashboard.html', 800);
+          } else {
+            showAuthSuccess('Welcome back, ' + result.user.name.split(' ')[0] + '! 🎉');
+            setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+          }
+        } else {
+          showAuthError(result.error);
+          btn.disabled = false; btn.textContent = '🔑 Sign In';
+        }
+      } catch (err) {
+        showAuthError('Something went wrong. Please try again.');
+        btn.disabled = false; btn.textContent = '🔑 Sign In';
+      }
+    }
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pw = document.getElementById('regPw').value;
+      const btn = document.getElementById('regSubmitBtn');
+      btn.disabled = true; btn.textContent = '⏳ Creating...';
+      setTimeout(() => {
+        const result = Store.registerCustomer(name, email, pw);
+        if (result.ok) {
+          Store.customerLogin(email, pw);
+          showAuthSuccess('Account created! Welcome, ' + name.split(' ')[0] + '! 🎉');
+          setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+        } else {
+          showAuthError(result.error);
+          btn.disabled = false; btn.textContent = '✨ Create Account';
+        }
+      }, 600);
+    }
+    function updateAuthNavBtn() {
+      const btn = document.getElementById('authNavBtn');
+      const user = Store.getCurrentUser();
+      if (!btn) return;
+      if (user) {
+        btn.textContent = '👤 ' + user.name.split(' ')[0];
+        btn.onclick = handleAuthBtnClick;
+      } else {
+        btn.innerHTML = '🔑 Login';
+        btn.onclick = openAuthModal;
+      }
+    }
+    function handleAuthBtnClick() {
+      if (confirm('Sign out of your account?')) {
+        Store.customerLogout();
+        updateAuthNavBtn();
+        showToast('Signed out successfully.', 'info');
+      }
+    }
+    window.addEventListener('load', updateAuthNavBtn);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
+  </script>
 </body>
+
 </html>

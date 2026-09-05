@@ -1,13 +1,13 @@
 /* =============================================
-   THREADCRAFT — Shop Page JS
+   WAVENEXA — Shop Page JS
    ============================================= */
 
 (function () {
   let currentProducts = [];
-  let activeCategory  = 'all';
-  let activeSizes     = [];
-  let currentSort     = 'default';
-  let isListView      = false;
+  let activeCategory = 'all';
+  let activeSizes = [];
+  let currentSort = 'default';
+  let isListView = false;
 
   // Read URL params
   const params = new URLSearchParams(window.location.search);
@@ -44,9 +44,9 @@
 
     // Sort
     switch (currentSort) {
-      case 'price-asc':  products.sort((a, b) => a.price - b.price); break;
+      case 'price-asc': products.sort((a, b) => a.price - b.price); break;
       case 'price-desc': products.sort((a, b) => b.price - a.price); break;
-      case 'newest':     products.sort((a, b) => b.createdAt.localeCompare(a.createdAt)); break;
+      case 'newest': products.sort((a, b) => b.createdAt.localeCompare(a.createdAt)); break;
     }
 
     return products;
@@ -99,7 +99,7 @@
   window.quickAdd = function (id) {
     const p = Store.getProduct(id);
     if (!p) return;
-    const size  = p.sizes[Math.floor(p.sizes.length / 2)];
+    const size = p.sizes[Math.floor(p.sizes.length / 2)];
     const color = p.colors[0];
     Store.addToCart(id, size, color, 1);
     showToast(`${p.title} added to cart!`, 'cart');
@@ -154,14 +154,14 @@
   // Clear Filters
   document.getElementById('clearFilters')?.addEventListener('click', () => {
     activeCategory = 'all';
-    activeSizes    = [];
-    currentSort    = 'default';
+    activeSizes = [];
+    currentSort = 'default';
     document.querySelectorAll('[data-cat]').forEach(b => b.classList.toggle('active', b.dataset.cat === 'all'));
     document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
     const si = document.getElementById('searchInput'); if (si) si.value = '';
-    const mn = document.getElementById('minPrice');    if (mn) mn.value = '';
-    const mx = document.getElementById('maxPrice');    if (mx) mx.value = '';
-    const ss = document.getElementById('sortSelect');  if (ss) ss.value = 'default';
+    const mn = document.getElementById('minPrice'); if (mn) mn.value = '';
+    const mx = document.getElementById('maxPrice'); if (mx) mx.value = '';
+    const ss = document.getElementById('sortSelect'); if (ss) ss.value = 'default';
     renderProducts();
   });
 
@@ -179,9 +179,31 @@
     renderProducts();
   });
 
-  // Mobile filter toggle
-  document.getElementById('filterToggle')?.addEventListener('click', () => {
-    document.getElementById('shopSidebar')?.classList.toggle('mobile-open');
+  // Mobile filter drawer
+  const sidebar = document.getElementById('shopSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const closeFilterBtn = document.getElementById('filterClose');
+
+  function openSidebar() {
+    sidebar?.classList.add('mobile-open');
+    backdrop?.classList.add('active');
+    document.body.classList.add('no-scroll');
+  }
+  function closeSidebar() {
+    sidebar?.classList.remove('mobile-open');
+    backdrop?.classList.remove('active');
+    document.body.classList.remove('no-scroll');
+  }
+
+  document.getElementById('filterToggle')?.addEventListener('click', openSidebar);
+  closeFilterBtn?.addEventListener('click', closeSidebar);
+  backdrop?.addEventListener('click', closeSidebar);
+
+  // When Apply Filters is clicked on mobile, also dismiss drawer
+  document.getElementById('applyFilters')?.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      closeSidebar();
+    }
   });
 
   // Init

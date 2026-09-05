@@ -1,257 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cart & Checkout — ThreadCraft</title>
+  <title>Cart & Checkout — WaveNexa</title>
   <meta name="description" content="Review your cart and complete your order.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/cart.css">
 </head>
+
 <body>
 
-<nav class="navbar" id="navbar">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">Thread<span>Craft</span></a>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="shop.html">Shop</a>
-    </div>
-    <div class="nav-actions">
-      <a href="cart.html" class="nav-cart-btn active-nav" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
-      <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
-    </div>
-  </div>
-</nav>
-<div class="mobile-menu" id="mobileMenu">
-  <div class="mobile-menu-close" id="menuClose">✕</div>
-  <a href="index.html">Home</a>
-  <a href="shop.html">Shop</a>
-</div>
-
-<!-- Progress Steps -->
-<div class="checkout-progress">
-  <div class="container">
-    <div class="progress-steps">
-      <div class="progress-step active" id="step1"><span class="step-num">1</span><span class="step-label">Cart</span></div>
-      <div class="progress-line"></div>
-      <div class="progress-step" id="step2"><span class="step-num">2</span><span class="step-label">Details</span></div>
-      <div class="progress-line"></div>
-      <div class="progress-step" id="step3"><span class="step-num">3</span><span class="step-label">Payment</span></div>
-    </div>
-  </div>
-</div>
-
-<div class="cart-page container">
-
-  <!-- ═══ Step 1: Cart ═══════════════════════ -->
-  <div class="cart-step" id="cartStep">
-    <div class="cart-layout">
-      <!-- Cart Items -->
-      <div class="cart-items-col">
-        <div class="cart-header">
-          <h2>Your Cart</h2>
-          <button class="btn btn-ghost btn-sm" id="clearCartBtn">Clear All</button>
-        </div>
-        <div id="cartItemsList"></div>
-
-        <!-- Empty State -->
-        <div class="empty-state" id="cartEmpty" style="display:none">
-          <div class="empty-icon">🛒</div>
-          <h3>Your cart is empty</h3>
-          <p>Looks like you haven't added anything yet</p>
-          <a href="shop.html" class="btn btn-primary" style="margin-top:20px">Shop Now →</a>
-        </div>
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Wave<span>Nexa</span></a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
       </div>
+      <div class="nav-actions">
+        <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="openAuthModal()">🔑 Login</button>
+        <a href="cart.html" class="nav-cart-btn active-nav" title="Cart">🛒 <span class="cart-badge"
+            id="cart-badge">0</span></a>
+        <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-close" id="menuClose">✕</div>
+    <a href="index.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="shop.html#collections">Collections</a>
+    <a href="cart.html" class="active">Cart 🛒</a>
+    <a href="#" onclick="openAuthModal(); return false;" id="mobileAuthLink">🔑 Login / Account</a>
+  </div>
 
-      <!-- Order Summary -->
-      <div class="cart-summary-col" id="cartSummaryCol">
-        <div class="order-summary card">
-          <h3 class="summary-title">Order Summary</h3>
-          <div class="summary-rows" id="summaryRows"></div>
-          <div class="divider"></div>
-          <div class="summary-total">
-            <span>Total</span>
-            <span id="summaryTotal">₹0</span>
-          </div>
-          <div class="shipping-note" id="shippingNote"></div>
-          <button class="btn btn-primary btn-full btn-lg" id="proceedToCheckout">
-            Proceed to Checkout →
-          </button>
-          <a href="shop.html" class="btn btn-ghost btn-full" style="margin-top:10px;text-align:center">← Continue Shopping</a>
+  <!-- Progress Steps -->
+  <div class="checkout-progress">
+    <div class="container">
+      <div class="progress-steps">
+        <div class="progress-step active" id="step1"><span class="step-num">1</span><span class="step-label">Cart</span>
         </div>
-
-        <!-- Coupon -->
-        <div class="coupon-box card">
-          <h4>🏷️ Have a Coupon?</h4>
-          <div class="coupon-input-row">
-            <input type="text" class="form-control" id="couponInput" placeholder="Enter code">
-            <button class="btn btn-outline btn-sm" id="applyCoupon">Apply</button>
-          </div>
+        <div class="progress-line"></div>
+        <div class="progress-step" id="step2"><span class="step-num">2</span><span class="step-label">Details</span>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step" id="step3"><span class="step-num">3</span><span class="step-label">Payment</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══ Step 2: Customer Details ═══════════ -->
-  <div class="cart-step" id="detailsStep" style="display:none">
-    <div class="checkout-form-layout">
-      <div class="checkout-form-col">
-        <div class="checkout-form-header">
-          <button class="btn btn-ghost btn-sm" id="backToCart">← Back to Cart</button>
-          <h2>Delivery Details</h2>
+  <div class="cart-page container">
+
+    <!-- ═══ Step 1: Cart ═══════════════════════ -->
+    <div class="cart-step" id="cartStep">
+      <div class="cart-layout">
+        <!-- Cart Items -->
+        <div class="cart-items-col">
+          <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="btn btn-ghost btn-sm" id="clearCartBtn">Clear All</button>
+          </div>
+          <div id="cartItemsList"></div>
+
+          <!-- Empty State -->
+          <div class="empty-state" id="cartEmpty" style="display:none">
+            <div class="empty-icon">🛒</div>
+            <h3>Your cart is empty</h3>
+            <p>Looks like you haven't added anything yet</p>
+            <a href="shop.html" class="btn btn-primary" style="margin-top:20px">Shop Now →</a>
+          </div>
         </div>
-        <form id="checkoutForm" class="checkout-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Full Name *</label>
-              <input type="text" class="form-control" id="custName" placeholder="Your full name" required>
+
+        <!-- Order Summary -->
+        <div class="cart-summary-col" id="cartSummaryCol">
+          <div class="order-summary card">
+            <h3 class="summary-title">Order Summary</h3>
+            <div class="summary-rows" id="summaryRows"></div>
+            <div class="divider"></div>
+            <div class="summary-total">
+              <span>Total</span>
+              <span id="summaryTotal">₹0</span>
             </div>
-            <div class="form-group">
-              <label class="form-label">Phone Number *</label>
-              <input type="tel" class="form-control" id="custPhone" placeholder="+91 98765 43210" required>
-            </div>
+            <div class="shipping-note" id="shippingNote"></div>
+            <button class="btn btn-primary btn-full btn-lg" id="proceedToCheckout">
+              Proceed to Checkout →
+            </button>
+            <a href="shop.html" class="btn btn-ghost btn-full" style="margin-top:10px;text-align:center">← Continue
+              Shopping</a>
           </div>
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="custEmail" placeholder="your@email.com">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Delivery Address *</label>
-            <textarea class="form-control" id="custAddress" rows="3" placeholder="House No., Street, Locality" required></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">City *</label>
-              <input type="text" class="form-control" id="custCity" placeholder="City" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">PIN Code *</label>
-              <input type="text" class="form-control" id="custPin" placeholder="400001" required>
+
+          <!-- Coupon -->
+          <div class="coupon-box card">
+            <h4>🏷️ Have a Coupon?</h4>
+            <div class="coupon-input-row">
+              <input type="text" class="form-control" id="couponInput" placeholder="Enter code">
+              <button class="btn btn-outline btn-sm" id="applyCoupon">Apply</button>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">State *</label>
-            <select class="form-control" id="custState" required>
-              <option value="">Select State</option>
-              <option>Maharashtra</option><option>Delhi</option><option>Karnataka</option>
-              <option>Tamil Nadu</option><option>Uttar Pradesh</option><option>Gujarat</option>
-              <option>Rajasthan</option><option>West Bengal</option><option>Telangana</option>
-              <option>Andhra Pradesh</option><option>Kerala</option><option>Punjab</option>
-              <option>Madhya Pradesh</option><option>Bihar</option><option>Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Order Notes (optional)</label>
-            <textarea class="form-control" id="custNotes" rows="2" placeholder="Special instructions..."></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary btn-full btn-lg">Proceed to Payment →</button>
-        </form>
-      </div>
-      <div class="checkout-sidebar">
-        <div class="mini-cart-summary card" id="miniCartSummary"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ═══ Step 3: Payment ═════════════════════ -->
-  <div class="cart-step" id="paymentStep" style="display:none">
-    <div class="payment-layout">
-      <div class="payment-col">
-        <div class="checkout-form-header">
-          <button class="btn btn-ghost btn-sm" id="backToDetails">← Back</button>
-          <h2>Payment</h2>
-        </div>
-        <div class="payment-methods">
-          <div class="payment-method-card active" id="payQR">
-            <div class="payment-method-radio"></div>
-            <span class="payment-icon">📱</span>
-            <div>
-              <strong>UPI / QR Code</strong>
-              <p>Scan QR code to pay instantly</p>
-            </div>
+    <!-- ═══ Step 2: Customer Details ═══════════ -->
+    <div class="cart-step" id="detailsStep" style="display:none">
+      <div class="checkout-form-layout">
+        <div class="checkout-form-col">
+          <div class="checkout-form-header">
+            <button class="btn btn-ghost btn-sm" id="backToCart">← Back to Cart</button>
+            <h2>Delivery Details</h2>
           </div>
-          <div class="payment-method-card" id="payCOD">
-            <div class="payment-method-radio"></div>
-            <span class="payment-icon">💵</span>
-            <div>
-              <strong>Cash on Delivery</strong>
-              <p>Pay when your order arrives</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- QR Section -->
-        <div class="qr-payment-section" id="qrSection">
-          <div class="qr-box">
-            <div id="qrImgWrap">
-              <div class="qr-placeholder">
-                <span>📱</span>
-                <p>QR Code not set up yet</p>
-                <small>Owner needs to add QR code from admin panel</small>
+          <form id="checkoutForm" class="checkout-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" class="form-control" id="custName" placeholder="Your full name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" class="form-control" id="custPhone" placeholder="+91 98765 43210" inputmode="tel"
+                  autocomplete="tel" required>
               </div>
             </div>
-            <p class="qr-note" id="qrNote">Scan to pay via UPI</p>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-control" id="custEmail" placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Delivery Address *</label>
+              <textarea class="form-control" id="custAddress" rows="3" placeholder="House No., Street, Locality"
+                autocomplete="street-address" required></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">City *</label>
+                <input type="text" class="form-control" id="custCity" placeholder="City" autocomplete="address-level2"
+                  required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">PIN Code *</label>
+                <input type="text" class="form-control" id="custPin" placeholder="400001" inputmode="numeric"
+                  autocomplete="postal-code" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">State *</label>
+              <select class="form-control" id="custState" required>
+                <option value="">Select State</option>
+                <option>Maharashtra</option>
+                <option>Delhi</option>
+                <option>Karnataka</option>
+                <option>Tamil Nadu</option>
+                <option>Uttar Pradesh</option>
+                <option>Gujarat</option>
+                <option>Rajasthan</option>
+                <option>West Bengal</option>
+                <option>Telangana</option>
+                <option>Andhra Pradesh</option>
+                <option>Kerala</option>
+                <option>Punjab</option>
+                <option>Madhya Pradesh</option>
+                <option>Bihar</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Order Notes (optional)</label>
+              <textarea class="form-control" id="custNotes" rows="2" placeholder="Special instructions..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg">Proceed to Payment →</button>
+          </form>
+        </div>
+        <div class="checkout-sidebar">
+          <div class="mini-cart-summary card" id="miniCartSummary"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Step 3: Payment ═════════════════════ -->
+    <div class="cart-step" id="paymentStep" style="display:none">
+      <div class="payment-layout">
+        <div class="payment-col">
+          <div class="checkout-form-header">
+            <button class="btn btn-ghost btn-sm" id="backToDetails">← Back</button>
+            <h2>Payment</h2>
           </div>
-          <div class="qr-steps">
-            <div class="qr-step"><span>1</span> Open any UPI app (PhonePe, GPay, Paytm)</div>
-            <div class="qr-step"><span>2</span> Scan the QR code above</div>
-            <div class="qr-step"><span>3</span> Enter the exact order amount</div>
-            <div class="qr-step"><span>4</span> Click "Confirm Order" below</div>
+          <div class="payment-methods">
+            <div class="payment-method-card active" id="payQR">
+              <div class="payment-method-radio"></div>
+              <span class="payment-icon">📱</span>
+              <div>
+                <strong>UPI / QR Code</strong>
+                <p>Scan QR code to pay instantly</p>
+              </div>
+            </div>
+            <div class="payment-method-card" id="payCOD">
+              <div class="payment-method-radio"></div>
+              <span class="payment-icon">💵</span>
+              <div>
+                <strong>Cash on Delivery</strong>
+                <p>Pay when your order arrives</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Section -->
+          <div class="qr-payment-section" id="qrSection">
+            <div class="qr-box">
+              <div id="qrImgWrap">
+                <div class="qr-placeholder">
+                  <span>📱</span>
+                  <p>QR Code Payment</p>
+                  <small>Scan with any UPI app to complete payment</small>
+                </div>
+              </div>
+              <p class="qr-note" id="qrNote">Scan to pay via UPI</p>
+            </div>
+            <div class="qr-steps">
+              <div class="qr-step"><span>1</span> Open any UPI app (PhonePe, GPay, Paytm)</div>
+              <div class="qr-step"><span>2</span> Scan the QR code above</div>
+              <div class="qr-step"><span>3</span> Enter the exact order amount</div>
+              <div class="qr-step"><span>4</span> Click "Confirm Order" below</div>
+            </div>
+          </div>
+
+          <!-- COD Section -->
+          <div class="cod-section" id="codSection" style="display:none">
+            <div class="cod-info card">
+              <span style="font-size:3rem">💵</span>
+              <h3>Cash on Delivery</h3>
+              <p>Pay cash when your order is delivered to your doorstep. No extra charges.</p>
+            </div>
+          </div>
+
+          <button class="btn btn-accent btn-full btn-lg" id="confirmOrderBtn">
+            ✅ Confirm Order
+          </button>
+        </div>
+        <div class="checkout-sidebar">
+          <div class="mini-cart-summary card" id="paymentMiniCart"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo" style="font-size:1.4rem;">Wave<span style="font-weight:300">Nexa</span></div>
+          <p>Premium T-shirts for those who wear their story with pride.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Shop</h5>
+          <ul>
+            <li><a href="shop.html?cat=Street">Street</a></li>
+            <li><a href="shop.html?cat=Vintage">Vintage</a></li>
+            <li><a href="shop.html?cat=Essentials">Essentials</a></li>
+            <li><a href="shop.html?cat=Luxury">Luxury</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Help</h5>
+          <ul>
+            <li><a href="#">Size Guide</a></li>
+            <li><a href="#">Shipping Info</a></li>
+            <li><a href="#">Return Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Contact</h5>
+          <ul>
+            <li><a href="#">📧 hello@wavenexa.in</a></li>
+            <li><a href="#">📞 +91 98765 43210</a></li>
+            <li><a href="#" onclick="openAuthModal(); return false;">🔑 Sign In / Register</a></li>
+            <li><a href="admin/login.html">🔐 Admin Portal</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 WaveNexa. All rights reserved.</p>
+        <p>Made with ❤️ in India</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/cart.js"></script>
+
+  <!-- ═══ Auth Modal ═══════════════════════════ -->
+  <div class="auth-modal-overlay" id="authModal" onclick="handleAuthOverlayClick(event)">
+    <div class="auth-modal-card" id="authModalCard">
+      <button class="auth-modal-close" onclick="closeAuthModal()" title="Close">✕</button>
+      <div class="auth-modal-logo">
+        <div class="nav-logo">Wave<span>Nexa</span></div>
+        <p>Your premium T-shirt destination</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
+
+      <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address / Admin ID</label>
+          <input type="text" class="form-control" id="loginEmail" placeholder="Email or admin ID"
+            autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-control" id="loginPw" placeholder="Enter your password"
+              autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">👁</button>
           </div>
         </div>
-
-        <!-- COD Section -->
-        <div class="cod-section" id="codSection" style="display:none">
-          <div class="cod-info card">
-            <span style="font-size:3rem">💵</span>
-            <h3>Cash on Delivery</h3>
-            <p>Pay cash when your order is delivered to your doorstep. No extra charges.</p>
-          </div>
-        </div>
-
-        <button class="btn btn-accent btn-full btn-lg" id="confirmOrderBtn">
-          ✅ Confirm Order
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginSubmitBtn">
+          🔑 Sign In
         </button>
-      </div>
-      <div class="checkout-sidebar">
-        <div class="mini-cart-summary card" id="paymentMiniCart"></div>
-      </div>
+      </form>
+
+      <form class="auth-form" id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="regName" placeholder="Your name" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="regEmail" placeholder="you@example.com" autocomplete="email"
+            required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input type="password" class="form-control" id="regPw" placeholder="Min 6 characters"
+              autocomplete="new-password" required minlength="6">
+            <button type="button" class="pw-toggle" onclick="togglePw('regPw',this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="regSubmitBtn">
+          ✨ Create Account
+        </button>
+      </form>
     </div>
   </div>
 
-</div>
-
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="nav-logo" style="font-size:1.4rem;">Thread<span style="font-weight:300">Craft</span></div>
-        <p>Premium T-shirts for those who wear their story with pride.</p>
-      </div>
-      <div class="footer-col"><h5>Shop</h5><ul>
-        <li><a href="shop.html?cat=Street">Street</a></li>
-        <li><a href="shop.html?cat=Vintage">Vintage</a></li>
-        <li><a href="shop.html?cat=Essentials">Essentials</a></li>
-        <li><a href="shop.html?cat=Luxury">Luxury</a></li>
-      </ul></div>
-      <div class="footer-col"><h5>Help</h5><ul>
-        <li><a href="#">Size Guide</a></li>
-        <li><a href="#">Shipping Info</a></li>
-        <li><a href="#">Return Policy</a></li>
-      </ul></div>
-      <div class="footer-col"><h5>Contact</h5><ul>
-        <li><a href="#">📧 hello@threadcraft.in</a></li>
-        <li><a href="#">📞 +91 98765 43210</a></li>
-        <li><a href="admin/login.html">🔐 Owner Login</a></li>
-      </ul></div>
-    </div>
-    <div class="footer-bottom"><p>© 2026 ThreadCraft. All rights reserved.</p><p>Made with ❤️ in India</p></div>
-  </div>
-</footer>
-
-<script src="js/store.js"></script>
-<script src="js/cart.js"></script>
+  <script>
+    function openAuthModal() {
+      document.getElementById('authModal').classList.add('open');
+      document.body.classList.add('no-scroll');
+      clearAuthMessages();
+    }
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.remove('open');
+      document.body.classList.remove('no-scroll');
+    }
+    function handleAuthOverlayClick(e) {
+      if (e.target === document.getElementById('authModal')) closeAuthModal();
+    }
+    function switchAuthTab(tab) {
+      document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+      clearAuthMessages();
+    }
+    function togglePw(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+    function showAuthError(msg) {
+      const el = document.getElementById('authError');
+      el.textContent = '❌ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+    function showAuthSuccess(msg) {
+      const el = document.getElementById('authSuccess');
+      el.textContent = '✅ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('authError').style.display = 'none';
+    }
+    function clearAuthMessages() {
+      document.getElementById('authError').style.display = 'none';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.disabled = true; btn.textContent = '⏳ Signing in...';
+      try {
+        const result = await Store.customerLogin(email, pw);
+        if (result.ok) {
+          if (result.role === 'admin') {
+            showAuthSuccess('Access granted! Redirecting...');
+            setTimeout(() => window.location.href = 'admin/dashboard.html', 800);
+          } else {
+            showAuthSuccess('Welcome back, ' + result.user.name.split(' ')[0] + '! 🎉');
+            setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+          }
+        } else {
+          showAuthError(result.error);
+          btn.disabled = false; btn.textContent = '🔑 Sign In';
+        }
+      } catch (err) {
+        showAuthError('Something went wrong. Please try again.');
+        btn.disabled = false; btn.textContent = '🔑 Sign In';
+      }
+    }
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pw = document.getElementById('regPw').value;
+      const btn = document.getElementById('regSubmitBtn');
+      btn.disabled = true; btn.textContent = '⏳ Creating...';
+      setTimeout(() => {
+        const result = Store.registerCustomer(name, email, pw);
+        if (result.ok) {
+          Store.customerLogin(email, pw);
+          showAuthSuccess('Account created! Welcome, ' + name.split(' ')[0] + '! 🎉');
+          setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+        } else {
+          showAuthError(result.error);
+          btn.disabled = false; btn.textContent = '✨ Create Account';
+        }
+      }, 600);
+    }
+    function updateAuthNavBtn() {
+      const btn = document.getElementById('authNavBtn');
+      const user = Store.getCurrentUser();
+      if (!btn) return;
+      if (user) {
+        btn.textContent = '👤 ' + user.name.split(' ')[0];
+        btn.onclick = handleAuthBtnClick;
+      } else {
+        btn.innerHTML = '🔑 Login';
+        btn.onclick = openAuthModal;
+      }
+    }
+    function handleAuthBtnClick() {
+      if (confirm('Sign out of your account?')) {
+        Store.customerLogout();
+        updateAuthNavBtn();
+        showToast('Signed out successfully.', 'info');
+      }
+    }
+    window.addEventListener('load', updateAuthNavBtn);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
+  </script>
 </body>
+
 </html>

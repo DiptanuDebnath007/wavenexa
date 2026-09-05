@@ -1,26 +1,26 @@
 /* =============================================
-   THREADCRAFT — Product Detail JS
+   WAVENEXA — Product Detail JS
    ============================================= */
 
 (function () {
-  const params  = new URLSearchParams(window.location.search);
-  const id      = params.get('id');
-  let product   = null;
-  let selSize   = null;
-  let selColor  = null;
-  let qty       = 1;
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  let product = null;
+  let selSize = null;
+  let selColor = null;
+  let qty = 1;
 
   if (!id) { window.location.href = 'shop.html'; return; }
   product = Store.getProduct(id);
   if (!product) { window.location.href = 'shop.html'; return; }
 
   // ── Page Meta ─────────────────────────────────
-  document.title = `${product.title} — ThreadCraft`;
-  document.getElementById('pageTitle').textContent = `${product.title} — ThreadCraft`;
+  document.title = `${product.title} — WaveNexa`;
+  document.getElementById('pageTitle').textContent = `${product.title} — WaveNexa`;
   document.getElementById('breadProduct').textContent = product.title;
 
   // ── Gallery ───────────────────────────────────
-  const mainImg  = document.getElementById('mainImg');
+  const mainImg = document.getElementById('mainImg');
   const thumbsEl = document.getElementById('thumbs');
   mainImg.src = product.images[0];
   mainImg.alt = product.title;
@@ -33,7 +33,7 @@
     `).join('');
   }
 
-  window.switchImg = function(src, el) {
+  window.switchImg = function (src, el) {
     mainImg.src = src;
     document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
     el?.classList.add('active');
@@ -44,8 +44,8 @@
   if (mainImgWrap) {
     mainImgWrap.addEventListener('mousemove', (e) => {
       const rect = mainImgWrap.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
-      const y = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
+      const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+      const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
       mainImg.style.transformOrigin = `${x}% ${y}%`;
     });
     mainImgWrap.addEventListener('mouseleave', () => {
@@ -170,10 +170,10 @@
     `).join('');
   }
 
-  window.quickAddRelated = function(pid) {
+  window.quickAddRelated = function (pid) {
     const p = Store.getProduct(pid);
     if (!p) return;
-    Store.addToCart(pid, p.sizes[Math.floor(p.sizes.length/2)], p.colors[0], 1);
+    Store.addToCart(pid, p.sizes[Math.floor(p.sizes.length / 2)], p.colors[0], 1);
     showToast(`${p.title} added to cart!`, 'cart');
     updateCartBadge();
   };
