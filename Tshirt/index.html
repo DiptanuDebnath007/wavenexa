@@ -10,6 +10,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -20,14 +21,14 @@
     <div class="promo-ad-inner">
       <!-- Left: Image -->
       <div class="promo-ad-visual">
-        <img src="assets/promo_banner.jpg" alt="Summer Sale – Up to 50% Off at WaveNexa" class="promo-ad-img">
+        <img id="promoImage" src="assets/promo_banner.jpg" alt="Summer Sale – Up to 50% Off at WaveNexa" class="promo-ad-img">
         <div class="promo-ad-img-glow"></div>
       </div>
       <!-- Right: Content -->
       <div class="promo-ad-content">
-        <div class="promo-ad-eyebrow">🔥 Limited Time Offer</div>
-        <h2 class="promo-ad-title">Summer Sale<br><span class="promo-ad-highlight">Up to 50% Off</span></h2>
-        <p class="promo-ad-sub">Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!</p>
+        <div class="promo-ad-eyebrow" id="promoEyebrow">🔥 Limited Time Offer</div>
+        <h2 class="promo-ad-title" id="promoTitle">Summer Sale<br><span class="promo-ad-highlight">Up to 50% Off</span></h2>
+        <p class="promo-ad-sub" id="promoSub">Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!</p>
         <!-- Countdown Timer -->
         <div class="promo-countdown" id="promoCountdown">
           <div class="countdown-unit">
@@ -51,8 +52,8 @@
           </div>
         </div>
         <div class="promo-ad-actions">
-          <a href="shop.html" class="btn btn-accent btn-lg promo-cta">Shop the Sale →</a>
-          <div class="promo-ad-badge">
+          <a href="shop.html" class="btn btn-accent btn-lg promo-cta" id="promoCta">Shop the Sale →</a>
+          <div class="promo-ad-badge" id="promoBadge">
             <span>FREE</span>
             <span>Shipping</span>
           </div>
@@ -67,7 +68,9 @@
   <!-- ═══ Navigation ══════════════════════════ -->
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Wave<span>Nexa</span></a>
+      <a href="index.html" class="nav-logo" aria-label="WaveNexa home">
+        <img src="logo/logo.png" alt="WaveNexa Logo">
+      </a>
       <div class="nav-links">
         <a href="index.html" class="active">Home</a>
         <a href="shop.html">Shop</a>
@@ -403,6 +406,9 @@
       </form>
 
       <!-- ── REGISTER FORM ── -->
+      <div class="auth-divider"><span>or continue with</span></div>
+      <div id="googleLoginBtn" class="google-login-wrap"></div>
+
       <form class="auth-form" id="registerForm" style="display:none" onsubmit="handleRegister(event)">
         <div class="form-group">
           <label class="form-label">Full Name</label>
@@ -431,6 +437,7 @@
 
   <script>
     /* ── Auth Modal Logic ────────────────────────── */
+    window.GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '1095897995890-9tmkkctlllh83vibggdbjebahaon7454.apps.googleusercontent.com';
 
     function openAuthModal() {
       document.getElementById('authModal').classList.add('open');
@@ -474,6 +481,62 @@
     function clearAuthMessages() {
       document.getElementById('authError').style.display = 'none';
       document.getElementById('authSuccess').style.display = 'none';
+    }
+
+    function initGoogleAuth() {
+      const googleWrap = document.getElementById('googleLoginBtn');
+      if (!googleWrap) return;
+
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        return;
+      }
+
+      if (!window.GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
+        googleWrap.innerHTML = '<p class="auth-hint">Google sign-in is ready once you replace the demo client ID.</p>';
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: window.GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse
+      });
+
+      google.accounts.id.renderButton(googleWrap, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'pill',
+        width: '100%',
+        logo_alignment: 'center'
+      });
+    }
+
+    async function handleGoogleCredentialResponse(response) {
+      const googleButton = document.querySelector('#googleLoginBtn button');
+      if (googleButton) {
+        googleButton.disabled = true;
+        googleButton.textContent = '⏳ Signing in...';
+      }
+
+      try {
+        const result = await Store.googleLogin(response.credential);
+        if (result.ok) {
+          showAuthSuccess('Welcome, ' + result.user.name.split(' ')[0] + '! 🎉');
+          setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+        } else {
+          showAuthError(result.error);
+          if (googleButton) {
+            googleButton.disabled = false;
+            googleButton.textContent = 'Continue with Google';
+          }
+        }
+      } catch (err) {
+        showAuthError('Something went wrong while signing in with Google.');
+        if (googleButton) {
+          googleButton.disabled = false;
+          googleButton.textContent = 'Continue with Google';
+        }
+      }
     }
 
     async function handleLogin(e) {
@@ -545,7 +608,10 @@
     }
 
     // Init on page load
-    window.addEventListener('load', updateAuthNavBtn);
+    window.addEventListener('load', () => {
+      updateAuthNavBtn();
+      initGoogleAuth();
+    });
 
     // Close on Escape key
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });

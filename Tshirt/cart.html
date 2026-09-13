@@ -9,13 +9,16 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/cart.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
 
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Wave<span>Nexa</span></a>
+      <a href="index.html" class="nav-logo" aria-label="WaveNexa home">
+        <img src="logo/logo.png" alt="WaveNexa Logo">
+      </a>
       <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="shop.html">Shop</a>
@@ -326,6 +329,9 @@
         </button>
       </form>
 
+      <div class="auth-divider"><span>or continue with</span></div>
+      <div id="googleLoginBtn" class="google-login-wrap"></div>
+
       <form class="auth-form" id="registerForm" style="display:none" onsubmit="handleRegister(event)">
         <div class="form-group">
           <label class="form-label">Full Name</label>
@@ -352,6 +358,8 @@
   </div>
 
   <script>
+    window.GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '1095897995890-9tmkkctlllh83vibggdbjebahaon7454.apps.googleusercontent.com';
+
     function openAuthModal() {
       document.getElementById('authModal').classList.add('open');
       document.body.classList.add('no-scroll');
@@ -391,6 +399,60 @@
     function clearAuthMessages() {
       document.getElementById('authError').style.display = 'none';
       document.getElementById('authSuccess').style.display = 'none';
+    }
+    function initGoogleAuth() {
+      const googleWrap = document.getElementById('googleLoginBtn');
+      if (!googleWrap) return;
+
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        return;
+      }
+
+      if (!window.GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
+        googleWrap.innerHTML = '<p class="auth-hint">Google sign-in is ready once you replace the demo client ID.</p>';
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: window.GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse
+      });
+
+      google.accounts.id.renderButton(googleWrap, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'pill',
+        width: '100%',
+        logo_alignment: 'center'
+      });
+    }
+    async function handleGoogleCredentialResponse(response) {
+      const googleButton = document.querySelector('#googleLoginBtn button');
+      if (googleButton) {
+        googleButton.disabled = true;
+        googleButton.textContent = '⏳ Signing in...';
+      }
+
+      try {
+        const result = await Store.googleLogin(response.credential);
+        if (result.ok) {
+          showAuthSuccess('Welcome, ' + result.user.name.split(' ')[0] + '! 🎉');
+          setTimeout(() => { closeAuthModal(); updateAuthNavBtn(); }, 900);
+        } else {
+          showAuthError(result.error);
+          if (googleButton) {
+            googleButton.disabled = false;
+            googleButton.textContent = 'Continue with Google';
+          }
+        }
+      } catch (err) {
+        showAuthError('Something went wrong while signing in with Google.');
+        if (googleButton) {
+          googleButton.disabled = false;
+          googleButton.textContent = 'Continue with Google';
+        }
+      }
     }
     async function handleLogin(e) {
       e.preventDefault();
@@ -455,7 +517,10 @@
         showToast('Signed out successfully.', 'info');
       }
     }
-    window.addEventListener('load', updateAuthNavBtn);
+    window.addEventListener('load', () => {
+      updateAuthNavBtn();
+      initGoogleAuth();
+    });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
   </script>
 </body>

@@ -253,20 +253,93 @@ window.addEventListener('load', function () {
 
 /* ── Promo Banner: Countdown Timer + Dismiss ── */
 (function () {
-  // Set sale end date: 2 days, 14 hrs, 48 min from now
-  const saleEnd = new Date();
-  saleEnd.setDate(saleEnd.getDate() + 2);
-  saleEnd.setHours(saleEnd.getHours() + 14);
-  saleEnd.setMinutes(saleEnd.getMinutes() + 48);
+  const settings = Store.getSettings();
+  const promo = settings.promoBanner || {};
+  const banner = document.getElementById('promoBanner');
+  const hero = document.getElementById('hero');
+  const closeBtn = document.getElementById('promoClose');
+  const NAV_H = 72;
+
+  const defaultPromo = {
+    enabled: true,
+    eyebrow: '🔥 Limited Time Offer',
+    title: 'Summer Sale',
+    highlight: 'Up to 50% Off',
+    sub: "Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!",
+    ctaText: 'Shop the Sale →',
+    ctaLink: 'shop.html',
+    badgeText: 'FREE Shipping',
+    imageUrl: 'assets/promo_banner.jpg',
+    imageAlt: 'Summer Sale – Up to 50% Off at WaveNexa',
+    endAt: (() => {
+      const d = new Date();
+      d.setDate(d.getDate() + 2);
+      d.setHours(d.getHours() + 14);
+      d.setMinutes(d.getMinutes() + 48);
+      return d.toISOString();
+    })()
+  };
+
+  const livePromo = { ...defaultPromo, ...promo };
+
+  function applyPromoToDom() {
+    if (!banner) return;
+
+    if (livePromo.enabled === false) {
+      banner.style.display = 'none';
+      if (hero) hero.style.paddingTop = '24px';
+      return;
+    }
+
+    banner.style.display = '';
+
+    const image = document.getElementById('promoImage');
+    if (image) {
+      image.src = livePromo.imageUrl || defaultPromo.imageUrl;
+      image.alt = livePromo.imageAlt || defaultPromo.imageAlt;
+    }
+
+    const eyebrow = document.getElementById('promoEyebrow');
+    if (eyebrow) eyebrow.textContent = livePromo.eyebrow || defaultPromo.eyebrow;
+
+    const title = document.getElementById('promoTitle');
+    if (title) {
+      if (livePromo.highlight) {
+        title.innerHTML = `${livePromo.title || defaultPromo.title}<br><span class="promo-ad-highlight">${livePromo.highlight}</span>`;
+      } else {
+        title.textContent = livePromo.title || defaultPromo.title;
+      }
+    }
+
+    const sub = document.getElementById('promoSub');
+    if (sub) sub.textContent = livePromo.sub || defaultPromo.sub;
+
+    const cta = document.getElementById('promoCta');
+    if (cta) {
+      cta.textContent = livePromo.ctaText || defaultPromo.ctaText;
+      cta.href = livePromo.ctaLink || defaultPromo.ctaLink;
+    }
+
+    const badge = document.getElementById('promoBadge');
+    if (badge) {
+      badge.innerHTML = `<span>${(livePromo.badgeText || defaultPromo.badgeText).replace(/\s+/g, ' ')}</span>`;
+    }
+  }
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
+  const saleEnd = new Date(livePromo.endAt || defaultPromo.endAt);
+
   function updateCountdown() {
     const diff = saleEnd - Date.now();
+    const countdownWrap = document.getElementById('promoCountdown');
     if (diff <= 0) {
-      document.getElementById('promoCountdown') && (document.getElementById('promoCountdown').style.display = 'none');
+      if (countdownWrap) countdownWrap.style.display = 'none';
       return;
     }
+
+    if (countdownWrap) countdownWrap.style.display = '';
+
     const days = Math.floor(diff / 86400000);
     const hrs = Math.floor((diff % 86400000) / 3600000);
     const min = Math.floor((diff % 3600000) / 60000);
@@ -287,24 +360,20 @@ window.addEventListener('load', function () {
     }
   }
 
+  applyPromoToDom();
   updateCountdown();
   setInterval(updateCountdown, 1000);
-
-  // Close button
-  const closeBtn = document.getElementById('promoClose');
-  const banner = document.getElementById('promoBanner');
-  const hero = document.getElementById('hero');
-  const NAV_H = 72; // matches --nav-h CSS variable
 
   function applyHeroOffset() {
     if (!hero) return;
     if (window.innerWidth <= 768) {
-      // On mobile, banner is in natural flow after navbar, hero needs standard compact padding
       hero.style.paddingTop = '24px';
       return;
     }
-    const bannerH = (banner && !banner.classList.contains('promo-ad-hiding'))
-      ? banner.offsetHeight : 0;
+
+    const bannerH = (banner && banner.style.display !== 'none' && !banner.classList.contains('promo-ad-hiding'))
+      ? banner.offsetHeight
+      : 0;
     hero.style.paddingTop = (NAV_H + bannerH) + 'px';
   }
 
@@ -314,7 +383,6 @@ window.addEventListener('load', function () {
   if (closeBtn && banner) {
     closeBtn.addEventListener('click', function () {
       banner.classList.add('promo-ad-hiding');
-      // Smoothly shrink hero padding as banner collapses
       if (hero && window.innerWidth > 768) {
         hero.style.transition = 'padding-top 0.5s cubic-bezier(0.4,0,0.2,1)';
         hero.style.paddingTop = NAV_H + 'px';

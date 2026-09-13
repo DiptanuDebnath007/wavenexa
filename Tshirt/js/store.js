@@ -169,6 +169,26 @@ const Store = (() => {
     }
   ];
 
+  const DEFAULT_PROMO_BANNER = {
+    enabled: true,
+    eyebrow: '🔥 Limited Time Offer',
+    title: 'Summer Sale',
+    highlight: 'Up to 50% Off',
+    sub: "Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!",
+    ctaText: 'Shop the Sale →',
+    ctaLink: 'shop.html',
+    badgeText: 'FREE Shipping',
+    imageUrl: 'assets/promo_banner.jpg',
+    imageAlt: 'Summer Sale – Up to 50% Off at WaveNexa',
+    endAt: (() => {
+      const d = new Date();
+      d.setDate(d.getDate() + 2);
+      d.setHours(d.getHours() + 14);
+      d.setMinutes(d.getMinutes() + 48);
+      return d.toISOString();
+    })()
+  };
+
   const DEFAULT_SETTINGS = {
     storeName: 'WaveNexa',
     tagline: 'Wear Your Story',
@@ -176,7 +196,8 @@ const Store = (() => {
     qrNote: 'Scan to pay via UPI',
     currency: '₹',
     shippingFee: 49,
-    freeShippingAbove: 999
+    freeShippingAbove: 999,
+    promoBanner: DEFAULT_PROMO_BANNER
   };
 
   // ── Init ─────────────────────────────────────
@@ -313,11 +334,21 @@ const Store = (() => {
   // ── Settings ──────────────────────────────────
   function getSettings() {
     const s = localStorage.getItem(KEYS.settings);
-    const settings = s ? JSON.parse(s) : DEFAULT_SETTINGS;
+    const existing = s ? JSON.parse(s) : {};
+    const settings = {
+      ...DEFAULT_SETTINGS,
+      ...existing,
+      promoBanner: {
+        ...DEFAULT_PROMO_BANNER,
+        ...(existing.promoBanner || {})
+      }
+    };
+
     if (settings.storeName === 'ThreadCraft') {
       settings.storeName = 'WaveNexa';
-      localStorage.setItem(KEYS.settings, JSON.stringify(settings));
     }
+
+    localStorage.setItem(KEYS.settings, JSON.stringify(settings));
     return settings;
   }
   function updateSettings(updates) {
@@ -370,6 +401,59 @@ const Store = (() => {
     return { ok: true, user };
   }
 
+  function parseGoogleCredential(credential) {
+    try {
+      const parts = credential.split('.');
+      if (parts.length < 2) throw new Error('Invalid token format');
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+      const decoded = atob(padded);
+      const json = decodeURIComponent(
+        Array.from(decoded).map(char => `%${('00' + char.charCodeAt(0).toString(16)).slice(-2)}`).join('')
+      );
+      return JSON.parse(json);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function googleLogin(credential) {
+    if (!credential) {
+      return { ok: false, error: 'Google sign-in was cancelled.' };
+    }
+
+    const payload = parseGoogleCredential(credential);
+    if (!payload || !payload.email) {
+      return { ok: false, error: 'Unable to verify Google account. Please try again.' };
+    }
+
+    const email = payload.email.toLowerCase();
+    const customers = getCustomers();
+    let user = customers.find(c => c.email.toLowerCase() === email);
+
+    if (!user) {
+      user = {
+        id: 'u' + Date.now(),
+        name: payload.name || payload.given_name || 'Google User',
+        email,
+        password: 'google-oauth',
+        googleAuth: true,
+        createdAt: new Date().toISOString()
+      };
+      customers.push(user);
+      localStorage.setItem(CUST_KEY, JSON.stringify(customers));
+    }
+
+    sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      provider: 'google'
+    }));
+
+    return { ok: true, role: 'customer', user };
+  }
+
   // Async — uses SHA-256 hash comparison via _ADMIN verifier
   async function customerLogin(email, password) {
     // Admin check — hashed comparison only, no plaintext ever compared
@@ -407,6 +491,7 @@ const Store = (() => {
     getSettings, updateSettings,
     adminLogin, adminLogout, isAdminLoggedIn,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
+    googleLogin,
     getStats
   };
 })();

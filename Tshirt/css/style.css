@@ -244,6 +244,9 @@ p {
 }
 
 .nav-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Outfit', sans-serif;
   font-size: 1.6rem;
   font-weight: 900;
@@ -252,6 +255,12 @@ p {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.5px;
+}
+
+.nav-logo img {
+  display: block;
+  height: 42px;
+  width: auto;
 }
 
 .nav-logo span {
@@ -1858,6 +1867,33 @@ select.form-control {
 
 .auth-hint strong {
   color: var(--primary);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.google-login-wrap {
+  margin-bottom: 18px;
+}
+
+.google-login-wrap > div {
+  width: 100%;
 }
 
 /* Password wrap/toggle */

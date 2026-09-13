@@ -120,6 +120,54 @@
               <label class="form-label">Free Shipping Above (₹)</label>
               <input type="number" class="form-control" id="freeShippingAbove" placeholder="999" min="0">
             </div>
+
+            <div class="form-group">
+              <label class="form-label">Offer Banner Enabled</label>
+              <label class="checkbox-row" style="display:flex;align-items:center;gap:10px;margin-top:8px;color:var(--text-muted)">
+                <input type="checkbox" id="promoEnabledInput">
+                <span>Show the top offer popup on the homepage</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Offer Eyebrow</label>
+              <input type="text" class="form-control" id="promoEyebrowInput" placeholder="🔥 Limited Time Offer">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Offer Title</label>
+              <input type="text" class="form-control" id="promoTitleInput" placeholder="Summer Sale">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Offer Highlight</label>
+              <input type="text" class="form-control" id="promoHighlightInput" placeholder="Up to 50% Off">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Offer Subtitle</label>
+              <textarea class="form-control" id="promoSubInput" rows="3" placeholder="Premium T-Shirts at unbeatable prices."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CTA Text</label>
+              <input type="text" class="form-control" id="promoCtaTextInput" placeholder="Shop the Sale →">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CTA Link</label>
+              <input type="text" class="form-control" id="promoCtaLinkInput" placeholder="shop.html">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge Text</label>
+              <input type="text" class="form-control" id="promoBadgeInput" placeholder="FREE Shipping">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Banner Image URL</label>
+              <input type="text" class="form-control" id="promoImageInput" placeholder="assets/promo_banner.jpg">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Banner Image Alt</label>
+              <input type="text" class="form-control" id="promoAltInput" placeholder="Summer Sale – Up to 50% Off at WaveNexa">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Offer Ends At</label>
+              <input type="datetime-local" class="form-control" id="promoEndInput">
+            </div>
             <div class="form-group">
               <label class="form-label">Change Admin Password</label>
               <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
@@ -160,12 +208,31 @@
 (function () {
   requireAdmin();
   const settings = Store.getSettings();
+  const promo = settings.promoBanner || {};
+
+  function toDateTimeLocalValue(date) {
+    const d = new Date(date);
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
 
   // Load existing QR
   if (settings.qrCode) loadQRPreview(settings.qrCode);
   if (settings.qrNote) document.getElementById('qrNoteInput').value = settings.qrNote;
   if (settings.shippingFee !== undefined) document.getElementById('shippingFee').value = settings.shippingFee;
   if (settings.freeShippingAbove !== undefined) document.getElementById('freeShippingAbove').value = settings.freeShippingAbove;
+
+  document.getElementById('promoEnabledInput').checked = promo.enabled !== false;
+  document.getElementById('promoEyebrowInput').value = promo.eyebrow || '';
+  document.getElementById('promoTitleInput').value = promo.title || '';
+  document.getElementById('promoHighlightInput').value = promo.highlight || '';
+  document.getElementById('promoSubInput').value = promo.sub || '';
+  document.getElementById('promoCtaTextInput').value = promo.ctaText || '';
+  document.getElementById('promoCtaLinkInput').value = promo.ctaLink || '';
+  document.getElementById('promoBadgeInput').value = promo.badgeText || '';
+  document.getElementById('promoImageInput').value = promo.imageUrl || '';
+  document.getElementById('promoAltInput').value = promo.imageAlt || '';
+  document.getElementById('promoEndInput').value = promo.endAt ? toDateTimeLocalValue(promo.endAt) : '';
 
   // File upload
   const fileInput = document.getElementById('qrFileInput');
@@ -245,6 +312,25 @@
 
     if (!isNaN(fee)) updates.shippingFee = fee;
     if (!isNaN(freeAbove)) updates.freeShippingAbove = freeAbove;
+
+    const promoBanner = {
+      enabled: document.getElementById('promoEnabledInput').checked,
+      eyebrow: document.getElementById('promoEyebrowInput').value.trim() || '🔥 Limited Time Offer',
+      title: document.getElementById('promoTitleInput').value.trim() || 'Summer Sale',
+      highlight: document.getElementById('promoHighlightInput').value.trim() || 'Up to 50% Off',
+      sub: document.getElementById('promoSubInput').value.trim() || "Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!",
+      ctaText: document.getElementById('promoCtaTextInput').value.trim() || 'Shop the Sale →',
+      ctaLink: document.getElementById('promoCtaLinkInput').value.trim() || 'shop.html',
+      badgeText: document.getElementById('promoBadgeInput').value.trim() || 'FREE Shipping',
+      imageUrl: document.getElementById('promoImageInput').value.trim() || 'assets/promo_banner.jpg',
+      imageAlt: document.getElementById('promoAltInput').value.trim() || 'Summer Sale – Up to 50% Off at WaveNexa',
+      endAt: document.getElementById('promoEndInput').value
+        ? new Date(document.getElementById('promoEndInput').value).toISOString()
+        : null
+    };
+
+    updates.promoBanner = promoBanner;
+
     if (newPw.length >= 6) {
       updates.adminPassword = newPw;
       showToast('Password changed! You will need to log in again.', 'info');
