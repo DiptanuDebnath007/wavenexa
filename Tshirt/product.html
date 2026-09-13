@@ -462,11 +462,7 @@
       }
     }
     function handleAuthBtnClick() {
-      if (confirm('Sign out of your account?')) {
-        Store.customerLogout();
-        updateAuthNavBtn();
-        showToast('Signed out successfully.', 'info');
-      }
+      window.location.href = 'profile.html';
     }
     window.addEventListener('load', () => {
       updateAuthNavBtn();

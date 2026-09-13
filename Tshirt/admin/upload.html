@@ -21,9 +21,11 @@
       <a href="orders.html" class="admin-nav-link"><span class="nav-icon">📦</span> Orders</a>
       <div class="admin-nav-section">Store</div>
       <a href="upload.html" class="admin-nav-link active"><span class="nav-icon">➕</span> Add Product</a>
+      <a href="promo.html" class="admin-nav-link"><span class="nav-icon">📢</span> Promo Banner</a>
       <a href="payment.html" class="admin-nav-link"><span class="nav-icon">📱</span> Payment QR</a>
       <div class="admin-nav-section">Account</div>
-      <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Store</a>
+      <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Home</a>
+      <a href="../shop.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🛍️</span> Visit Shop</a>
       <a href="#" class="admin-nav-link" id="logoutLink"><span class="nav-icon">🚪</span> Logout</a>
     </nav>
     <div class="admin-sidebar-footer">
@@ -188,6 +190,82 @@
 (function () {
   requireAdmin();
   let uploadedImages = [];
+  let currentEditingProductId = null;
+
+  function renderUploadedThumbs(images) {
+    const thumbsEl = document.getElementById('uploadThumbs');
+    const dropZone = document.getElementById('imgDropZone');
+    const overlay = document.getElementById('imgOverlay');
+    thumbsEl.innerHTML = '';
+    if (!images || !images.length) {
+      overlay.style.display = 'none';
+      dropZone.querySelectorAll('span').forEach(s => s.style.display = '');
+      const existingImg = dropZone.querySelector('img');
+      if (existingImg) existingImg.remove();
+      return;
+    }
+
+    const existingImg = dropZone.querySelector('img');
+    if (existingImg) existingImg.remove();
+
+    const firstImg = document.createElement('img');
+    firstImg.src = images[0];
+    firstImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+    dropZone.appendChild(firstImg);
+    overlay.style.display = 'flex';
+    dropZone.querySelectorAll('span').forEach(s => s.style.display = 'none');
+
+    images.forEach((img, idx) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb';
+      thumb.innerHTML = `<img src="${img}" alt="thumb ${idx + 1}">`;
+      thumbsEl.appendChild(thumb);
+    });
+  }
+
+  function fillProductForm(product) {
+    currentEditingProductId = product.id;
+    uploadedImages = Array.isArray(product.images) && product.images.length ? [...product.images] : [];
+
+    document.getElementById('pName').value = product.title || '';
+    document.getElementById('pCategory').value = product.category || '';
+    document.getElementById('pDesc').value = product.description || '';
+    document.getElementById('pPrice').value = product.price || '';
+    document.getElementById('pOrigPrice').value = product.originalPrice || '';
+    document.getElementById('pStock').value = product.stock || 0;
+    document.getElementById('pMaterial').value = product.material || '';
+    document.getElementById('pFit').value = product.fit || '';
+    document.getElementById('pCare').value = product.care || '';
+    document.getElementById('pBadge').value = product.badge || '';
+    document.getElementById('pFeatured').value = String(!!product.featured);
+    document.getElementById('pColors').value = (product.colors || []).join(', ');
+
+    document.querySelectorAll('.size-check-btn').forEach(btn => {
+      btn.classList.toggle('active', (product.sizes || []).includes(btn.dataset.size));
+    });
+
+    document.getElementById('colorPreview').innerHTML = (product.colors || []).map(c => `<div style="width:32px;height:32px;border-radius:50%;background:${c};border:2px solid var(--border);transition:var(--transition)" title="${c}"></div>`).join('');
+    renderUploadedThumbs(uploadedImages);
+
+    const submitBtn = document.querySelector('[type="submit"]');
+    submitBtn.textContent = '✏️ Update Product';
+    document.getElementById('uploadForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetUploadForm() {
+    currentEditingProductId = null;
+    uploadedImages = [];
+    document.getElementById('uploadForm').reset();
+    document.getElementById('colorPreview').innerHTML = '';
+    document.querySelectorAll('.size-check-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-size="M"]')?.classList.add('active');
+    document.querySelector('[data-size="L"]')?.classList.add('active');
+    document.querySelector('[data-size="XL"]')?.classList.add('active');
+    renderUploadedThumbs([]);
+
+    const submitBtn = document.querySelector('[type="submit"]');
+    submitBtn.textContent = '🚀 Publish Product';
+  }
 
   // Image upload
   const imgInput = document.getElementById('imgInput');
@@ -269,38 +347,31 @@
       care:          document.getElementById('pCare').value.trim(),
       badge:         document.getElementById('pBadge').value || null,
       featured:      document.getElementById('pFeatured').value === 'true',
-      images:        uploadedImages.length > 0 ? uploadedImages : ['assets/tshirt_black.jpg']
+      images:        uploadedImages.length > 0 ? uploadedImages : (currentEditingProductId ? Store.getProduct(currentEditingProductId)?.images || ['assets/tshirt_black.jpg'] : ['assets/tshirt_black.jpg'])
     };
 
     const btn = document.querySelector('[type="submit"]');
-    btn.disabled = true; btn.textContent = '⏳ Publishing...';
+    btn.disabled = true;
+    btn.textContent = currentEditingProductId ? '⏳ Updating...' : '⏳ Publishing...';
 
-    Store.addProduct(product);
-    showToast(`"${product.title}" published successfully! 🎉`, 'success');
+    if (currentEditingProductId) {
+      Store.updateProduct(currentEditingProductId, product);
+      showToast(`"${product.title}" updated successfully! ✨`, 'success');
+    } else {
+      Store.addProduct(product);
+      showToast(`"${product.title}" published successfully! 🎉`, 'success');
+    }
 
     setTimeout(() => {
-      btn.disabled = false; btn.textContent = '🚀 Publish Product';
-      document.getElementById('uploadForm').reset();
-      uploadedImages = [];
-      thumbsEl.innerHTML = '';
-      const img = dropZone.querySelector('img');
-      if (img) img.remove();
-      overlay.style.display = 'none';
-      dropZone.querySelectorAll('span').forEach(s => s.style.display = '');
-      document.getElementById('colorPreview').innerHTML = '';
-      document.querySelectorAll('.size-check-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('[data-size="M"]')?.classList.add('active');
-      document.querySelector('[data-size="L"]')?.classList.add('active');
-      document.querySelector('[data-size="XL"]')?.classList.add('active');
+      btn.disabled = false;
+      btn.textContent = currentEditingProductId ? '✏️ Update Product' : '🚀 Publish Product';
+      resetUploadForm();
       renderAllProducts();
     }, 800);
   });
 
   document.getElementById('resetForm')?.addEventListener('click', () => {
-    document.getElementById('uploadForm').reset();
-    uploadedImages = [];
-    thumbsEl.innerHTML = '';
-    document.getElementById('colorPreview').innerHTML = '';
+    resetUploadForm();
   });
 
   // All products
@@ -319,6 +390,7 @@
           <div class="admin-product-actions">
             <button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete this product?')) { Store.deleteProduct('${p.id}'); showToast('Product deleted', 'info'); renderAllProducts(); }">🗑 Delete</button>
             <button class="btn btn-outline btn-sm" onclick="toggleFeatured('${p.id}', ${p.featured})">${p.featured ? '⭐ Featured' : '☆ Feature'}</button>
+            <button class="btn btn-primary btn-sm" onclick="editProduct('${p.id}')">✏️ Edit</button>
           </div>
         </div>
       </div>
@@ -326,6 +398,11 @@
   }
 
   window.renderAllProducts = renderAllProducts;
+  window.editProduct = function(id) {
+    const product = Store.getProduct(id);
+    if (!product) return;
+    fillProductForm(product);
+  };
   window.toggleFeatured = function(id, current) {
     Store.updateProduct(id, { featured: !current });
     renderAllProducts();

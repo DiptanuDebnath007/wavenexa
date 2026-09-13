@@ -311,15 +311,22 @@ const Store = (() => {
     const settings = getSettings();
     const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
     const shipping = subtotal >= settings.freeShippingAbove ? 0 : settings.shippingFee;
+    const now = new Date();
     const order = {
       id: 'ORD' + Date.now(),
-      customer,
+      trackingId: 'WNX' + Math.random().toString(36).slice(2, 8).toUpperCase(),
+      customer: {
+        ...(customer || {}),
+        email: (customer && customer.email ? customer.email.toLowerCase() : ''),
+        id: customer && customer.id ? customer.id : null
+      },
       items,
       subtotal,
       shipping,
       total: subtotal + shipping,
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString()
     };
     orders.unshift(order);
     set(KEYS.orders, orders);
@@ -352,7 +359,21 @@ const Store = (() => {
     return settings;
   }
   function updateSettings(updates) {
-    const settings = { ...getSettings(), ...updates };
+    const current = getSettings();
+    const settings = { ...current, ...updates };
+
+    if (updates.promoBanner) {
+      const existingPromo = current.promoBanner || {};
+      const mergedPromo = { ...existingPromo, ...updates.promoBanner };
+
+      // Preserve the original countdown end time when the admin leaves the date blank.
+      if (updates.promoBanner.endAt === null && existingPromo.endAt) {
+        mergedPromo.endAt = existingPromo.endAt;
+      }
+
+      settings.promoBanner = mergedPromo;
+    }
+
     localStorage.setItem(KEYS.settings, JSON.stringify(settings));
     window.dispatchEvent(new CustomEvent('settingsChange', { detail: settings }));
   }
@@ -385,9 +406,52 @@ const Store = (() => {
   const CUST_KEY = 'tc_customers';
   const CUSER_KEY = 'tc_current_user';
 
+  function normalizeCustomer(user) {
+    if (!user) return null;
+    return {
+      id: user.id || 'u' + Date.now(),
+      name: user.name || 'Customer',
+      email: (user.email || '').toLowerCase(),
+      password: user.password || '',
+      googleAuth: !!user.googleAuth,
+      profilePhoto: user.profilePhoto || '',
+      phone: user.phone || '',
+      address: user.address || '',
+      city: user.city || '',
+      state: user.state || '',
+      pin: user.pin || '',
+      createdAt: user.createdAt || new Date().toISOString()
+    };
+  }
+
   function getCustomers() {
-    try { return JSON.parse(localStorage.getItem(CUST_KEY)) || []; }
-    catch { return []; }
+    try {
+      const raw = JSON.parse(localStorage.getItem(CUST_KEY)) || [];
+      return raw.map(normalizeCustomer).filter(Boolean);
+    } catch { return []; }
+  }
+
+  function getCustomerProfile(userId) {
+    const customers = getCustomers();
+    return customers.find(c => c.id === userId) || null;
+  }
+
+  function getCustomerOrders(userOrEmail) {
+    const orders = getOrders();
+    if (!userOrEmail) return [];
+
+    const identity = userOrEmail.email ? userOrEmail.email.toLowerCase() : '';
+    const userId = userOrEmail.id || null;
+
+    return orders
+      .filter(o => {
+        if (!o.customer) return false;
+        return (
+          (userId && o.customer.id === userId) ||
+          (identity && o.customer.email && o.customer.email.toLowerCase() === identity)
+        );
+      })
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
   function registerCustomer(name, email, password) {
@@ -395,10 +459,55 @@ const Store = (() => {
     if (customers.find(c => c.email.toLowerCase() === email.toLowerCase())) {
       return { ok: false, error: 'Email already registered.' };
     }
-    const user = { id: 'u' + Date.now(), name, email: email.toLowerCase(), password, createdAt: new Date().toISOString() };
+    const user = normalizeCustomer({
+      id: 'u' + Date.now(),
+      name,
+      email: email.toLowerCase(),
+      password,
+      createdAt: new Date().toISOString()
+    });
     customers.push(user);
     localStorage.setItem(CUST_KEY, JSON.stringify(customers));
     return { ok: true, user };
+  }
+
+  function updateCustomerProfile(userId, updates = {}) {
+    const customers = getCustomers();
+    const index = customers.findIndex(c => c.id === userId);
+
+    if (index === -1) {
+      return { ok: false, error: 'Customer not found.' };
+    }
+
+    const current = customers[index];
+    const next = {
+      ...current,
+      name: (updates.name || current.name).trim(),
+      phone: updates.phone ?? current.phone,
+      address: updates.address ?? current.address,
+      city: updates.city ?? current.city,
+      state: updates.state ?? current.state,
+      pin: updates.pin ?? current.pin,
+      profilePhoto: updates.profilePhoto ?? current.profilePhoto,
+      email: current.email
+    };
+
+    customers[index] = normalizeCustomer(next);
+    localStorage.setItem(CUST_KEY, JSON.stringify(customers));
+
+    const currentSession = getCurrentUser();
+    if (currentSession && currentSession.id === userId) {
+      sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+        ...currentSession,
+        id: next.id,
+        name: next.name,
+        email: next.email,
+        profilePhoto: next.profilePhoto || '',
+        provider: currentSession.provider || 'email'
+      }));
+    }
+
+    return { ok: true, user: customers[index] };
   }
 
   function parseGoogleCredential(credential) {
@@ -432,14 +541,14 @@ const Store = (() => {
     let user = customers.find(c => c.email.toLowerCase() === email);
 
     if (!user) {
-      user = {
+      user = normalizeCustomer({
         id: 'u' + Date.now(),
         name: payload.name || payload.given_name || 'Google User',
         email,
         password: 'google-oauth',
         googleAuth: true,
         createdAt: new Date().toISOString()
-      };
+      });
       customers.push(user);
       localStorage.setItem(CUST_KEY, JSON.stringify(customers));
     }
@@ -448,6 +557,7 @@ const Store = (() => {
       id: user.id,
       name: user.name,
       email: user.email,
+      profilePhoto: user.profilePhoto || '',
       provider: 'google'
     }));
 
@@ -465,7 +575,13 @@ const Store = (() => {
     const customers = getCustomers();
     const user = customers.find(c => c.email.toLowerCase() === email.toLowerCase() && c.password === password);
     if (user) {
-      sessionStorage.setItem(CUSER_KEY, JSON.stringify({ id: user.id, name: user.name, email: user.email }));
+      sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePhoto: user.profilePhoto || '',
+        provider: 'email'
+      }));
       return { ok: true, role: 'customer', user };
     }
     return { ok: false, error: 'Invalid email or password.' };
@@ -476,8 +592,10 @@ const Store = (() => {
   }
 
   function getCurrentUser() {
-    try { return JSON.parse(sessionStorage.getItem(CUSER_KEY)) || null; }
-    catch { return null; }
+    try {
+      const raw = JSON.parse(sessionStorage.getItem(CUSER_KEY));
+      return raw || null;
+    } catch { return null; }
   }
 
   // Public API
@@ -491,6 +609,7 @@ const Store = (() => {
     getSettings, updateSettings,
     adminLogin, adminLogout, isAdminLoggedIn,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
+    getCustomerProfile, updateCustomerProfile, getCustomerOrders,
     googleLogin,
     getStats
   };

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — WaveNexa</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .profile-page {
+      padding: 40px 20px 80px;
+    }
+
+    .profile-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+      gap: 30px;
+      align-items: start;
+    }
+
+    .profile-card {
+      background: rgba(17, 22, 32, 0.75);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .profile-card-header {
+      padding: 28px 24px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .profile-card-body {
+      padding: 22px 24px 24px;
+    }
+
+    .profile-avatar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 18px;
+    }
+
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.14);
+      background: linear-gradient(135deg, rgba(150, 108, 255, 0.25), rgba(60, 179, 255, 0.25));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(108, 99, 255, 0.22);
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .avatar-fallback {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: white;
+    }
+
+    .profile-name {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: -0.04em;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .profile-email {
+      margin: 6px 0 0;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .stat-box strong {
+      display: block;
+      font-size: 1.15rem;
+      font-family: 'Outfit', sans-serif;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-box span {
+      color: var(--text-dim);
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .profile-actions {
+      margin-top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .profile-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(89, 168, 255, 0.4);
+      color: #9ed1ff;
+      background: rgba(89, 168, 255, 0.08);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .profile-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 14px;
+      color: var(--text);
+      font: inherit;
+      resize: vertical;
+      min-height: 50px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: rgba(108, 99, 255, 0.8);
+      box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.12);
+    }
+
+    .field textarea {
+      min-height: 100px;
+    }
+
+    .upload-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+    }
+
+    .upload-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: rgba(255,255,255,0.02);
+      cursor: pointer;
+      font-weight: 700;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .file-label:hover {
+      border-color: rgba(108, 99, 255, 0.8);
+      transform: translateY(-1px);
+    }
+
+    .file-hint {
+      color: var(--text-dim);
+      font-size: 0.82rem;
+    }
+
+    .form-message {
+      min-height: 24px;
+      font-size: 0.9rem;
+      color: #8ce0a4;
+      font-weight: 600;
+    }
+
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .order-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: 18px 18px 16px;
+    }
+
+    .order-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .order-id {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+
+    .tracking-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 110px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .status-pending {
+      background: rgba(255, 183, 77, 0.13);
+      border-color: rgba(255, 183, 77, 0.35);
+      color: #ffcb6a;
+    }
+
+    .status-packed,
+    .status-shipped,
+    .status-out_for_delivery {
+      background: rgba(66, 165, 245, 0.12);
+      border-color: rgba(66, 165, 245, 0.32);
+      color: #8dc8ff;
+    }
+
+    .status-delivered {
+      background: rgba(76, 175, 80, 0.12);
+      border-color: rgba(76, 175, 80, 0.35);
+      color: #99e0a7;
+    }
+
+    .status-cancelled {
+      background: rgba(239, 83, 80, 0.12);
+      border-color: rgba(239, 83, 80, 0.3);
+      color: #ff9d9a;
+    }
+
+    .order-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .order-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 0;
+    }
+
+    .item-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+
+    .order-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .order-total {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .empty-state {
+      background: rgba(255,255,255,0.015);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: 34px 24px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 860px) {
+      .profile-shell {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .upload-row,
+      .order-top,
+      .order-bottom,
+      .order-meta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .profile-page {
+        padding-top: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="WaveNexa home">
+        <img src="logo/logo.png" alt="WaveNexa Logo">
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="shop.html#collections">Collections</a>
+        <a href="index.html#about">About</a>
+      </div>
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn" id="cart-btn" title="Cart">
+          🛒 <span class="cart-badge" id="cart-badge">0</span>
+        </a>
+        <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="window.location.href='profile.html'">👤 Profile</button>
+        <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-close" id="menuClose">✕</div>
+    <a href="index.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="shop.html#collections">Collections</a>
+    <a href="index.html#about">About</a>
+    <a href="cart.html">Cart 🛒</a>
+    <a id="mobileAuthLink" href="javascript:void(0)">👤 Profile</a>
+  </div>
+
+  <main class="profile-page">
+    <div class="profile-shell">
+      <aside class="profile-card">
+        <div class="profile-card-header">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="profileAvatar"></div>
+            <div>
+              <h2 class="profile-name" id="profileName">Loading...</h2>
+              <p class="profile-email" id="profileEmail">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card-body">
+          <div class="stats-grid">
+            <div class="stat-box">
+              <strong id="ordersStat">0</strong>
+              <span>Orders</span>
+            </div>
+            <div class="stat-box">
+              <strong id="spentStat">₹0</strong>
+              <span>Spent</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn btn-primary" id="logoutBtn">↩️ Logout</button>
+            <a href="shop.html" class="btn btn-outline">🛍 Continue Shopping</a>
+          </div>
+        </div>
+      </aside>
+
+      <section class="profile-content">
+        <div class="profile-card">
+          <div class="profile-card-body">
+            <div class="section-head">
+              <h3>Profile Details</h3>
+              <span class="section-badge">Account</span>
+            </div>
+
+            <form class="profile-form" id="profileForm">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="nameInput">Full Name</label>
+                  <input id="nameInput" name="name" type="text" placeholder="Enter your full name">
+                </div>
+                <div class="field">
+                  <label for="phoneInput">Phone Number</label>
+                  <input id="phoneInput" name="phone" type="tel" placeholder="Enter your phone number">
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="addressInput">Address</label>
+                <textarea id="addressInput" name="address" placeholder="Enter your address"></textarea>
+              </div>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="cityInput">City</label>
+                  <input id="cityInput" name="city" type="text" placeholder="City">
+                </div>
+                <div class="field">
+                  <label for="stateInput">State</label>
+                  <input id="stateInput" name="state" type="text" placeholder="State">
+                </div>
+              </div>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="pinInput">PIN Code</label>
+                  <input id="pinInput" name="pin" type="text" placeholder="PIN code">
+                </div>
+                <div class="field">
+                  <label for="emailInput">Email</label>
+                  <input id="emailInput" name="email" type="email" readonly>
+                </div>
+              </div>
+
+              <div class="upload-row">
+                <div class="upload-wrap">
+                  <label class="file-label" for="photoInput">📷 Upload Photo</label>
+                  <input class="file-input" id="photoInput" type="file" accept="image/*">
+                  <span class="file-hint" id="photoHint">No profile photo yet.</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">💾 Save Profile</button>
+              </div>
+
+              <div class="form-message" id="formMessage"></div>
+            </form>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-card-body">
+            <div class="section-head">
+              <h3>My Orders</h3>
+              <span class="section-badge" id="ordersBadge">0 Active</span>
+            </div>
+
+            <div class="orders-list" id="ordersList"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script>
+    const profileState = {
+      currentUser: null,
+      currentProfile: null,
+      pendingPhoto: ''
+    };
+
+    function getInitials(name) {
+      return (name || 'CU').split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase();
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const date = new Date(iso);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function renderAvatar(user) {
+      const avatar = document.getElementById('profileAvatar');
+      const fallback = getInitials(user.name);
+
+      if (user.profilePhoto) {
+        avatar.innerHTML = `<img src="${user.profilePhoto}" alt="${user.name}">`;
+      } else {
+        avatar.innerHTML = `<div class="avatar-fallback">${fallback}</div>`;
+      }
+    }
+
+    function renderProfile() {
+      const profile = profileState.currentProfile || profileState.currentUser;
+      if (!profile) return;
+
+      document.getElementById('profileName').textContent = profile.name || 'Customer';
+      document.getElementById('profileEmail').textContent = profile.email || '—';
+      document.getElementById('nameInput').value = profile.name || '';
+      document.getElementById('phoneInput').value = profile.phone || '';
+      document.getElementById('addressInput').value = profile.address || '';
+      document.getElementById('cityInput').value = profile.city || '';
+      document.getElementById('stateInput').value = profile.state || '';
+      document.getElementById('pinInput').value = profile.pin || '';
+      document.getElementById('emailInput').value = profile.email || '';
+
+      renderAvatar(profile);
+
+      const orders = Store.getCustomerOrders(profile);
+      document.getElementById('ordersStat').textContent = orders.length;
+      document.getElementById('ordersBadge').textContent = `${orders.length} ${orders.length === 1 ? 'Order' : 'Orders'}`;
+      document.getElementById('spentStat').textContent = formatPrice(orders.reduce((sum, order) => sum + Number(order.total || 0), 0));
+
+      document.getElementById('photoHint').textContent = profile.profilePhoto ? 'Profile photo ready.' : 'No profile photo yet.';
+      renderOrders(orders);
+    }
+
+    function renderOrders(orders) {
+      const container = document.getElementById('ordersList');
+
+      if (!orders.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h4 style="margin:0 0 8px; font-size:1.1rem;">No orders yet</h4>
+            <p style="margin:0;">Your recent purchases will appear here after checkout.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(order => {
+        const statusText = (order.status || 'pending').replace(/_/g, ' ');
+        const statusClass = `status-${(order.status || 'pending').replace(/\s+/g, '_')}`;
+
+        const items = order.items.map(item => `<span class="item-tag">${item.title} × ${item.qty}</span>`).join('');
+
+        return `
+          <article class="order-card">
+            <div class="order-top">
+              <div>
+                <div class="order-id">${order.id}</div>
+                <div class="tracking-pill">Tracking: ${order.trackingId || 'Pending'}</div>
+              </div>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+
+            <div class="order-meta">
+              <span>Placed on ${formatDate(order.createdAt)}</span>
+              <span>${order.items.length} item${order.items.length > 1 ? 's' : ''}</span>
+            </div>
+
+            <div class="order-items">${items}</div>
+
+            <div class="order-bottom">
+              <div class="order-total">${formatPrice(order.total || 0)}</div>
+              <a href="orders.html?id=${order.id}" class="btn btn-outline btn-sm">View Details</a>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function handlePhotoChange(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        profileState.pendingPhoto = String(reader.result || '');
+        document.getElementById('photoHint').textContent = 'Photo selected and ready to save.';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleProfileSubmit(event) {
+      event.preventDefault();
+      const formMessage = document.getElementById('formMessage');
+
+      const updates = {
+        name: document.getElementById('nameInput').value.trim(),
+        phone: document.getElementById('phoneInput').value.trim(),
+        address: document.getElementById('addressInput').value.trim(),
+        city: document.getElementById('cityInput').value.trim(),
+        state: document.getElementById('stateInput').value.trim(),
+        pin: document.getElementById('pinInput').value.trim(),
+        profilePhoto: profileState.pendingPhoto || profileState.currentProfile.profilePhoto || ''
+      };
+
+      const result = Store.updateCustomerProfile(profileState.currentUser.id, updates);
+
+      if (result.ok) {
+        profileState.currentProfile = result.user;
+        profileState.pendingPhoto = '';
+        formMessage.textContent = 'Profile updated successfully.';
+        renderProfile();
+      } else {
+        formMessage.textContent = result.error || 'Unable to update profile.';
+      }
+    }
+
+    function bindEvents() {
+      document.getElementById('profileForm').addEventListener('submit', handleProfileSubmit);
+      document.getElementById('photoInput').addEventListener('change', handlePhotoChange);
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        Store.customerLogout();
+        window.location.href = 'index.html';
+      });
+
+      const mobileAuthLink = document.getElementById('mobileAuthLink');
+      if (mobileAuthLink) {
+        mobileAuthLink.textContent = '👤 Profile';
+        mobileAuthLink.onclick = () => {
+          document.querySelector('.mobile-menu').classList.remove('open');
+          window.location.href = 'profile.html';
+        };
+      }
+    }
+
+    function initProfilePage() {
+      const user = Store.getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      profileState.currentUser = user;
+      profileState.currentProfile = Store.getCustomerProfile(user.id) || {
+        ...user,
+        email: user.email || '',
+        name: user.name || 'Customer',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        pin: '',
+        profilePhoto: user.profilePhoto || ''
+      };
+
+      bindEvents();
+      renderProfile();
+
+      const authBtn = document.getElementById('authNavBtn');
+      if (authBtn) {
+        authBtn.textContent = '👤 ' + (profileState.currentProfile.name || 'Profile').split(' ')[0];
+        authBtn.onclick = () => window.location.href = 'profile.html';
+      }
+    }
+
+    window.addEventListener('load', initProfilePage);
+  </script>
+</body>
+
+</html>
