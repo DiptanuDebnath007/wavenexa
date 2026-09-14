@@ -197,7 +197,11 @@ const Store = (() => {
     currency: '₹',
     shippingFee: 49,
     freeShippingAbove: 999,
-    promoBanner: DEFAULT_PROMO_BANNER
+    promoBanner: DEFAULT_PROMO_BANNER,
+    quikinkInventory: {
+      url: '',
+      token: '625c5adef9537f36f441ec8758edbdc8e1e7485b9cbeefd917dab0d9bb814f0f'
+    }
   };
 
   // ── Init ─────────────────────────────────────
@@ -234,6 +238,122 @@ const Store = (() => {
   // ── Products ──────────────────────────────────
   function getProducts() { return get(KEYS.products); }
   function getProduct(id) { return getProducts().find(p => p.id === id) || null; }
+
+  function normalizeQuikinkProduct(raw = {}) {
+    const title = raw.title || raw.name || raw.productName || raw.product_name || 'Quikink Product';
+    const description = raw.description || raw.shortDescription || raw.summary || `${title} — imported from Quikink.`;
+    const price = Number(raw.price ?? raw.sale_price ?? raw.sellingPrice ?? raw.amount ?? 0);
+    const originalPrice = raw.originalPrice ?? raw.compare_at_price ?? raw.mrp ?? raw.strikePrice ?? null;
+    const images = Array.isArray(raw.images)
+      ? raw.images.map(img => typeof img === 'string' ? img : (img?.url || img?.src || '')).filter(Boolean)
+      : (raw.image || raw.img || raw.thumbnail ? [raw.image || raw.img || raw.thumbnail] : []);
+    const sizes = Array.isArray(raw.sizes)
+      ? raw.sizes
+      : (typeof raw.sizes === 'string' ? raw.sizes.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L', 'XL']);
+    const colors = Array.isArray(raw.colors)
+      ? raw.colors
+      : (typeof raw.colors === 'string' ? raw.colors.split(',').map(c => c.trim()).filter(Boolean) : ['#000000']);
+    const stock = Number(raw.stock ?? raw.inventory ?? raw.quantity ?? raw.available ?? 0);
+
+    return {
+      id: 'qk_' + (raw.id || raw.slug || raw.productId || raw.product_id || Date.now() + Math.random().toString(16).slice(2)),
+      externalId: raw.id || raw.slug || raw.productId || raw.product_id || null,
+      title,
+      description,
+      price: Number.isFinite(price) ? price : 0,
+      originalPrice: Number.isFinite(Number(originalPrice)) ? Number(originalPrice) : null,
+      sizes,
+      colors,
+      images: images.length ? images : ['assets/tshirt_black.jpg'],
+      category: raw.category || raw.collection || raw.productType || raw.product_type || 'Quikink',
+      stock: Number.isFinite(stock) ? stock : 0,
+      featured: Boolean(raw.featured || raw.isFeatured || raw.highlighted),
+      badge: raw.badge || raw.tag || (raw.featured ? 'hot' : null),
+      material: raw.material || raw.fabric || '',
+      fit: raw.fit || raw.style || '',
+      care: raw.care || raw.careInstructions || '',
+      createdAt: raw.createdAt || new Date().toISOString().split('T')[0]
+    };
+  }
+
+  function syncQuikinkInventory(payload) {
+    const products = getProducts();
+    const rawItems = Array.isArray(payload)
+      ? payload
+      : (payload?.products || payload?.data || payload?.items || payload?.results || []);
+
+    if (!Array.isArray(rawItems) || rawItems.length === 0) {
+      throw new Error('No Quikink products were returned by the inventory feed.');
+    }
+
+    const normalized = rawItems.map(normalizeQuikinkProduct).filter(Boolean);
+    const existingByExternal = new Map();
+    products.forEach(product => {
+      if (product.externalId) existingByExternal.set(String(product.externalId), product);
+    });
+
+    const imported = [];
+
+    normalized.forEach(item => {
+      const duplicateKey = item.externalId ? String(item.externalId) : item.title.toLowerCase();
+      const existingIndex = products.findIndex(product => {
+        if (product.externalId && item.externalId) return String(product.externalId) === String(item.externalId);
+        return product.title.toLowerCase() === item.title.toLowerCase();
+      });
+
+      if (existingIndex >= 0) {
+        products[existingIndex] = {
+          ...products[existingIndex],
+          ...item,
+          id: products[existingIndex].id,
+          externalId: item.externalId || products[existingIndex].externalId
+        };
+        imported.push(products[existingIndex]);
+        return;
+      }
+
+      products.unshift(item);
+      imported.push(item);
+    });
+
+    set(KEYS.products, products);
+    return { imported: imported.length, total: products.length };
+  }
+
+  async function importQuikinkInventory(sourceUrl, token = '') {
+    if (!sourceUrl || !sourceUrl.trim()) {
+      throw new Error('Please enter a Quikink inventory URL first.');
+    }
+
+    const url = sourceUrl.trim();
+    const headers = {};
+
+    if (token && token.trim()) {
+      headers.Authorization = token.trim().startsWith('Bearer ') ? token.trim() : `Bearer ${token.trim()}`;
+    }
+
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      throw new Error(`Quikink inventory request failed (${response.status}).`);
+    }
+
+    let data;
+    const contentType = response.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        throw new Error('The Quikink response is not valid JSON.');
+      }
+    }
+
+    return syncQuikinkInventory(data);
+  }
+
   function addProduct(product) {
     const products = getProducts();
     product.id = 'p' + Date.now();
@@ -492,22 +612,29 @@ const Store = (() => {
       email: current.email
     };
 
-    customers[index] = normalizeCustomer(next);
-    localStorage.setItem(CUST_KEY, JSON.stringify(customers));
+    try {
+      customers[index] = normalizeCustomer(next);
+      localStorage.setItem(CUST_KEY, JSON.stringify(customers));
 
-    const currentSession = getCurrentUser();
-    if (currentSession && currentSession.id === userId) {
-      sessionStorage.setItem(CUSER_KEY, JSON.stringify({
-        ...currentSession,
-        id: next.id,
-        name: next.name,
-        email: next.email,
-        profilePhoto: next.profilePhoto || '',
-        provider: currentSession.provider || 'email'
-      }));
+      const currentSession = getCurrentUser();
+      if (currentSession && currentSession.id === userId) {
+        sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+          ...currentSession,
+          id: next.id,
+          name: next.name,
+          email: next.email,
+          profilePhoto: next.profilePhoto || '',
+          provider: currentSession.provider || 'email'
+        }));
+      }
+
+      return { ok: true, user: customers[index] };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unable to save the profile photo. Please try a smaller image.'
+      };
     }
-
-    return { ok: true, user: customers[index] };
   }
 
   function parseGoogleCredential(credential) {
@@ -603,6 +730,7 @@ const Store = (() => {
     init,
     getProducts, getProduct, addProduct, updateProduct, deleteProduct,
     getFeaturedProducts, searchProducts, filterProducts,
+    syncQuikinkInventory, importQuikinkInventory,
     getCart, addToCart, updateCartQty, removeFromCart, clearCart,
     getCartCount, getCartTotal,
     getOrders, getOrder, addOrder, updateOrderStatus,

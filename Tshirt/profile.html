@@ -676,16 +676,59 @@
       }).join('');
     }
 
+    function resizeImageFile(file, maxDimension = 1200, quality = 0.82) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const img = new Image();
+
+          img.onload = () => {
+            const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const compressed = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressed);
+          };
+
+          img.onerror = () => reject(new Error('Unable to read the selected image.'));
+          img.src = String(reader.result || '');
+        };
+
+        reader.onerror = () => reject(new Error('Unable to read the selected image.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
     function handlePhotoChange(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        profileState.pendingPhoto = String(reader.result || '');
-        document.getElementById('photoHint').textContent = 'Photo selected and ready to save.';
-      };
-      reader.readAsDataURL(file);
+      if (!file.type || !file.type.startsWith('image/')) {
+        profileState.pendingPhoto = '';
+        document.getElementById('photoHint').textContent = 'Please choose a valid image file.';
+        event.target.value = '';
+        return;
+      }
+
+      document.getElementById('photoHint').textContent = 'Processing photo...';
+
+      resizeImageFile(file)
+        .then((dataUrl) => {
+          profileState.pendingPhoto = dataUrl;
+          document.getElementById('photoHint').textContent = 'Photo selected and ready to save.';
+        })
+        .catch(() => {
+          profileState.pendingPhoto = '';
+          document.getElementById('photoHint').textContent = 'Could not process this image. Please choose a smaller JPG or PNG.';
+          event.target.value = '';
+        });
     }
 
     function handleProfileSubmit(event) {

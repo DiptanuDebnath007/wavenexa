@@ -45,6 +45,27 @@
     </div>
 
     <div class="admin-content">
+      <div class="card" style="padding:28px;margin-bottom:28px;max-width:1100px">
+        <h3 style="margin-bottom:8px">🔗 Quikink Inventory Sync</h3>
+        <p style="margin:0 0 20px;color:var(--text-muted);font-size:0.88rem">
+          Paste your Quikink product feed URL here and optionally add a bearer token. The imported products will be merged into the existing catalogue on this website.
+        </p>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1.4fr 1fr auto;gap:16px;align-items:end">
+          <div class="form-group">
+            <label class="form-label">Inventory Feed URL</label>
+            <input type="url" class="form-control" id="quikinkUrlInput" placeholder="https://your-quikink-endpoint/products">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bearer Token (optional)</label>
+            <input type="text" class="form-control" id="quikinkTokenInput" placeholder="Paste token if your feed requires auth">
+          </div>
+          <button type="button" class="btn btn-primary" id="importQuikinkBtn">⬇ Import Inventory</button>
+        </div>
+
+        <div id="quikinkStatus" style="margin-top:16px;min-height:24px;font-size:0.85rem;color:var(--text-muted)"></div>
+      </div>
+
       <form id="uploadForm" class="upload-form-card">
         <div class="upload-form-grid">
           <!-- Left: Image Upload -->
@@ -272,6 +293,55 @@
   const dropZone = document.getElementById('imgDropZone');
   const thumbsEl = document.getElementById('uploadThumbs');
   const overlay  = document.getElementById('imgOverlay');
+
+  const quikinkStatus = document.getElementById('quikinkStatus');
+  const quikinkUrlInput = document.getElementById('quikinkUrlInput');
+  const quikinkTokenInput = document.getElementById('quikinkTokenInput');
+  const quikinkBtn = document.getElementById('importQuikinkBtn');
+
+  const settings = Store.getSettings();
+  if (settings.quikinkInventory) {
+    quikinkUrlInput.value = settings.quikinkInventory.url || '';
+    quikinkTokenInput.value = settings.quikinkInventory.token || '';
+  }
+
+  quikinkBtn?.addEventListener('click', async () => {
+    const url = quikinkUrlInput.value.trim();
+    const token = quikinkTokenInput.value.trim();
+
+    if (!url) {
+      quikinkStatus.textContent = 'Please enter your Quikink inventory feed URL.';
+      quikinkStatus.style.color = 'var(--accent)';
+      return;
+    }
+
+    quikinkBtn.disabled = true;
+    quikinkBtn.textContent = '⏳ Importing...';
+    quikinkStatus.textContent = 'Fetching products from Quikink...';
+    quikinkStatus.style.color = 'var(--text-muted)';
+
+    try {
+      Store.updateSettings({
+        quikinkInventory: {
+          url,
+          token
+        }
+      });
+
+      const result = await Store.importQuikinkInventory(url, token);
+      quikinkStatus.textContent = `✅ Imported ${result.imported} Quikink product(s).`;
+      quikinkStatus.style.color = '#8ce0a4';
+      renderAllProducts();
+      showToast('Quikink inventory imported successfully!', 'success');
+    } catch (error) {
+      quikinkStatus.textContent = error.message || 'Unable to import Quikink inventory.';
+      quikinkStatus.style.color = '#ff9d9a';
+      showToast('Quikink import failed. Check your endpoint and token.', 'error');
+    } finally {
+      quikinkBtn.disabled = false;
+      quikinkBtn.textContent = '⬇ Import Inventory';
+    }
+  });
 
   imgInput.addEventListener('change', () => {
     const files = Array.from(imgInput.files);
