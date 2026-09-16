@@ -199,8 +199,7 @@ const Store = (() => {
     freeShippingAbove: 999,
     promoBanner: DEFAULT_PROMO_BANNER,
     quikinkInventory: {
-      url: '',
-      token: '625c5adef9537f36f441ec8758edbdc8e1e7485b9cbeefd917dab0d9bb814f0f'
+      url: ''
     }
   };
 
@@ -470,6 +469,12 @@ const Store = (() => {
         ...(existing.promoBanner || {})
       }
     };
+
+    // Never retain provider credentials in browser storage.
+    if (settings.quikinkInventory && 'token' in settings.quikinkInventory) {
+      delete settings.quikinkInventory.token;
+      localStorage.setItem(KEYS.settings, JSON.stringify(settings));
+    }
 
     if (settings.storeName === 'ThreadCraft') {
       settings.storeName = 'WaveNexa';

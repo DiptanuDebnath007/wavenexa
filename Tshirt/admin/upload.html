@@ -57,8 +57,8 @@
             <input type="url" class="form-control" id="quikinkUrlInput" placeholder="https://your-quikink-endpoint/products">
           </div>
           <div class="form-group">
-            <label class="form-label">Bearer Token (optional)</label>
-            <input type="text" class="form-control" id="quikinkTokenInput" placeholder="Paste token if your feed requires auth">
+            <label class="form-label">Bearer Token (used for this import only)</label>
+            <input type="password" class="form-control" id="quikinkTokenInput" placeholder="Paste token; it will not be saved">
           </div>
           <button type="button" class="btn btn-primary" id="importQuikinkBtn">⬇ Import Inventory</button>
         </div>
@@ -322,10 +322,7 @@
 
     try {
       Store.updateSettings({
-        quikinkInventory: {
-          url,
-          token
-        }
+        quikinkInventory: { url }
       });
 
       const result = await Store.importQuikinkInventory(url, token);
