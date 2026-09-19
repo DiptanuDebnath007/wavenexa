@@ -166,7 +166,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.88rem">
           <div><span style="color:var(--text-dim)">Name: </span><strong>${o.customer.name}</strong></div>
           <div><span style="color:var(--text-dim)">Phone: </span><strong>${o.customer.phone}</strong></div>
-          <div style="grid-column:1/-1"><span style="color:var(--text-dim)">Address: </span><strong>${o.customer.address}, ${o.customer.city}, ${o.customer.state} - ${o.customer.pin}</strong></div>
+          <div style="grid-column:1/-1"><span style="color:var(--text-dim)">Address: </span><strong>${o.customer.address}, ${o.customer.city}, ${o.customer.state}, ${o.customer.country || 'India'} - ${o.customer.pin}</strong></div>
           <div><span style="color:var(--text-dim)">Payment: </span><strong>${o.customer.paymentMethod === 'qr' ? '📱 UPI/QR' : '💵 COD'}</strong></div>
           ${o.customer.notes ? `<div style="grid-column:1/-1"><span style="color:var(--text-dim)">Notes: </span><strong>${o.customer.notes}</strong></div>` : ''}
         </div>
@@ -246,4 +246,3 @@
 </script>
 </body>
 </html>
-

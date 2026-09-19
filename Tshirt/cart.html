@@ -129,8 +129,14 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input type="email" class="form-control" id="custEmail" placeholder="your@email.com" autocomplete="email">
+              <label class="form-label">Email Address *</label>
+              <input type="email" class="form-control" id="custEmail" placeholder="your@email.com" autocomplete="email"
+                required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country *</label>
+              <input type="text" class="form-control" id="custCountry" placeholder="Country" value="India"
+                autocomplete="country-name" required>
             </div>
             <div class="form-group">
               <label class="form-label">Delivery Address *</label>
@@ -150,25 +156,9 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">State *</label>
-              <select class="form-control" id="custState" required>
-                <option value="">Select State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Uttar Pradesh</option>
-                <option>Gujarat</option>
-                <option>Rajasthan</option>
-                <option>West Bengal</option>
-                <option>Telangana</option>
-                <option>Andhra Pradesh</option>
-                <option>Kerala</option>
-                <option>Punjab</option>
-                <option>Madhya Pradesh</option>
-                <option>Bihar</option>
-                <option>Other</option>
-              </select>
+              <label class="form-label">State / Region *</label>
+              <input type="text" class="form-control" id="custState" placeholder="State or region"
+                autocomplete="address-level1" required>
             </div>
             <div class="form-group">
               <label class="form-label">Order Notes (optional)</label>
