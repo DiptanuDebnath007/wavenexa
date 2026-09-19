@@ -156,15 +156,12 @@
       name: document.getElementById('custName').value.trim(),
       phone: document.getElementById('custPhone').value.trim(),
       email: document.getElementById('custEmail').value.trim(),
-      country: document.getElementById('custCountry').value.trim(),
       address: document.getElementById('custAddress').value.trim(),
       city: document.getElementById('custCity').value.trim(),
       pin: document.getElementById('custPin').value.trim(),
       state: document.getElementById('custState').value,
       notes: document.getElementById('custNotes').value.trim()
     };
-    const currentUser = Store.getCurrentUser();
-    if (currentUser) customerData.id = currentUser.id;
     goToStep(3);
   });
 
@@ -205,15 +202,8 @@
     btn.textContent = '⏳ Processing...';
 
     setTimeout(() => {
-      try {
-        const order = Store.addOrder({ ...customerData, paymentMethod }, cart);
-        window.location.href = `orders.html?id=${order.id}`;
-      } catch (error) {
-        showToast(error.message || 'Unable to place this order. Please review your cart.', 'error');
-        btn.disabled = false;
-        btn.textContent = '✅ Confirm Order';
-        renderCart();
-      }
+      const order = Store.addOrder({ ...customerData, paymentMethod }, cart);
+      window.location.href = `orders.html?id=${order.id}`;
     }, 1200);
   });
 

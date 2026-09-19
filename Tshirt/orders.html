@@ -283,7 +283,7 @@
       table.innerHTML = `
     <tr><td>Customer</td><td>${order.customer.name}</td></tr>
     <tr><td>Phone</td><td>${order.customer.phone}</td></tr>
-    <tr><td>Address</td><td>${order.customer.address}, ${order.customer.city}, ${order.customer.state}, ${order.customer.country || 'India'} - ${order.customer.pin}</td></tr>
+    <tr><td>Address</td><td>${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pin}</td></tr>
     <tr><td>Payment</td><td>${order.customer.paymentMethod === 'qr' ? '📱 UPI/QR Code' : '💵 Cash on Delivery'}</td></tr>
     <tr><td>Subtotal</td><td>${formatPrice(order.subtotal)}</td></tr>
     <tr><td>Shipping</td><td>${order.shipping === 0 ? 'FREE 🎉' : formatPrice(order.shipping)}</td></tr>

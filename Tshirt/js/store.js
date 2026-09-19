@@ -36,8 +36,7 @@ const Store = (() => {
     orders: 'tc_orders',
     cart: 'tc_cart',
     settings: 'tc_settings',
-    auth: 'tc_auth',
-    reviews: 'tc_reviews'
+    auth: 'tc_auth'
   };
 
   // ── Sample Products ───────────────────────────
@@ -218,9 +217,6 @@ const Store = (() => {
     if (!localStorage.getItem(KEYS.settings)) {
       localStorage.setItem(KEYS.settings, JSON.stringify(DEFAULT_SETTINGS));
     }
-    if (!localStorage.getItem(KEYS.reviews)) {
-      localStorage.setItem(KEYS.reviews, JSON.stringify([]));
-    }
     // Security: purge any plaintext admin password that may exist in storage
     try {
       const s = JSON.parse(localStorage.getItem(KEYS.settings));
@@ -398,20 +394,13 @@ const Store = (() => {
     const cart = getCart();
     const product = getProduct(productId);
     if (!product) return false;
-    const requestedQty = Math.max(1, Number(qty) || 1);
     const key = `${productId}_${size}_${color}`;
     const existing = cart.find(i => i.key === key);
     if (existing) {
-      if (Number.isFinite(product.stock) && existing.qty + requestedQty > product.stock) {
-        return false;
-      }
-      existing.qty += requestedQty;
+      existing.qty += qty;
     } else {
-      if (Number.isFinite(product.stock) && requestedQty > product.stock) {
-        return false;
-      }
       cart.push({
-        key, productId, size, color, qty: requestedQty,
+        key, productId, size, color, qty,
         title: product.title,
         price: product.price,
         image: product.images[0] || ''
@@ -438,23 +427,8 @@ const Store = (() => {
   function getOrder(id) { return getOrders().find(o => o.id === id) || null; }
   function addOrder(customer, items) {
     const orders = getOrders();
-    const products = getProducts();
     const settings = getSettings();
-    const requestedItems = Array.isArray(items) ? items : [];
-    if (!requestedItems.length) {
-      throw new Error('Your cart is empty.');
-    }
-
-    const stockById = new Map(products.map(product => [product.id, product.stock]));
-    requestedItems.forEach(item => {
-      const available = stockById.get(item.productId);
-      if (available === undefined || item.qty > available) {
-        throw new Error(`${item.title || 'A product'} is no longer available in the requested quantity.`);
-      }
-      stockById.set(item.productId, available - item.qty);
-    });
-
-    const subtotal = requestedItems.reduce((s, i) => s + i.price * i.qty, 0);
+    const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
     const shipping = subtotal >= settings.freeShippingAbove ? 0 : settings.shippingFee;
     const now = new Date();
     const order = {
@@ -465,7 +439,7 @@ const Store = (() => {
         email: (customer && customer.email ? customer.email.toLowerCase() : ''),
         id: customer && customer.id ? customer.id : null
       },
-      items: requestedItems,
+      items,
       subtotal,
       shipping,
       total: subtotal + shipping,
@@ -473,10 +447,6 @@ const Store = (() => {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString()
     };
-    set(KEYS.products, products.map(product => ({
-      ...product,
-      stock: stockById.get(product.id)
-    })));
     orders.unshift(order);
     set(KEYS.orders, orders);
     clearCart();
@@ -485,34 +455,6 @@ const Store = (() => {
   function updateOrderStatus(id, status) {
     const orders = getOrders().map(o => o.id === id ? { ...o, status } : o);
     set(KEYS.orders, orders);
-  }
-
-  function getProductReviews(productId) {
-    return get(KEYS.reviews).filter(review => review.productId === productId);
-  }
-
-  function addProductReview(productId, review = {}) {
-    if (!getProduct(productId)) return { ok: false, error: 'Product not found.' };
-    const name = String(review.name || '').trim();
-    const title = String(review.title || '').trim();
-    const text = String(review.text || '').trim();
-    const rating = Number(review.rating);
-    if (name.length < 2) return { ok: false, error: 'Please enter your name.' };
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-      return { ok: false, error: 'Please choose a rating from 1 to 5.' };
-    }
-    if (text.length < 10) return { ok: false, error: 'Review must be at least 10 characters.' };
-    const nextReview = {
-      id: `review_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      productId,
-      name: name.slice(0, 80),
-      title: title.slice(0, 120),
-      text: text.slice(0, 1000),
-      rating,
-      createdAt: new Date().toISOString()
-    };
-    set(KEYS.reviews, [...get(KEYS.reviews), nextReview]);
-    return { ok: true, review: nextReview };
   }
 
   // ── Settings ──────────────────────────────────
@@ -797,7 +739,6 @@ const Store = (() => {
     getCart, addToCart, updateCartQty, removeFromCart, clearCart,
     getCartCount, getCartTotal,
     getOrders, getOrder, addOrder, updateOrderStatus,
-    getProductReviews, addProductReview,
     getSettings, updateSettings,
     adminLogin, adminLogout, isAdminLoggedIn,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
@@ -917,3 +858,4 @@ function imgPath(src) {
   if (isAdmin && !src.startsWith('../')) return '../' + src;
   return src;
 }
+

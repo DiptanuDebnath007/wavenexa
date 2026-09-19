@@ -242,10 +242,7 @@ window.addEventListener('load', function () {
       if (!product) return;
       const size = product.sizes[Math.floor(product.sizes.length / 2)];
       const color = product.colors[0];
-      if (!Store.addToCart(id, size, color, 1)) {
-        showToast(`${product.title} is out of stock.`, 'error');
-        return;
-      }
+      Store.addToCart(id, size, color, 1);
       showToast(`${product.title} added to cart!`, 'cart');
       updateCartBadge();
     };

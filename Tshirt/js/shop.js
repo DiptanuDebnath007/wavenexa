@@ -101,10 +101,7 @@
     if (!p) return;
     const size = p.sizes[Math.floor(p.sizes.length / 2)];
     const color = p.colors[0];
-    if (!Store.addToCart(id, size, color, 1)) {
-      showToast(`${p.title} is out of stock.`, 'error');
-      return;
-    }
+    Store.addToCart(id, size, color, 1);
     showToast(`${p.title} added to cart!`, 'cart');
     updateCartBadge();
   };

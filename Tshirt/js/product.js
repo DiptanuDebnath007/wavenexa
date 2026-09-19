@@ -62,70 +62,6 @@
   document.getElementById('prodFit').textContent = product.fit || '—';
   document.getElementById('prodCare').textContent = product.care || '—';
 
-  function escapeReviewText(value) {
-    const element = document.createElement('div');
-    element.textContent = value || '';
-    return element.innerHTML;
-  }
-
-  function renderReviews() {
-    const reviews = Store.getProductReviews(product.id).sort((a, b) =>
-      new Date(b.createdAt) - new Date(a.createdAt)
-    );
-    const average = reviews.length
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-      : 0;
-    document.getElementById('ratingCount').textContent =
-      `(${reviews.length} review${reviews.length === 1 ? '' : 's'})`;
-    document.getElementById('reviewsSummary').textContent = reviews.length
-      ? `${average.toFixed(1)} / 5 from ${reviews.length} review${reviews.length === 1 ? '' : 's'}`
-      : 'No reviews yet';
-    document.getElementById('productStars').textContent = reviews.length
-      ? '★'.repeat(Math.round(average)) + '☆'.repeat(5 - Math.round(average))
-      : '☆☆☆☆☆';
-
-    const list = document.getElementById('reviewsList');
-    if (!reviews.length) {
-      list.innerHTML = '<div class="reviews-empty">Be the first to review this product.</div>';
-      return;
-    }
-    list.innerHTML = reviews.map(review => `
-      <article class="review-card">
-        <div class="review-card-top">
-          <div>
-            <strong>${escapeReviewText(review.name)}</strong>
-            <div class="review-stars" aria-label="${review.rating} out of 5 stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-          </div>
-          <time datetime="${review.createdAt}">${new Date(review.createdAt).toLocaleDateString('en-IN')}</time>
-        </div>
-        ${review.title ? `<h4>${escapeReviewText(review.title)}</h4>` : ''}
-        <p>${escapeReviewText(review.text)}</p>
-      </article>
-    `).join('');
-  }
-
-  const reviewForm = document.getElementById('reviewForm');
-  const currentUser = Store.getCurrentUser();
-  if (currentUser) document.getElementById('reviewName').value = currentUser.name || '';
-  reviewForm.addEventListener('submit', event => {
-    event.preventDefault();
-    const result = Store.addProductReview(product.id, {
-      name: document.getElementById('reviewName').value,
-      rating: document.getElementById('reviewRating').value,
-      title: document.getElementById('reviewTitle').value,
-      text: document.getElementById('reviewText').value
-    });
-    const message = document.getElementById('reviewMessage');
-    message.textContent = result.ok ? 'Thanks for sharing your review!' : result.error;
-    message.className = `review-message ${result.ok ? 'success' : 'error'}`;
-    if (result.ok) {
-      reviewForm.reset();
-      if (currentUser) document.getElementById('reviewName').value = currentUser.name || '';
-      renderReviews();
-    }
-  });
-  renderReviews();
-
   if (product.originalPrice) {
     document.getElementById('prodOrigPrice').textContent = formatPrice(product.originalPrice);
     document.getElementById('prodDiscount').textContent = getDiscount(product.price, product.originalPrice);
@@ -133,18 +69,7 @@
 
   const stockEl = document.getElementById('stockText');
   const stockDot = document.querySelector('.stock-dot');
-  const addToCartBtn = document.getElementById('addToCartBtn');
-  const buyNowBtn = document.getElementById('buyNowBtn');
-  if (product.stock <= 0) {
-    stockEl.textContent = 'Out of stock';
-    if (stockDot) stockDot.style.background = '#FF6584';
-    [addToCartBtn, buyNowBtn].forEach(btn => {
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Out of stock';
-      }
-    });
-  } else if (product.stock <= 5) {
+  if (product.stock <= 5) {
     stockEl.textContent = `Only ${product.stock} left!`;
     stockDot.style.background = '#FF6B35';
     document.getElementById('prodStock').style.color = '#FF6B35';
@@ -198,13 +123,10 @@
   qtyInput.addEventListener('change', () => { qty = Math.max(1, Math.min(10, parseInt(qtyInput.value) || 1)); qtyInput.value = qty; });
 
   // ── Add to Cart ───────────────────────────────
-  addToCartBtn.addEventListener('click', () => {
+  document.getElementById('addToCartBtn').addEventListener('click', () => {
     if (!selSize) { showToast('Please select a size!', 'error'); return; }
     if (!selColor) { showToast('Please select a color!', 'error'); return; }
-    if (!Store.addToCart(product.id, selSize, selColor, qty)) {
-      showToast('That quantity is no longer available.', 'error');
-      return;
-    }
+    Store.addToCart(product.id, selSize, selColor, qty);
     showToast(`${product.title} (${selSize}) added to cart!`, 'cart');
     updateCartBadge();
     // Animate button
@@ -214,14 +136,10 @@
   });
 
   // ── Buy Now ───────────────────────────────────
-  buyNowBtn.addEventListener('click', (e) => {
+  document.getElementById('buyNowBtn').addEventListener('click', (e) => {
     if (!selSize) { e.preventDefault(); showToast('Please select a size!', 'error'); return; }
     if (!selColor) { e.preventDefault(); showToast('Please select a color!', 'error'); return; }
-    if (!Store.addToCart(product.id, selSize, selColor, qty)) {
-      e.preventDefault();
-      showToast('That quantity is no longer available.', 'error');
-      return;
-    }
+    Store.addToCart(product.id, selSize, selColor, qty);
     updateCartBadge();
   });
 
@@ -255,10 +173,7 @@
   window.quickAddRelated = function (pid) {
     const p = Store.getProduct(pid);
     if (!p) return;
-    if (!Store.addToCart(pid, p.sizes[Math.floor(p.sizes.length / 2)], p.colors[0], 1)) {
-      showToast(`${p.title} is out of stock.`, 'error');
-      return;
-    }
+    Store.addToCart(pid, p.sizes[Math.floor(p.sizes.length / 2)], p.colors[0], 1);
     showToast(`${p.title} added to cart!`, 'cart');
     updateCartBadge();
   };
