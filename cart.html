@@ -22,7 +22,6 @@
       <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="shop.html">Shop</a>
-        <a href="shopify.html" style="color:var(--primary);font-weight:600;">⚡ Shopify Store</a>
       </div>
       <div class="nav-actions">
         <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="openAuthModal()">🔑 Login</button>
@@ -36,7 +35,6 @@
     <div class="mobile-menu-close" id="menuClose">✕</div>
     <a href="index.html">Home</a>
     <a href="shop.html">Shop</a>
-    <a href="shopify.html" style="color:var(--primary);font-weight:600;">⚡ Shopify Store</a>
     <a href="shop.html#collections">Collections</a>
     <a href="cart.html" class="active">Cart 🛒</a>
     <a href="#" onclick="openAuthModal(); return false;" id="mobileAuthLink">🔑 Login / Account</a>
@@ -91,11 +89,8 @@
               <span id="summaryTotal">₹0</span>
             </div>
             <div class="shipping-note" id="shippingNote"></div>
-            <button class="btn btn-shopify btn-full btn-lg" id="shopifyCheckoutBtn" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19.34 7.24a.8.8 0 0 0-.74-.52h-2.91L13.78 3.5a1.8 1.8 0 0 0-2.56 0L9.31 6.72H6.4a.8.8 0 0 0-.74.52L3.06 17.5a.8.8 0 0 0 .74 1.08h15.4a.8.8 0 0 0 .74-1.08L19.34 7.24z"/>
-              </svg>
-              ⚡ Checkout with Shopify
+            <button class="btn btn-primary btn-full btn-lg" id="shopifyCheckoutBtn" style="margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;">
+              🔒 Proceed to Secure Payment →
             </button>
             <button class="btn btn-outline btn-full" id="proceedToCheckout" style="font-size:0.9rem;">
               Local Delivery / COD →

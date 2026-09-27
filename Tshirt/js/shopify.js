@@ -446,37 +446,9 @@ const ShopifyClient = (() => {
    * Build & attach the Shopify Headless Setup & Admin launcher modal
    */
   function initUI() {
-    // 1. Update any existing .shopify-admin-link to open admin URL
-    document.querySelectorAll('.shopify-admin-link').forEach(el => {
-      el.href = window.getShopifyAdminUrl();
-      el.target = '_blank';
-      el.rel = 'noopener noreferrer';
-    });
-
-    // 2. Add floating indicator / connector badge
-    if (!document.getElementById('shopifyFloatingWidget')) {
-      const widget = document.createElement('div');
-      widget.id = 'shopifyFloatingWidget';
-      widget.className = 'shopify-widget';
-      const isConfigured = window.isShopifyConfigured();
-
-      widget.innerHTML = `
-        <button class="shopify-badge-btn ${isConfigured ? 'connected' : 'setup-needed'}" id="shopifyWidgetBtn" title="Shopify Headless Backend & Admin">
-          <span class="shopify-bag-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.34 7.24a.8.8 0 0 0-.74-.52h-2.91L13.78 3.5a1.8 1.8 0 0 0-2.56 0L9.31 6.72H6.4a.8.8 0 0 0-.74.52L3.06 17.5a.8.8 0 0 0 .74 1.08h15.4a.8.8 0 0 0 .74-1.08L19.34 7.24z"/>
-            </svg>
-          </span>
-          <span class="shopify-badge-label">${isConfigured ? 'Shopify Connected' : 'Connect Shopify'}</span>
-        </button>
-      `;
-
-      document.body.appendChild(widget);
-
-      widget.querySelector('#shopifyWidgetBtn').addEventListener('click', () => {
-        openShopifyModal();
-      });
-    }
+    // Backend functions (Storefront API, live cart checkout, sync) run silently in headless mode.
+    // No floating badges or admin links are added to the public storefront.
+  }
 
     // 3. Create Shopify Modal in DOM if not present
     if (!document.getElementById('shopifyModal')) {

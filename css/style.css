@@ -1930,12 +1930,9 @@ select.form-control {
    Shopify Headless Backend & Admin Integration
    ============================================= */
 
-/* Floating Shopify Widget / Status Pill */
+/* Floating Shopify Widget / Status Pill (hidden in customer storefront) */
 .shopify-widget {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 995;
+  display: none !important;
 }
 
 .shopify-badge-btn {
