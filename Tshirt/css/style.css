@@ -1919,10 +1919,183 @@ select.form-control {
   color: var(--primary);
 }
 
+/* ── OTP Verification & Multi-Method Auth UI ── */
+.auth-mode-selector {
+  display: flex;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.auth-mode-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: calc(var(--radius) - 4px);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-mode-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* OTP Digits Grid */
+.otp-inputs-wrap {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 18px 0;
+}
+
+.otp-digit {
+  width: 46px;
+  height: 52px;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: 'Space Grotesk', 'Inter', monospace;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.otp-digit:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(108, 99, 255, 0.14);
+  box-shadow: 0 0 16px rgba(108, 99, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.otp-digit.filled {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Simulated SMS/Email notification banner */
+.otp-sim-banner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(14, 165, 233, 0.1));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  animation: otpPulse 0.4s ease;
+}
+
+@keyframes otpPulse {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.otp-sim-banner .otp-sim-code {
+  font-family: monospace;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #34d399;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.otp-sim-banner .otp-autofill-btn {
+  background: rgba(16, 185, 129, 0.22);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #34d399;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.otp-sim-banner .otp-autofill-btn:hover {
+  background: #10b981;
+  color: #fff;
+}
+
+.otp-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.otp-resend-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.82rem;
+  transition: opacity 0.2s ease;
+}
+
+.otp-resend-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.google-custom-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ffffff;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.google-custom-btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .auth-modal-card {
-    padding: 36px 22px 28px;
+    padding: 32px 18px 24px;
+  }
+  .otp-digit {
+    width: 38px;
+    height: 48px;
+    font-size: 1.15rem;
   }
 }
 

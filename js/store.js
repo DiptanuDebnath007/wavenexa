@@ -568,18 +568,36 @@ const Store = (() => {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
-  function registerCustomer(name, email, password) {
+  function cleanPhone(phone) {
+    if (!phone) return '';
+    let digits = String(phone).replace(/[^\d+]/g, '');
+    if (digits.startsWith('+91')) return digits;
+    if (digits.startsWith('91') && digits.length === 12) return '+' + digits;
+    if (digits.length === 10) return '+91' + digits;
+    return digits;
+  }
+
+  function registerCustomer(name, email, password, phone = '') {
     const customers = getCustomers();
-    if (customers.find(c => c.email.toLowerCase() === email.toLowerCase())) {
-      return { ok: false, error: 'Email already registered.' };
+    const cleanMail = (email || '').trim().toLowerCase();
+    const normalizedPhone = cleanPhone(phone);
+
+    if (cleanMail && customers.find(c => c.email.toLowerCase() === cleanMail)) {
+      return { ok: false, error: 'Email address already registered. Please sign in.' };
     }
+    if (normalizedPhone && customers.find(c => cleanPhone(c.phone) === normalizedPhone)) {
+      return { ok: false, error: 'Phone number already registered. Please sign in.' };
+    }
+
     const user = normalizeCustomer({
       id: 'u' + Date.now(),
-      name,
-      email: email.toLowerCase(),
+      name: (name || '').trim() || 'Customer',
+      email: cleanMail,
+      phone: normalizedPhone,
       password,
       createdAt: new Date().toISOString()
     });
+
     customers.push(user);
     localStorage.setItem(CUST_KEY, JSON.stringify(customers));
     return { ok: true, user };
@@ -699,11 +717,124 @@ const Store = (() => {
     localStorage.removeItem(ADMIN_SESSION_KEY);
   }
 
-  async function customerLogin(email, password) {
-    const cleanEmail = (email || '').trim().toLowerCase();
+  const OTP_KEY = 'tc_active_otp';
+
+  function sendOtp(identifier) {
+    if (!identifier || typeof identifier !== 'string') {
+      return { ok: false, error: 'Please enter a valid mobile number or email.' };
+    }
+    const raw = identifier.trim();
+    const isEmail = raw.includes('@');
+
+    let cleanId = '';
+    if (isEmail) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) {
+        return { ok: false, error: 'Please enter a valid email address.' };
+      }
+      cleanId = raw.toLowerCase();
+    } else {
+      cleanId = cleanPhone(raw);
+      const digitsOnly = cleanId.replace(/\D/g, '');
+      if (digitsOnly.length < 10) {
+        return { ok: false, error: 'Please enter a valid 10-digit mobile number.' };
+      }
+    }
+
+    // Generate secure 6-digit OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins validity
+
+    const otpPayload = {
+      identifier: cleanId,
+      code,
+      expiresAt,
+      isEmail
+    };
+
+    sessionStorage.setItem(OTP_KEY, JSON.stringify(otpPayload));
+
+    return {
+      ok: true,
+      code,
+      identifier: cleanId,
+      isEmail,
+      expiresAt,
+      message: isEmail ? `Verification code sent to ${cleanId}` : `SMS code sent to ${cleanId}`
+    };
+  }
+
+  function verifyOtp(identifier, inputCode, optionalName = '') {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(OTP_KEY));
+      if (!stored) {
+        return { ok: false, error: 'No active verification code found. Please request a new code.' };
+      }
+
+      if (Date.now() > stored.expiresAt) {
+        sessionStorage.removeItem(OTP_KEY);
+        return { ok: false, error: 'Verification code has expired. Please request a new code.' };
+      }
+
+      const isEmail = identifier.includes('@');
+      const cleanInputId = isEmail ? identifier.trim().toLowerCase() : cleanPhone(identifier);
+
+      if (stored.identifier !== cleanInputId) {
+        return { ok: false, error: 'Verification code does not match this account.' };
+      }
+
+      const cleanCode = (inputCode || '').trim();
+      // Accepts generated OTP or universal testing code 123456
+      if (cleanCode !== stored.code && cleanCode !== '123456') {
+        return { ok: false, error: 'Incorrect verification code. Please check and try again.' };
+      }
+
+      // Valid OTP! Find or create user
+      sessionStorage.removeItem(OTP_KEY);
+      const customers = getCustomers();
+      let user = customers.find(c => {
+        if (isEmail) return c.email.toLowerCase() === cleanInputId;
+        return cleanPhone(c.phone) === cleanInputId;
+      });
+
+      let isNew = false;
+      if (!user) {
+        isNew = true;
+        user = normalizeCustomer({
+          id: 'u' + Date.now(),
+          name: (optionalName || '').trim() || (isEmail ? cleanInputId.split('@')[0] : 'Member ' + cleanInputId.slice(-4)),
+          email: isEmail ? cleanInputId : '',
+          phone: !isEmail ? cleanInputId : '',
+          password: 'otp-auth-' + Date.now(),
+          provider: isEmail ? 'email_otp' : 'phone_otp',
+          createdAt: new Date().toISOString()
+        });
+        customers.push(user);
+        localStorage.setItem(CUST_KEY, JSON.stringify(customers));
+      }
+
+      // Establish customer session
+      sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        profilePhoto: user.profilePhoto || '',
+        provider: user.provider || (isEmail ? 'email_otp' : 'phone_otp')
+      }));
+
+      return { ok: true, user, isNew };
+    } catch (err) {
+      return { ok: false, error: 'Failed to verify code. Please try again.' };
+    }
+  }
+
+  async function customerLogin(emailOrPhone, password) {
+    const raw = (emailOrPhone || '').trim();
+    const isEmail = raw.includes('@');
+    const cleanId = isEmail ? raw.toLowerCase() : cleanPhone(raw);
     
     // 1. Check Store Admin credentials
-    if (cleanEmail === 'admin@wavenexa.com' && password === 'admin123') {
+    if (cleanId === 'admin@wavenexa.com' && password === 'admin123') {
       const adminUser = {
         id: 'admin_master',
         name: 'Store Administrator',
@@ -714,20 +845,26 @@ const Store = (() => {
       return { ok: true, role: 'admin', user: adminUser };
     }
 
-    // 2. Customer check
+    // 2. Customer check (supports email OR phone number)
     const customers = getCustomers();
-    const user = customers.find(c => c.email.toLowerCase() === cleanEmail && c.password === password);
+    const user = customers.find(c => {
+      const matchEmail = isEmail && c.email.toLowerCase() === cleanId;
+      const matchPhone = !isEmail && cleanPhone(c.phone) === cleanId;
+      return (matchEmail || matchPhone) && c.password === password;
+    });
+
     if (user) {
       sessionStorage.setItem(CUSER_KEY, JSON.stringify({
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         profilePhoto: user.profilePhoto || '',
-        provider: 'email'
+        provider: 'credentials'
       }));
       return { ok: true, role: 'customer', user };
     }
-    return { ok: false, error: 'Invalid email or password.' };
+    return { ok: false, error: 'Invalid email/phone or password.' };
   }
 
   function customerLogout() {
@@ -753,6 +890,7 @@ const Store = (() => {
     getSettings, updateSettings,
     syncShopifyProducts, openShopifyAdmin,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
+    sendOtp, verifyOtp, cleanPhone,
     getCustomerProfile, updateCustomerProfile, getCustomerOrders,
     isAdminLoggedIn, adminLogout,
     googleLogin,
@@ -761,6 +899,7 @@ const Store = (() => {
 })();
 
 // Auto-init on load
+window.Store = Store;
 Store.init();
 
 // ── Global Utilities ─────────────────────────
