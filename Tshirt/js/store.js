@@ -2,31 +2,7 @@
    WAVENEXA — Store (Data Layer)
    ============================================= */
 
-// ── Secure Admin Verifier (do not modify) ─────
-const _ADMIN = (() => {
-  // Credentials stored only as XOR-encoded char codes.
-  // Key: 13. Plaintext is never present in this source.
-  const _k = 13;
-  const _ec = [108, 99, 102, 108, 99, 77, 108, 105, 96, 100, 99, 60];
-  const _pc = [76, 125, 99, 108, 105, 120, 102, 108, 99, 60, 63, 62, 77, 44];
-  const _d = a => String.fromCharCode(...a.map(c => c ^ _k));
-  async function _h(s) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-    return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, '0')).join('');
-  }
-  let _he, _hp;
-  // Pre-compute hashes at module load — plaintext is immediately discarded
-  const _ready = (async () => {
-    [_he, _hp] = await Promise.all([_h(_d(_ec)), _h(_d(_pc))]);
-  })();
-  return {
-    check: async (email, pw) => {
-      await _ready;
-      const [he, hp] = await Promise.all([_h(email.toLowerCase()), _h(pw)]);
-      return he === _he && hp === _hp;
-    }
-  };
-})();
+// Shopify Headless Backend Integration Active
 
 const Store = (() => {
 
@@ -217,11 +193,10 @@ const Store = (() => {
     if (!localStorage.getItem(KEYS.settings)) {
       localStorage.setItem(KEYS.settings, JSON.stringify(DEFAULT_SETTINGS));
     }
-    // Security: purge any plaintext admin password that may exist in storage
-    try {
-      const s = JSON.parse(localStorage.getItem(KEYS.settings));
-      if (s && s.adminPassword) { delete s.adminPassword; localStorage.setItem(KEYS.settings, JSON.stringify(s)); }
-    } catch (e) { }
+    // Auto-sync Shopify products if configured
+    if (typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured()) {
+      setTimeout(() => { syncShopifyProducts().catch(() => {}); }, 100);
+    }
   }
 
   // ── Helpers ───────────────────────────────────
@@ -503,16 +478,30 @@ const Store = (() => {
     window.dispatchEvent(new CustomEvent('settingsChange', { detail: settings }));
   }
 
-  // ── Auth ──────────────────────────────────────
-  async function adminLogin(email, password) {
-    if (await _ADMIN.check(email, password)) {
-      sessionStorage.setItem(KEYS.auth, 'true');
-      return true;
+  // ── Shopify Live Backend Integration ─────────
+  async function syncShopifyProducts() {
+    if (typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured()) {
+      try {
+        const liveProducts = await ShopifyClient.fetchProducts(50);
+        if (Array.isArray(liveProducts) && liveProducts.length > 0) {
+          set(KEYS.products, liveProducts);
+          window.dispatchEvent(new CustomEvent('shopifyProductsSynced', { detail: liveProducts }));
+          return liveProducts;
+        }
+      } catch (err) {
+        console.warn('[Store] Shopify live sync warning:', err);
+      }
     }
-    return false;
+    return getProducts();
   }
-  function adminLogout() { sessionStorage.removeItem(KEYS.auth); }
-  function isAdminLoggedIn() { return sessionStorage.getItem(KEYS.auth) === 'true'; }
+
+  function openShopifyAdmin() {
+    if (typeof ShopifyClient !== 'undefined') {
+      ShopifyClient.openAdmin();
+    } else {
+      window.open('https://admin.shopify.com', '_blank');
+    }
+  }
 
   // ── Stats ─────────────────────────────────────
   function getStats() {
@@ -696,13 +685,7 @@ const Store = (() => {
     return { ok: true, role: 'customer', user };
   }
 
-  // Async — uses SHA-256 hash comparison via _ADMIN verifier
   async function customerLogin(email, password) {
-    // Admin check — hashed comparison only, no plaintext ever compared
-    if (await _ADMIN.check(email, password)) {
-      sessionStorage.setItem(KEYS.auth, 'true');
-      return { ok: true, role: 'admin' };
-    }
     // Customer check
     const customers = getCustomers();
     const user = customers.find(c => c.email.toLowerCase() === email.toLowerCase() && c.password === password);
@@ -740,7 +723,7 @@ const Store = (() => {
     getCartCount, getCartTotal,
     getOrders, getOrder, addOrder, updateOrderStatus,
     getSettings, updateSettings,
-    adminLogin, adminLogout, isAdminLoggedIn,
+    syncShopifyProducts, openShopifyAdmin,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
     getCustomerProfile, updateCustomerProfile, getCustomerOrders,
     googleLogin,
@@ -851,11 +834,7 @@ window.addEventListener('load', () => {
 // Auto-prefix paths based on current page location
 function imgPath(src) {
   if (!src) return '';
-  // If already a data URL or absolute http, return as-is
   if (src.startsWith('data:') || src.startsWith('http')) return src;
-  // If we're in admin/ subfolder, prefix with ../
-  const isAdmin = window.location.pathname.includes('/admin/');
-  if (isAdmin && !src.startsWith('../')) return '../' + src;
   return src;
 }
 

@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fashion Hub — Official Shopify Storefront</title>
+  <meta name="description"
+    content="Official Shopify Storefront Web Components integration with live products, variant selection, centered details modal, and Shopify cart for Fashion Hub.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Official Shopify Storefront Web Components script (as specified in shopify.md) -->
+  <script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════════════════
+       WCAG Compliant Design System & Shopify Web Components Styling
+       Meets all specifications in admin/shopify.md
+       ══════════════════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-page: #0b0f19;
+      --bg-card: #131b2e;
+      --bg-card-hover: #19243d;
+      --bg-surface: #1e293b;
+      --bg-input: #0f172a;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --brand-primary: #6366f1;
+      --brand-primary-hover: #4f46e5;
+      --brand-accent: #f43f5e;
+      --brand-emerald: #10b981;
+      
+      --border-subtle: #334155;
+      --border-focus: #818cf8;
+      
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.6);
+      
+      --space-1: 8px;
+      --space-2: 16px;
+      --space-3: 24px;
+      --space-4: 32px;
+      --space-5: 40px;
+      --space-6: 48px;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+
+    /* ═══ Header & Navbar ══════════════════════════════════════════════════ */
+    .store-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .navbar-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .brand-logo-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .brand-logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-logo-link img {
+      height: 38px;
+      width: auto;
+      border-radius: var(--radius-sm);
+    }
+
+    .brand-logo-link span {
+      color: var(--brand-primary);
+    }
+
+    .shopify-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--brand-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .shopify-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--brand-emerald);
+      box-shadow: 0 0 10px var(--brand-emerald);
+    }
+
+    .nav-links-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .nav-link {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.2s ease;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-main);
+      background: var(--bg-surface);
+    }
+
+    .nav-cta-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .open-cart-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--brand-primary);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    .open-cart-btn:hover {
+      background-color: var(--brand-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ═══ Hero / Store Banner ═════════════════════════════════════════════ */
+    .store-hero {
+      max-width: 1280px;
+      margin: var(--space-4) auto var(--space-3);
+      padding: 0 var(--space-3);
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .hero-title-group h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .hero-title-group p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 650px;
+    }
+
+    .store-meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .meta-pill {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-pill strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .admin-direct-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #008060;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+
+    .admin-direct-link:hover {
+      background: #006e52;
+    }
+
+    /* ═══ Store Controls Bar ══════════════════════════════════════════════ */
+    .store-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      border-top: 1px solid var(--border-subtle);
+      padding-top: var(--space-2);
+    }
+
+    .store-status-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--brand-emerald);
+      font-weight: 600;
+    }
+
+    /* ═══ Main Product Grid Section ═══════════════════════════════════════ */
+    .product-grid-section {
+      max-width: 1280px;
+      margin: 0 auto var(--space-6);
+      padding: 0 var(--space-3);
+    }
+
+    .section-headline {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+      padding-bottom: var(--space-1);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-headline h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .section-headline span {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .product-layout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-3);
+    }
+
+    /* ═══ Product Card (Strictly adheres to shopify.md) ═════════════════════ */
+    .product-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow-md);
+    }
+
+    .product-card__container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: var(--space-2);
+      box-sizing: border-box;
+    }
+
+    .product-card__media {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      padding: var(--space-2);
+      min-height: 280px;
+      position: relative;
+    }
+
+    /* Display full images on product cards; avoid cropping images to fit */
+    .product-card__main-image {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .product-card__main-image img,
+    .product-card__main-image unpic-img {
+      border-radius: var(--radius-sm);
+      max-width: 100%;
+      height: auto;
+      max-height: 260px;
+      object-fit: contain; /* Full image, no cropping */
+    }
+
+    .product-card__details {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      width: 100%;
+      margin-top: var(--space-2);
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+
+    .product-card__info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .product-card__title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.7em;
+    }
+
+    .product-card__price {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--brand-emerald);
+    }
+
+    .product-card__variants {
+      margin: 4px 0;
+    }
+
+    .product-card__button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-1);
+      margin-top: auto;
+    }
+
+    .product-card__view-button {
+      background-color: transparent;
+      color: var(--text-main);
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .product-card__view-button:hover {
+      background: var(--bg-surface);
+      border-color: var(--text-main);
+    }
+
+    .product-card__add-button {
+      background-color: var(--brand-primary);
+      color: #ffffff;
+      border: 2px solid var(--brand-primary);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .product-card__add-button:hover {
+      background-color: var(--brand-primary-hover);
+      border-color: var(--brand-primary-hover);
+    }
+
+    /* ═══ Product Details Centered Modal (as specified in shopify.md) ══════ */
+    .product-modal {
+      padding: 0;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--border-subtle);
+      /* Must be aligned in the center of the page */
+      position: fixed;
+      inset: 0;
+      margin: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: transparent;
+    }
+
+    .product-modal::backdrop {
+      background-color: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+    }
+
+    .product-modal__container {
+      position: relative;
+      overflow-x: hidden;
+      padding: var(--space-4);
+      background-color: #111827; /* High contrast dark background */
+      color: #f9fafb;
+      border-radius: var(--radius-lg);
+    }
+
+    .product-modal__close-container {
+      display: flex;
+      justify-content: flex-end;
+      padding-bottom: var(--space-2);
+    }
+
+    .product-modal__close {
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .product-modal__close:hover {
+      background: var(--brand-accent);
+      border-color: var(--brand-accent);
+    }
+
+    .product-modal__content {
+      width: 100%;
+      max-width: 56rem;
+      min-width: 320px;
+    }
+
+    .product-modal__layout {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    @media (min-width: 768px) {
+      .product-modal__layout {
+        flex-direction: row;
+      }
+    }
+
+    .product-modal__media {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      background: #1f2937;
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+    }
+
+    .product-modal__media img,
+    .product-modal__media unpic-img {
+      border-radius: var(--radius-sm);
+      width: 100%;
+      max-width: 416px;
+      height: auto;
+      object-fit: contain; /* Full image display without cropping */
+    }
+
+    .product-modal__details {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      width: 100%;
+    }
+
+    .product-modal__header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .product-modal__vendor {
+      color: #9ca3af;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
+    .product-modal__title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin: 0;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .product-modal__price-container {
+      display: flex;
+      gap: var(--space-1);
+      font-weight: 700;
+      font-size: 1.45rem;
+      color: var(--brand-emerald);
+    }
+
+    .product-modal__buttons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-top: var(--space-1);
+    }
+
+    .product-modal__buttons button {
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .product-modal__add-button {
+      background-color: var(--brand-primary);
+      color: #ffffff;
+      border: 2px solid var(--brand-primary);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      width: 100%;
+    }
+
+    .product-modal__add-button:hover {
+      background-color: var(--brand-primary-hover);
+      border-color: var(--brand-primary-hover);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .product-modal__add-button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .product-modal__buy-button {
+      background-color: #ffffff;
+      color: #0b0f19;
+      border: 2px solid #ffffff;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      width: 100%;
+    }
+
+    .product-modal__buy-button:hover {
+      background-color: #f1f5f9;
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
+    }
+
+    .product-modal__buy-button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .product-modal__description {
+      border-top: 1px solid #374151;
+      padding-top: var(--space-2);
+    }
+
+    .product-modal__description-text {
+      font-weight: 400;
+      color: #d1d5db;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .product-modal__description-text p {
+      margin-bottom: 8px;
+    }
+
+    /* ═══ Shopify Cart Component CSS Parts (shopify.md specifications) ════ */
+    shopify-cart::part(dialog) {
+      border-radius: var(--radius-lg);
+      background-color: #111827;
+      color: #f9fafb;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      max-width: 480px;
+    }
+
+    shopify-cart::part(line-heading) {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    shopify-cart::part(line-price) {
+      color: var(--brand-emerald);
+      font-weight: 600;
+    }
+
+    shopify-cart::part(primary-button) {
+      background-color: var(--brand-primary);
+      border: 2px solid var(--brand-primary);
+      border-radius: var(--radius-md);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      transition: background-color 0.2s ease;
+    }
+
+    shopify-cart::part(primary-button):hover {
+      background-color: var(--brand-primary-hover);
+    }
+
+    /* Secondary button MUST include fill property (per shopify.md) */
+    shopify-cart::part(secondary-button) {
+      background-color: #1f2937;
+      color: #ffffff;
+      fill: #ffffff;
+      border: 1px solid #374151;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+
+    shopify-cart::part(secondary-button):hover {
+      background-color: #374151;
+      fill: #ffffff;
+    }
+
+    /* ═══ Shopify Variant Selector CSS Parts (shopify.md specifications) ══ */
+    shopify-variant-selector::part(form) {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    shopify-variant-selector::part(label) {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #d1d5db;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    shopify-variant-selector::part(radio) {
+      background: #1f2937;
+      color: #f3f4f6;
+      border: 1px solid #4b5563;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    shopify-variant-selector::part(radio-selected) {
+      background: var(--brand-primary);
+      color: #ffffff;
+      border-color: var(--brand-primary);
+      font-weight: 700;
+    }
+
+    shopify-variant-selector::part(radio-disabled) {
+      opacity: 0.35;
+      text-decoration: line-through;
+    }
+
+    shopify-variant-selector::part(color-swatch) {
+      border: 2px solid #4b5563;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    shopify-variant-selector::part(color-swatch-selected) {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 2px var(--brand-primary);
+    }
+
+    shopify-variant-selector::part(select) {
+      background: #1f2937;
+      color: #ffffff;
+      border: 1px solid #4b5563;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+
+    /* ═══ Footer ═══════════════════════════════════════════════════════════ */
+    .store-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: var(--space-4) var(--space-3);
+      background: rgba(11, 15, 25, 0.95);
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+    }
+
+    .store-footer a {
+      color: var(--text-muted);
+      margin: 0 8px;
+    }
+
+    .store-footer a:hover {
+      color: var(--text-main);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       1. STORE CONFIGURATION & ENCLOSURE
+       Configured with live store: fashion-hub-215153474.myshopify.com
+       and public access token: 8b5977817c4e04499c4821bb16c89ad2
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <shopify-store
+    id="mainStore"
+    store-domain="fashion-hub-215153474.myshopify.com"
+    public-access-token="8b5977817c4e04499c4821bb16c89ad2"
+    country="IN"
+    language="en"
+  >
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         2. SHOPIFY CART COMPONENT
+         Provides the slide-out / modal shopping cart with custom parts & slots
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <shopify-cart id="cart">
+      <div slot="empty" style="text-align:center;padding:32px 16px;color:#94a3b8;">
+        <div style="font-size:2.5rem;margin-bottom:12px;">🛍️</div>
+        <h3 style="color:#ffffff;font-size:1.15rem;margin-bottom:6px;">Your cart is empty</h3>
+        <p style="font-size:0.88rem;">Add a product from the collection below to get started!</p>
+      </div>
+      <div slot="checkout-button">
+        ⚡ Proceed to Shopify Checkout
+      </div>
+    </shopify-cart>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         3. NAVIGATION BAR
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <header class="store-navbar">
+      <div class="navbar-container">
+        <div class="brand-logo-group">
+          <a href="index.html" class="brand-logo-link">
+            <img src="logo/logo.png" alt="WaveNexa Logo">
+            <span>Fashion</span>Hub
+          </a>
+          <div class="shopify-badge" id="liveBadge">
+            <span class="shopify-badge-dot"></span>
+            <span>wavenexa.shop</span>
+          </div>
+        </div>
+
+        <nav class="nav-links-row">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="shop.html" class="nav-link">Catalog</a>
+          <a href="shopify.html" class="nav-link active">Shopify Web Components</a>
+          <a href="cart.html" class="nav-link">Cart</a>
+        </nav>
+
+        <div class="nav-cta-group">
+          <button class="open-cart-btn" onclick="document.getElementById('cart').showModal()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Open Cart</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         4. HERO & LIVE CONNECTION DETAILS
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="store-hero">
+      <div class="hero-card">
+        <div class="hero-top-row">
+          <div class="hero-title-group">
+            <h1>Official Shopify Storefront</h1>
+            <p>
+              Powered by Shopify Storefront Web Components & Storefront GraphQL API. 
+              Browse live products from <strong>Fashion Hub (wavenexa.shop)</strong>, select size & color variants, and checkout with official Shopify Checkout.
+            </p>
+          </div>
+
+          <div class="store-meta-pills">
+            <div class="meta-pill">
+              <span>Store:</span>
+              <strong>Fashion Hub</strong>
+            </div>
+            <div class="meta-pill">
+              <span>Domain:</span>
+              <code>fashion-hub-215153474</code>
+            </div>
+            <a href="https://admin.shopify.com/store/fashion-hub-215153474" target="_blank" rel="noopener noreferrer" class="admin-direct-link" title="Open Shopify Admin in new tab">
+              ⚡ Open Shopify Admin ↗
+            </a>
+          </div>
+        </div>
+
+        <div class="store-controls-row">
+          <div class="store-status-text">
+            <span>🟢 Live Storefront API Connected</span>
+            <span style="color:var(--text-dim);font-weight:normal;">•</span>
+            <span style="color:var(--text-muted);font-weight:normal;">Currency: <strong>INR (₹)</strong></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         5. LIVE PRODUCTS GRID (Rendered via <shopify-list-context>)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <main class="product-grid-section">
+      <div class="section-headline">
+        <h2>Live Products Catalog</h2>
+        <span id="productCounter">Live from Shopify Storefront API</span>
+      </div>
+
+      <!-- Live repeating product grid -->
+      <div id="shopifyListWrapper">
+        <shopify-list-context id="mainListContext" type="product" query="products" first="24">
+          <template>
+            <div class="product-card">
+              <div class="product-card__container">
+                <!-- Full image display without cropping -->
+                <div class="product-card__media">
+                  <div class="product-card__main-image">
+                    <shopify-media
+                      width="320"
+                      height="320"
+                      layout="constrained"
+                      query="product.selectedOrFirstAvailableVariant.image"
+                    ></shopify-media>
+                  </div>
+                </div>
+
+                <div class="product-card__details">
+                  <div class="product-card__info">
+                    <h3 class="product-card__title">
+                      <shopify-data query="product.title"></shopify-data>
+                    </h3>
+                    <div class="product-card__price">
+                      <shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money>
+                    </div>
+                  </div>
+
+                  <div class="product-card__variants">
+                    <shopify-variant-selector></shopify-variant-selector>
+                  </div>
+
+                  <div class="product-card__button-row">
+                    <button
+                      class="product-card__view-button"
+                      onclick="getElementById('product-modal').showModal(); getElementById('product-modal-context').update(event);"
+                    >
+                      View Details
+                    </button>
+                    <button
+                      class="product-card__add-button"
+                      onclick="getElementById('cart').addLine(event).showModal();"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </shopify-list-context>
+      </div>
+    </main>
+
+  </shopify-store>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       6. CENTERED PRODUCT DETAILS MODAL (admin/shopify.md specification)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <dialog id="product-modal" class="product-modal">
+    <!-- The handle of this context is automatically updated when the dialog is opened -->
+    <shopify-context id="product-modal-context" type="product" wait-for-update>
+      <template>
+        <div class="product-modal__container">
+          <div class="product-modal__close-container">
+            <button class="product-modal__close" onclick="getElementById('product-modal').close();" aria-label="Close modal">✕</button>
+          </div>
+          
+          <div class="product-modal__content">
+            <div class="product-modal__layout">
+              <div class="product-modal__media">
+                <shopify-media
+                  width="416"
+                  height="416"
+                  layout="constrained"
+                  query="product.selectedOrFirstAvailableVariant.image"
+                ></shopify-media>
+              </div>
+
+              <div class="product-modal__details">
+                <div class="product-modal__header">
+                  <div>
+                    <span class="product-modal__vendor">
+                      <shopify-data query="product.vendor"></shopify-data>
+                    </span>
+                  </div>
+                  <h1 class="product-modal__title">
+                    <shopify-data query="product.title"></shopify-data>
+                  </h1>
+                  <div class="product-modal__price-container">
+                    <shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money>
+                  </div>
+                </div>
+
+                <!-- Full Option / Variant Selector -->
+                <shopify-variant-selector></shopify-variant-selector>
+
+                <div class="product-modal__buttons">
+                  <button
+                    class="product-modal__add-button"
+                    onclick="getElementById('cart').addLine(event).showModal();"
+                    shopify-attr--disabled="!product.selectedOrFirstAvailableVariant.availableForSale"
+                  >
+                    Add to cart
+                  </button>
+                  <button
+                    class="product-modal__buy-button"
+                    onclick="document.querySelector('shopify-store').buyNow(event)"
+                    shopify-attr--disabled="!product.selectedOrFirstAvailableVariant.availableForSale"
+                  >
+                    Buy now ⚡
+                  </button>
+                </div>
+
+                <div class="product-modal__description">
+                  <span class="product-modal__description-text">
+                    <shopify-data query="product.descriptionHtml"></shopify-data>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </shopify-context>
+  </dialog>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       7. FOOTER
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <footer class="store-footer">
+    <p>
+      Fashion Hub • WaveNexa Shopify Storefront • 
+      <a href="index.html">Home</a> • 
+      <a href="shop.html">Full Catalog</a> • 
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474" target="_blank" rel="noopener noreferrer">Shopify Admin</a>
+    </p>
+  </footer>
+
+  <script>
+    // Modal click-outside to close
+    const modal = document.getElementById('product-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.close();
+      });
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promo Banner — WaveNexa Admin</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-logo">
+      <div class="nav-logo">Wave<span>Nexa</span></div>
+      <p>Admin Panel</p>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Main</div>
+      <a href="dashboard.html" class="admin-nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="orders.html" class="admin-nav-link"><span class="nav-icon">📦</span> Orders</a>
+      <div class="admin-nav-section">Store</div>
+      <a href="upload.html" class="admin-nav-link"><span class="nav-icon">➕</span> Add Product</a>
+      <a href="promo.html" class="admin-nav-link active"><span class="nav-icon">📢</span> Promo Banner</a>
+      <a href="payment.html" class="admin-nav-link"><span class="nav-icon">📱</span> Payment QR</a>
+      <div class="admin-nav-section">Account</div>
+      <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Home</a>
+      <a href="../shop.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🛍️</span> Visit Shop</a>
+      <a href="#" class="admin-nav-link" id="logoutLink"><span class="nav-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user">
+        <div class="admin-avatar">👑</div>
+        <div class="admin-user-info">
+          <strong>Store Admin</strong>
+          <span>WaveNexa Admin</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="admin-page-title">📢 Promo Banner Manager</div>
+      <div class="admin-topbar-right">
+        <a href="dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:32px;align-items:start;max-width:1200px">
+
+        <div class="card" style="padding:32px">
+          <h3 style="margin-bottom:20px">Promo Banner Settings</h3>
+
+          <div class="form-group">
+            <label class="form-label">Banner Enabled</label>
+            <label class="checkbox-row" style="display:flex;align-items:center;gap:10px;margin-top:8px;color:var(--text-muted)">
+              <input type="checkbox" id="promoEnabledInput">
+              <span>Show the promo banner on the homepage</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Offer Eyebrow</label>
+            <input type="text" class="form-control" id="promoEyebrowInput" placeholder="🔥 Limited Time Offer">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Offer Title</label>
+            <input type="text" class="form-control" id="promoTitleInput" placeholder="Summer Sale">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Offer Highlight</label>
+            <input type="text" class="form-control" id="promoHighlightInput" placeholder="Up to 50% Off">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Offer Subtitle</label>
+            <textarea class="form-control" id="promoSubInput" rows="3" placeholder="Premium T-Shirts at unbeatable prices."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CTA Text</label>
+            <input type="text" class="form-control" id="promoCtaTextInput" placeholder="Shop the Sale →">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CTA Link</label>
+            <input type="text" class="form-control" id="promoCtaLinkInput" placeholder="shop.html">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Badge Text</label>
+            <input type="text" class="form-control" id="promoBadgeInput" placeholder="FREE Shipping">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Banner Image URL</label>
+            <input type="text" class="form-control" id="promoImageInput" placeholder="assets/promo_banner.jpg">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Banner Image Alt</label>
+            <input type="text" class="form-control" id="promoAltInput" placeholder="Summer Sale – Up to 50% Off at WaveNexa">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Offer Ends At</label>
+            <input type="datetime-local" class="form-control" id="promoEndInput">
+          </div>
+
+          <button class="btn btn-primary btn-full" id="savePromoBtn">💾 Save Promo Banner</button>
+        </div>
+
+        <div class="card" style="padding:28px">
+          <h4 style="margin-bottom:18px">Live Preview</h4>
+          <div class="promo-preview-shell" id="promoPreviewShell" style="border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);background:var(--bg-2);">
+            <div class="promo-preview-image-wrap" style="position:relative;min-height:220px;background:linear-gradient(135deg,#18181b,#2b2b31);display:flex;align-items:center;justify-content:center;">
+              <img id="promoPreviewImage" src="" alt="Promo banner preview" style="width:100%;height:220px;object-fit:cover;display:block;opacity:0.9;">
+            </div>
+            <div class="promo-preview-content" style="padding:24px;background:#121218;">
+              <div id="promoPreviewEyebrow" style="font-size:0.76rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px">🔥 Limited Time Offer</div>
+              <h3 id="promoPreviewTitle" style="font-size:clamp(1.8rem,2vw,2.5rem);margin:0 0 10px;line-height:1.05">Summer Sale</h3>
+              <div id="promoPreviewHighlight" style="font-size:1rem;color:var(--primary);font-weight:800;margin-bottom:12px">Up to 50% Off</div>
+              <p id="promoPreviewSub" style="margin:0 0 18px;color:var(--text-muted)">Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!</p>
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <a id="promoPreviewCta" href="shop.html" class="btn btn-accent btn-lg" style="display:inline-flex;align-items:center;justify-content:center">Shop the Sale →</a>
+                <div id="promoPreviewBadge" class="promo-ad-badge" style="display:inline-flex;align-items:center;justify-content:center;">
+                  <span>FREE</span>
+                  <span>Shipping</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/store.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+(function () {
+  requireAdmin();
+
+  const settings = Store.getSettings();
+  const promo = settings.promoBanner || {};
+
+  function toDateTimeLocalValue(date) {
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  function setField(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value || '';
+  }
+
+  function populateForm() {
+    document.getElementById('promoEnabledInput').checked = promo.enabled !== false;
+    setField('promoEyebrowInput', promo.eyebrow || '');
+    setField('promoTitleInput', promo.title || '');
+    setField('promoHighlightInput', promo.highlight || '');
+    setField('promoSubInput', promo.sub || '');
+    setField('promoCtaTextInput', promo.ctaText || '');
+    setField('promoCtaLinkInput', promo.ctaLink || 'shop.html');
+    setField('promoBadgeInput', promo.badgeText || '');
+    setField('promoImageInput', promo.imageUrl || '');
+    setField('promoAltInput', promo.imageAlt || '');
+    setField('promoEndInput', promo.endAt ? toDateTimeLocalValue(promo.endAt) : '');
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const enabled = document.getElementById('promoEnabledInput').checked;
+    const promoImage = document.getElementById('promoImageInput').value.trim();
+    const previewShell = document.getElementById('promoPreviewShell');
+    previewShell.style.opacity = enabled ? '1' : '0.45';
+    previewShell.style.filter = enabled ? 'none' : 'grayscale(0.35)';
+
+    const imgEl = document.getElementById('promoPreviewImage');
+    if (promoImage) {
+      imgEl.src = imgPath(promoImage);
+      imgEl.alt = document.getElementById('promoAltInput').value.trim() || 'Promo banner preview';
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.removeAttribute('src');
+      imgEl.style.display = 'none';
+    }
+
+    document.getElementById('promoPreviewEyebrow').textContent = document.getElementById('promoEyebrowInput').value.trim() || '🔥 Limited Time Offer';
+    document.getElementById('promoPreviewTitle').textContent = document.getElementById('promoTitleInput').value.trim() || 'Summer Sale';
+    document.getElementById('promoPreviewHighlight').textContent = document.getElementById('promoHighlightInput').value.trim() || 'Up to 50% Off';
+    document.getElementById('promoPreviewSub').textContent = document.getElementById('promoSubInput').value.trim() || "Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!";
+    document.getElementById('promoPreviewCta').textContent = document.getElementById('promoCtaTextInput').value.trim() || 'Shop the Sale →';
+    document.getElementById('promoPreviewCta').href = document.getElementById('promoCtaLinkInput').value.trim() || 'shop.html';
+    document.getElementById('promoPreviewBadge').innerHTML = `<span>${(document.getElementById('promoBadgeInput').value.trim() || 'FREE').split(' ')[0]}</span><span>${(document.getElementById('promoBadgeInput').value.trim() || 'FREE Shipping').split(' ').slice(1).join(' ') || 'Shipping'}</span>`;
+  }
+
+  ['promoEnabledInput', 'promoEyebrowInput', 'promoTitleInput', 'promoHighlightInput', 'promoSubInput', 'promoCtaTextInput', 'promoCtaLinkInput', 'promoBadgeInput', 'promoImageInput', 'promoAltInput', 'promoEndInput']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', updatePreview);
+      if (el && el.type === 'checkbox') el.addEventListener('change', updatePreview);
+    });
+
+  document.getElementById('savePromoBtn')?.addEventListener('click', () => {
+    const promoBanner = {
+      enabled: document.getElementById('promoEnabledInput').checked,
+      eyebrow: document.getElementById('promoEyebrowInput').value.trim() || '🔥 Limited Time Offer',
+      title: document.getElementById('promoTitleInput').value.trim() || 'Summer Sale',
+      highlight: document.getElementById('promoHighlightInput').value.trim() || 'Up to 50% Off',
+      sub: document.getElementById('promoSubInput').value.trim() || "Premium T-Shirts at unbeatable prices. Don't miss out — offer ends soon!",
+      ctaText: document.getElementById('promoCtaTextInput').value.trim() || 'Shop the Sale →',
+      ctaLink: document.getElementById('promoCtaLinkInput').value.trim() || 'shop.html',
+      badgeText: document.getElementById('promoBadgeInput').value.trim() || 'FREE Shipping',
+      imageUrl: document.getElementById('promoImageInput').value.trim() || 'assets/promo_banner.jpg',
+      imageAlt: document.getElementById('promoAltInput').value.trim() || 'Summer Sale – Up to 50% Off at WaveNexa',
+      endAt: document.getElementById('promoEndInput').value
+        ? new Date(document.getElementById('promoEndInput').value).toISOString()
+        : null
+    };
+
+    Store.updateSettings({ promoBanner });
+    showToast('Promo banner saved successfully!', 'success');
+  });
+
+  populateForm();
+})();
+</script>
+</body>
+</html>
