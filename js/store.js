@@ -685,10 +685,38 @@ const Store = (() => {
     return { ok: true, role: 'customer', user };
   }
 
+  const ADMIN_SESSION_KEY = 'tc_admin_session';
+
+  function isAdminLoggedIn() {
+    try {
+      const sess = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || localStorage.getItem(ADMIN_SESSION_KEY));
+      return Boolean(sess && sess.role === 'admin');
+    } catch { return false; }
+  }
+
+  function adminLogout() {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+  }
+
   async function customerLogin(email, password) {
-    // Customer check
+    const cleanEmail = (email || '').trim().toLowerCase();
+    
+    // 1. Check Store Admin credentials
+    if (cleanEmail === 'admin@wavenexa.com' && password === 'admin123') {
+      const adminUser = {
+        id: 'admin_master',
+        name: 'Store Administrator',
+        email: 'admin@wavenexa.com',
+        role: 'admin'
+      };
+      sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+      return { ok: true, role: 'admin', user: adminUser };
+    }
+
+    // 2. Customer check
     const customers = getCustomers();
-    const user = customers.find(c => c.email.toLowerCase() === email.toLowerCase() && c.password === password);
+    const user = customers.find(c => c.email.toLowerCase() === cleanEmail && c.password === password);
     if (user) {
       sessionStorage.setItem(CUSER_KEY, JSON.stringify({
         id: user.id,
@@ -726,6 +754,7 @@ const Store = (() => {
     syncShopifyProducts, openShopifyAdmin,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
     getCustomerProfile, updateCustomerProfile, getCustomerOrders,
+    isAdminLoggedIn, adminLogout,
     googleLogin,
     getStats
   };
