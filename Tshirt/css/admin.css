@@ -28,6 +28,16 @@
 
 .admin-sidebar-logo .nav-logo {
   font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+}
+
+.admin-sidebar-logo .nav-logo img {
+  height: 42px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .admin-sidebar-logo p {

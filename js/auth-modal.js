@@ -28,7 +28,9 @@
       <button class="auth-modal-close" onclick="closeAuthModal()" title="Close">✕</button>
 
       <div class="auth-modal-logo">
-        <a href="index.html" class="nav-logo">Wave<span>Nexa</span></a>
+        <a href="index.html" class="nav-logo" aria-label="WaveNexa Home">
+          <img src="logo/logo.png" alt="WaveNexa Logo" style="height: 52px; width: auto; margin: 0 auto; display: block;">
+        </a>
         <p>Member Access & Order Tracking</p>
       </div>
 

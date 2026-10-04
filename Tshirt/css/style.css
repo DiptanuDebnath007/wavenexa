@@ -259,8 +259,17 @@ p {
 
 .nav-logo img {
   display: block;
-  height: 42px;
+  height: 44px;
   width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.footer-brand .nav-logo img {
+  height: 48px;
+  width: auto;
+  margin-bottom: 12px;
+  display: block;
 }
 
 .nav-logo span {
@@ -1784,6 +1793,16 @@ select.form-control {
 
 .auth-modal-logo .nav-logo {
   font-size: 1.7rem;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-modal-logo .nav-logo img {
+  height: 52px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  margin: 0 auto;
 }
 
 .auth-modal-logo p {
