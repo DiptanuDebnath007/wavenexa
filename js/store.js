@@ -889,100 +889,292 @@ const Store = (() => {
   }
 
   const OTP_KEY = 'tc_active_otp';
+  const RATE_LIMIT_KEY = 'tc_otp_rate_limit';
 
-  function sendOtp(identifier) {
+  async function hashOtp(email, otp, salt) {
+    const enc = new TextEncoder();
+    const data = enc.encode(`${(email || '').toLowerCase().trim()}:${(otp || '').trim()}:${salt}`);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function generateSecureOtp() {
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    return (100000 + (arr[0] % 900000)).toString();
+  }
+
+  function generateSalt() {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function checkRateLimit(email) {
+    try {
+      const now = Date.now();
+      const records = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '{}');
+      const userRecords = (records[email] || []).filter(ts => now - ts < 10 * 60 * 1000);
+      if (userRecords.length >= 5) {
+        const oldest = userRecords[0];
+        const waitSec = Math.ceil((10 * 60 * 1000 - (now - oldest)) / 1000);
+        return { allowed: false, waitSec };
+      }
+      return { allowed: true };
+    } catch {
+      return { allowed: true };
+    }
+  }
+
+  function recordOtpRequest(email) {
+    try {
+      const now = Date.now();
+      const records = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '{}');
+      const userRecords = (records[email] || []).filter(ts => now - ts < 10 * 60 * 1000);
+      userRecords.push(now);
+      records[email] = userRecords;
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(records));
+    } catch (_) {}
+  }
+
+  async function dispatchEmailJs(email, otp, recipientName) {
+    const config = window.EMAILJS_CONFIG || {
+      serviceId: 'service_p176j1e',
+      templateId: 'template_v4451o9',
+      publicKey: 'dlLlCT95h6RXooM6x'
+    };
+
+    const templateParams = {
+      to_email: email,
+      email: email,
+      user_email: email,
+      recipient_email: email,
+      to_name: recipientName || email.split('@')[0],
+      user_name: recipientName || email.split('@')[0],
+      otp: otp,
+      passcode: otp,
+      code: otp,
+      verification_code: otp,
+      expires_in: '5 minutes',
+      project_name: 'WaveNexa',
+      store_name: 'WaveNexa',
+      warning: 'Do not share this OTP with anyone.'
+    };
+
+    // Method 1: EmailJS SDK if available
+    if (window.emailjs && typeof window.emailjs.send === 'function') {
+      try {
+        const res = await window.emailjs.send(config.serviceId, config.templateId, templateParams, config.publicKey);
+        return { ok: true, res };
+      } catch (sdkErr) {
+        console.warn('[EmailJS] SDK send failed, attempting direct REST fallback:', sdkErr);
+      }
+    }
+
+    // Method 2: Direct REST API
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        service_id: config.serviceId,
+        template_id: config.templateId,
+        user_id: config.publicKey,
+        template_params: templateParams
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(errText || `Email service returned HTTP ${response.status}`);
+    }
+
+    return { ok: true };
+  }
+
+  async function sendOtp(identifier, optionalName = '') {
     if (!identifier || typeof identifier !== 'string') {
       return { ok: false, error: 'Please enter a valid email address.' };
     }
-    const raw = identifier.trim().toLowerCase();
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) {
-      return { ok: false, error: 'Please enter a valid email address (e.g. you@email.com).' };
+    const cleanEmail = identifier.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      return { ok: false, error: 'Please enter a valid email address (e.g. you@example.com).' };
     }
 
-    // Generate secure 6-digit OTP code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins validity
+    // Check resend cooldown
+    const existing = getActiveOtpSession();
+    if (existing && existing.email === cleanEmail && Date.now() < existing.resendAllowedAt) {
+      const remainingSec = Math.ceil((existing.resendAllowedAt - Date.now()) / 1000);
+      return { ok: false, error: `Please wait ${remainingSec} second${remainingSec === 1 ? '' : 's'} before requesting another OTP.` };
+    }
 
-    const otpPayload = {
-      identifier: raw,
-      code,
+    // Check rate limit
+    const rateCheck = checkRateLimit(cleanEmail);
+    if (!rateCheck.allowed) {
+      return { ok: false, error: `Too many OTP requests. Please wait ${rateCheck.waitSec} seconds.` };
+    }
+
+    // Generate secure random 6-digit OTP and salt
+    const otp = generateSecureOtp();
+    const salt = generateSalt();
+    const hash = await hashOtp(cleanEmail, otp, salt);
+    const now = Date.now();
+    const expiresAt = now + 5 * 60 * 1000; // 5 minutes
+    const resendAllowedAt = now + 60 * 1000; // 60 seconds cooldown
+
+    // Send email via EmailJS
+    try {
+      await dispatchEmailJs(cleanEmail, otp, optionalName);
+    } catch (sendErr) {
+      console.error('[Store] EmailJS error:', sendErr);
+      return {
+        ok: false,
+        error: 'Unable to send OTP email right now. Please verify EmailJS service settings and try again.'
+      };
+    }
+
+    // Store hash securely (NEVER store plain OTP!)
+    const payload = {
+      email: cleanEmail,
+      hash,
+      salt,
       expiresAt,
-      isEmail: true
+      resendAllowedAt,
+      attemptsLeft: 5,
+      createdAt: now
     };
-
-    sessionStorage.setItem(OTP_KEY, JSON.stringify(otpPayload));
+    sessionStorage.setItem(OTP_KEY, JSON.stringify(payload));
+    recordOtpRequest(cleanEmail);
 
     return {
       ok: true,
-      code,
-      identifier: raw,
-      isEmail: true,
+      email: cleanEmail,
       expiresAt,
-      message: `Verification code sent to your email (${raw})`
+      resendAllowedAt,
+      message: 'OTP sent successfully to your email.'
     };
   }
 
-  function verifyOtp(identifier, inputCode, optionalName = '') {
+  async function verifyOtp(identifier, inputCode, optionalName = '') {
     try {
       const stored = JSON.parse(sessionStorage.getItem(OTP_KEY));
       if (!stored) {
-        return { ok: false, error: 'No active email verification code found. Please request a new code.' };
+        return { ok: false, error: 'No active OTP verification session found. Please request a new OTP.' };
+      }
+
+      const cleanEmail = (identifier || '').trim().toLowerCase();
+      if (stored.email !== cleanEmail) {
+        return { ok: false, error: 'Verification code does not match this email address.' };
       }
 
       if (Date.now() > stored.expiresAt) {
         sessionStorage.removeItem(OTP_KEY);
-        return { ok: false, error: 'Email verification code has expired. Please request a new code.' };
+        return { ok: false, error: 'OTP expired. Please request a new OTP.' };
       }
 
-      const cleanInputId = (identifier || '').trim().toLowerCase();
-
-      if (stored.identifier !== cleanInputId) {
-        return { ok: false, error: 'Verification code does not match this email address.' };
+      if (stored.attemptsLeft <= 0) {
+        sessionStorage.removeItem(OTP_KEY);
+        return { ok: false, error: 'Too many attempts. Please request a new OTP.', attemptsLeft: 0 };
       }
 
       const cleanCode = (inputCode || '').trim();
-      // Accepts generated OTP or universal testing code 123456
-      if (cleanCode !== stored.code && cleanCode !== '123456') {
-        return { ok: false, error: 'Incorrect verification code. Please check your email inbox and try again.' };
+      if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
+        return { ok: false, error: 'Please enter a valid 6-digit OTP.' };
       }
 
-      // Valid OTP! Find or create user
-      sessionStorage.removeItem(OTP_KEY);
-      const customers = getCustomers();
-      let user = customers.find(c => c.email && c.email.toLowerCase() === cleanInputId);
+      // Compute hash of entered code with stored salt
+      const inputHash = await hashOtp(cleanEmail, cleanCode, stored.salt);
 
+      if (inputHash !== stored.hash) {
+        stored.attemptsLeft = (stored.attemptsLeft || 5) - 1;
+        if (stored.attemptsLeft <= 0) {
+          sessionStorage.removeItem(OTP_KEY);
+          return { ok: false, error: 'Too many attempts. Please request a new OTP.', attemptsLeft: 0 };
+        }
+        sessionStorage.setItem(OTP_KEY, JSON.stringify(stored));
+        return {
+          ok: false,
+          error: `Invalid OTP. ${stored.attemptsLeft} attempt${stored.attemptsLeft === 1 ? '' : 's'} remaining.`,
+          attemptsLeft: stored.attemptsLeft
+        };
+      }
+
+      // Valid OTP! Invalidate OTP immediately after successful verification
+      sessionStorage.removeItem(OTP_KEY);
+
+      // Check if Admin
+      if (cleanEmail === 'admin@wavenexa.com') {
+        const adminUser = {
+          id: 'admin_master',
+          name: 'Store Administrator',
+          email: 'admin@wavenexa.com',
+          role: 'admin'
+        };
+        sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+        localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+        return { ok: true, role: 'admin', user: adminUser };
+      }
+
+      // Customer account lookup or creation
+      const customers = getCustomers();
+      let user = customers.find(c => c.email && c.email.toLowerCase() === cleanEmail);
       let isNew = false;
+
       if (!user) {
         isNew = true;
         user = normalizeCustomer({
           id: 'u' + Date.now(),
-          name: (optionalName || '').trim() || cleanInputId.split('@')[0],
-          email: cleanInputId,
+          name: (optionalName || '').trim() || cleanEmail.split('@')[0],
+          email: cleanEmail,
           phone: '',
-          password: 'email-verified-' + Date.now(),
-          provider: 'email_verification',
+          password: 'email-otp-verified',
+          provider: 'email_otp',
           createdAt: new Date().toISOString()
         });
         customers.push(user);
         localStorage.setItem(CUST_KEY, JSON.stringify(customers));
       }
 
-      // Set active session
+      // Create authenticated customer session
       const sessionUser = {
         id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone || '',
         profilePhoto: user.profilePhoto || '',
-        provider: 'email_verification'
+        provider: 'email_otp'
       };
       sessionStorage.setItem(CUSER_KEY, JSON.stringify(sessionUser));
+      localStorage.setItem(CUSER_KEY, JSON.stringify(sessionUser));
 
-      return { ok: true, user: sessionUser, isNew };
+      return { ok: true, role: 'customer', user: sessionUser, isNew };
     } catch (err) {
-      return { ok: false, error: 'Verification failed. Please try again.' };
+      console.error('[Store] OTP verification error:', err);
+      return { ok: false, error: 'Verification error occurred. Please try again.' };
     }
+  }
+
+  function getActiveOtpSession() {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(OTP_KEY));
+      if (!stored) return null;
+      if (Date.now() > stored.expiresAt || stored.attemptsLeft <= 0) {
+        sessionStorage.removeItem(OTP_KEY);
+        return null;
+      }
+      return {
+        email: stored.email,
+        expiresAt: stored.expiresAt,
+        resendAllowedAt: stored.resendAllowedAt,
+        attemptsLeft: stored.attemptsLeft
+      };
+    } catch { return null; }
+  }
+
+  function clearActiveOtpSession() {
+    sessionStorage.removeItem(OTP_KEY);
   }
 
   async function customerLogin(emailOrPhone, password) {
@@ -1050,7 +1242,7 @@ const Store = (() => {
     isSyncing: () => isSyncing,
     getSyncError: () => syncError,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
-    sendOtp, verifyOtp, cleanPhone,
+    sendOtp, verifyOtp, getActiveOtpSession, clearActiveOtpSession, cleanPhone,
     getCustomerProfile, updateCustomerProfile, getCustomerOrders,
     isAdminLoggedIn, adminLogout,
     googleLogin,

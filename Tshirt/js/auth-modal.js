@@ -16,8 +16,8 @@
   let currentTab = 'otp'; // 'otp' | 'password' | 'register'
   let otpStep = 'request'; // 'request' | 'verify'
   let currentIdentifier = '';
+  let otpExpiryTimer = null;
   let otpResendTimer = null;
-  let otpCountdown = 60;
 
   /**
    * HTML Template for the state-of-the-art Auth Modal
@@ -34,7 +34,7 @@
 
       <!-- Main Tabs -->
       <div class="auth-tabs" id="authMainTabs">
-        <button class="auth-tab ${currentTab === 'otp' ? 'active' : ''}" id="tabOtp" onclick="switchAuthTab('otp')">✉️ Email Verification</button>
+        <button class="auth-tab ${currentTab === 'otp' ? 'active' : ''}" id="tabOtp" onclick="switchAuthTab('otp')">✉️ Email OTP</button>
         <button class="auth-tab ${currentTab === 'password' ? 'active' : ''}" id="tabPassword" onclick="switchAuthTab('password')">🔑 Password</button>
         <button class="auth-tab ${currentTab === 'register' ? 'active' : ''}" id="tabRegister" onclick="switchAuthTab('register')">✨ Register</button>
       </div>
@@ -44,44 +44,43 @@
       <div class="auth-success" id="authSuccess"></div>
 
       <!-- ═════════════════════════════════════════════
-           1. EMAIL VERIFICATION FLOW
+           1. EMAIL OTP AUTHENTICATION FLOW
            ═════════════════════════════════════════════ -->
       <div id="otpSection" style="${currentTab === 'otp' ? '' : 'display:none;'}">
         
-        <!-- Step 1: Request Email Code -->
+        <!-- Step 1: Request Email OTP -->
         <form id="otpRequestForm" onsubmit="handleSendOtp(event)" style="${otpStep === 'request' ? '' : 'display:none;'}">
           <div class="form-group">
             <label class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="otpIdentifierInput" placeholder="you@email.com" autocomplete="email" required>
+            <input type="email" class="form-control" id="otpIdentifierInput" placeholder="you@example.com" autocomplete="email" required>
             <small style="color:var(--text-dim);font-size:0.75rem;margin-top:4px;display:block;">
-              We will send a 6-digit verification code to your email inbox
+              We will send a secure 6-digit OTP code to your email
             </small>
           </div>
           <button type="submit" class="btn btn-primary btn-full btn-lg" id="sendOtpBtn">
-            ✉️ Send Verification Code
+            ✉️ Send OTP
           </button>
         </form>
 
-        <!-- Step 2: Verify Email Code -->
+        <!-- Step 2: Verify Email OTP -->
         <form id="otpVerifyForm" onsubmit="handleVerifyOtp(event)" style="${otpStep === 'verify' ? '' : 'display:none;'}">
-          <div style="text-align:center;margin-bottom:12px;">
-            <span style="font-size:0.85rem;color:var(--text-muted);">Verification code sent to </span>
+          <div style="text-align:center;margin-bottom:14px;">
+            <span style="font-size:0.85rem;color:var(--text-muted);">OTP sent to </span>
             <strong id="otpTargetDisplay" style="color:var(--primary);font-size:0.9rem;"></strong>
             <button type="button" onclick="resetOtpFlow()" style="background:none;border:none;color:var(--accent);font-size:0.8rem;cursor:pointer;margin-left:6px;text-decoration:underline;">Change Email</button>
           </div>
 
-          <!-- Email Delivery Notification Card -->
-          <div class="otp-sim-banner" id="otpSimBanner">
-            <div>
-              <span style="display:block;font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">📧 WaveNexa Email Security Code</span>
-              <span class="otp-sim-code" id="otpSimCodeDisplay">------</span>
-            </div>
-            <button type="button" class="otp-autofill-btn" id="otpAutofillBtn" onclick="autofillOtp()">
-              ⚡ 1-Click Auto-Fill
-            </button>
+          <!-- Status & Expiration Banner -->
+          <div class="otp-status-banner" style="background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.25);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;text-align:center;">
+            <p style="font-size:0.88rem;color:var(--text);margin:0 0 5px;font-weight:600;">
+              📬 OTP sent successfully to your email.
+            </p>
+            <p style="font-size:0.82rem;color:var(--accent);margin:0;font-weight:600;" id="otpExpiryNotice">
+              ⏱️ OTP expires in <strong id="otpExpiryTimer">5:00</strong>
+            </p>
           </div>
 
-          <!-- 6-Digit OTP Box Grid -->
+          <!-- 6-Digit OTP Input Grid -->
           <div class="otp-inputs-wrap" id="otpDigitsWrap">
             <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" data-idx="0" autocomplete="one-time-code" autofocus>
             <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" data-idx="1">
@@ -91,20 +90,22 @@
             <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" data-idx="5">
           </div>
 
+          <div id="otpAttemptsNotice" style="font-size:0.78rem;color:#f87171;text-align:center;margin-top:6px;display:none;"></div>
+
           <!-- Optional Name for New Members -->
-          <div class="form-group" id="otpNameGroup" style="display:none;margin-top:12px;">
-            <label class="form-label">Your Name (for order delivery)</label>
+          <div class="form-group" id="otpNameGroup" style="display:none;margin-top:14px;">
+            <label class="form-label">Your Full Name (for delivery & profile)</label>
             <input type="text" class="form-control" id="otpNameInput" placeholder="Enter your full name">
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-lg" id="verifyOtpBtn">
-            🚀 Verify Email & Continue
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="verifyOtpBtn" style="margin-top:14px;">
+            🚀 Verify OTP
           </button>
 
           <div class="otp-timer-row">
-            <span id="otpTimerText">Resend email in <strong id="otpTimerCount">60s</strong></span>
+            <span id="otpTimerText">Resend in <strong id="otpTimerCount">60s</strong></span>
             <button type="button" class="otp-resend-btn" id="otpResendBtn" disabled onclick="resendOtp()">
-              🔄 Resend Email
+              🔄 Resend OTP
             </button>
           </div>
         </form>
@@ -203,6 +204,7 @@
     overlay.innerHTML = getModalHTML();
     setupOtpDigitInputs();
     initGoogleAuth();
+    restorePendingOtpSession();
   }
 
   /**
@@ -281,7 +283,6 @@
     if (modal) {
       modal.classList.remove('open');
       document.body.style.overflow = '';
-      clearInterval(otpResendTimer);
     }
   };
 
@@ -361,7 +362,102 @@
     if (succ) succ.style.display = 'none';
   }
 
-  // ── Email Verification Handlers ───────────────────────────────────────────
+  // ── Email OTP Timers & State ─────────────────────────────────────────────
+
+
+  function formatTimeRemaining(ms) {
+    if (ms <= 0) return '0:00';
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  function startOtpTimers(expiresAt, resendAllowedAt) {
+    stopOtpTimers();
+
+    // 1. Expiration Timer (5:00 down to 0:00)
+    function tickExpiry() {
+      const remainingMs = expiresAt - Date.now();
+      const timerEl = document.getElementById('otpExpiryTimer');
+      const noticeEl = document.getElementById('otpExpiryNotice');
+      const verifyBtn = document.getElementById('verifyOtpBtn');
+      if (timerEl) {
+        timerEl.textContent = formatTimeRemaining(remainingMs);
+      }
+      if (remainingMs <= 0) {
+        stopOtpTimers();
+        if (noticeEl) {
+          noticeEl.innerHTML = '<span style="color:#f87171;font-weight:700;">⚠️ OTP expired. Please request a new OTP.</span>';
+        }
+        if (verifyBtn) verifyBtn.disabled = true;
+        showAuthError('OTP expired. Please request a new OTP.');
+      }
+    }
+    tickExpiry();
+    otpExpiryTimer = setInterval(tickExpiry, 1000);
+
+    // 2. Resend Cooldown Timer (60s down to 0s)
+    function tickResend() {
+      const remainingMs = resendAllowedAt - Date.now();
+      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+      const resendBtn = document.getElementById('otpResendBtn');
+      const timerText = document.getElementById('otpTimerText');
+      const timerCount = document.getElementById('otpTimerCount');
+
+      if (remainingSec > 0) {
+        if (timerText) {
+          timerText.style.display = 'inline';
+          if (timerCount) timerCount.textContent = remainingSec + 's';
+        }
+        if (resendBtn) {
+          resendBtn.disabled = true;
+          resendBtn.textContent = '🔄 Resend OTP';
+        }
+      } else {
+        clearInterval(otpResendTimer);
+        if (timerText) timerText.style.display = 'none';
+        if (resendBtn) {
+          resendBtn.disabled = false;
+          resendBtn.textContent = '🔄 Resend OTP';
+        }
+      }
+    }
+    tickResend();
+    otpResendTimer = setInterval(tickResend, 1000);
+  }
+
+  function stopOtpTimers() {
+    if (otpExpiryTimer) { clearInterval(otpExpiryTimer); otpExpiryTimer = null; }
+    if (otpResendTimer) { clearInterval(otpResendTimer); otpResendTimer = null; }
+  }
+
+  function restorePendingOtpSession() {
+    if (typeof Store === 'undefined' || !Store.getActiveOtpSession) return;
+    const session = Store.getActiveOtpSession();
+    if (session && session.email && Date.now() < session.expiresAt) {
+      currentIdentifier = session.email;
+      otpStep = 'verify';
+      const reqForm = document.getElementById('otpRequestForm');
+      const verForm = document.getElementById('otpVerifyForm');
+      const targetDisp = document.getElementById('otpTargetDisplay');
+      if (reqForm) reqForm.style.display = 'none';
+      if (verForm) verForm.style.display = '';
+      if (targetDisp) targetDisp.textContent = session.email;
+
+      startOtpTimers(session.expiresAt, session.resendAllowedAt);
+
+      if (session.attemptsLeft < 5) {
+        const attemptsEl = document.getElementById('otpAttemptsNotice');
+        if (attemptsEl) {
+          attemptsEl.style.display = 'block';
+          attemptsEl.textContent = `⚠️ ${session.attemptsLeft} attempt${session.attemptsLeft === 1 ? '' : 's'} remaining`;
+        }
+      }
+    }
+  }
+
+  // ── Email OTP Handlers ───────────────────────────────────────────────────
 
   window.handleSendOtp = async function (e) {
     if (e && e.preventDefault) e.preventDefault();
@@ -370,62 +466,56 @@
     const emailVal = input ? input.value.trim().toLowerCase() : '';
 
     if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
-      showAuthError('Please enter a valid email address (e.g. you@email.com).');
+      showAuthError('Please enter a valid email address (e.g. you@example.com).');
       return;
     }
 
     if (btn) {
       btn.disabled = true;
-      btn.textContent = '⏳ Sending verification code...';
+      btn.textContent = '⏳ Sending OTP...';
     }
     clearAuthMessages();
 
     try {
-      const res = Store.sendOtp(emailVal);
+      const res = await Store.sendOtp(emailVal);
       if (res.ok) {
-        currentIdentifier = res.identifier;
+        currentIdentifier = res.email;
         otpStep = 'verify';
 
         // Update verify screen UI
         document.getElementById('otpRequestForm').style.display = 'none';
         document.getElementById('otpVerifyForm').style.display = '';
-        document.getElementById('otpTargetDisplay').textContent = res.identifier;
-        document.getElementById('otpSimCodeDisplay').textContent = res.code;
+        document.getElementById('otpTargetDisplay').textContent = res.email;
 
         // Check if user is known; if not, show optional name input
         const customers = Store.getCustomers ? Store.getCustomers() : [];
-        const isKnown = customers.some(c => c.email && c.email.toLowerCase() === res.identifier.toLowerCase());
+        const isKnown = customers.some(c => c.email && c.email.toLowerCase() === res.email.toLowerCase());
         const nameGroup = document.getElementById('otpNameGroup');
         if (nameGroup) nameGroup.style.display = isKnown ? 'none' : 'block';
 
-        showAuthSuccess(`Email sent! Your verification code is ${res.code}`);
-        startOtpCountdown();
+        const verifyBtn = document.getElementById('verifyOtpBtn');
+        if (verifyBtn) verifyBtn.disabled = false;
+        const attemptsEl = document.getElementById('otpAttemptsNotice');
+        if (attemptsEl) attemptsEl.style.display = 'none';
+
+        showAuthSuccess('OTP sent successfully to your email.');
+        startOtpTimers(res.expiresAt, res.resendAllowedAt);
+
         setTimeout(() => {
           const first = document.querySelector('.otp-digit[data-idx="0"]');
           if (first) { first.focus(); first.select(); }
         }, 150);
       } else {
-        showAuthError(res.error || 'Failed to send verification code.');
+        showAuthError(res.error || 'Failed to send OTP.');
       }
     } catch (err) {
-      showAuthError('Something went wrong sending the verification code.');
+      showAuthError('Unable to send OTP. Please check your network and try again.');
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = '✉️ Send Verification Code';
+        btn.textContent = '✉️ Send OTP';
       }
     }
-  };
-
-  window.autofillOtp = function () {
-    const code = document.getElementById('otpSimCodeDisplay')?.textContent.trim();
-    if (!code || code.length !== 6) return;
-    const inputs = document.querySelectorAll('.otp-digit');
-    inputs.forEach((inp, idx) => {
-      inp.value = code[idx] || '';
-      inp.classList.add('filled');
-    });
-    handleVerifyOtp();
   };
 
   window.handleVerifyOtp = async function (e) {
@@ -435,76 +525,104 @@
     const nameInput = document.getElementById('otpNameInput');
     const optionalName = nameInput ? nameInput.value.trim() : '';
     const btn = document.getElementById('verifyOtpBtn');
+    const attemptsEl = document.getElementById('otpAttemptsNotice');
 
     if (code.length < 6) {
-      showAuthError('Please enter all 6 digits of the verification code.');
+      showAuthError('Please enter all 6 digits of the OTP.');
       return;
     }
 
     if (btn) {
       btn.disabled = true;
-      btn.textContent = '⏳ Verifying code...';
+      btn.textContent = '⏳ Verifying OTP...';
     }
+    clearAuthMessages();
 
     try {
-      const res = Store.verifyOtp(currentIdentifier, code, optionalName);
+      const res = await Store.verifyOtp(currentIdentifier, code, optionalName);
       if (res.ok) {
-        clearInterval(otpResendTimer);
-        const firstName = (res.user.name || 'Member').split(' ')[0];
-        showAuthSuccess(`Email verified! Welcome, ${firstName}! 🎉`);
-        setTimeout(() => {
-          closeAuthModal();
-          updateAuthNavBtn();
-        }, 850);
+        stopOtpTimers();
+        if (res.role === 'admin') {
+          showAuthSuccess('👑 Admin authorized! Redirecting to Dashboard...');
+          setTimeout(() => {
+            window.location.href = 'admin/dashboard.html';
+          }, 700);
+        } else {
+          const firstName = (res.user.name || 'Member').split(' ')[0];
+          showAuthSuccess(`Welcome, ${firstName}! 🎉 Login successful.`);
+          setTimeout(() => {
+            closeAuthModal();
+            updateAuthNavBtn();
+          }, 850);
+        }
       } else {
-        showAuthError(res.error || 'Invalid verification code.');
+        showAuthError(res.error || 'Invalid OTP.');
         inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
         inputs[0]?.focus();
+        if (typeof res.attemptsLeft === 'number') {
+          if (attemptsEl) {
+            attemptsEl.style.display = 'block';
+            attemptsEl.textContent = res.attemptsLeft > 0
+              ? `⚠️ ${res.attemptsLeft} attempt${res.attemptsLeft === 1 ? '' : 's'} remaining before OTP expires.`
+              : '❌ Maximum attempts reached. Please request a new OTP.';
+          }
+          if (res.attemptsLeft <= 0 && btn) {
+            btn.disabled = true;
+          }
+        }
       }
     } catch (err) {
-      showAuthError('Verification failed. Please try again.');
+      showAuthError('Verification error. Please try again.');
     } finally {
-      if (btn) {
+      if (btn && (!attemptsEl || attemptsEl.textContent.indexOf('Maximum') === -1)) {
         btn.disabled = false;
-        btn.textContent = '🚀 Verify Email & Continue';
+        btn.textContent = '🚀 Verify OTP';
       }
     }
   };
 
   window.resetOtpFlow = function () {
     otpStep = 'request';
-    clearInterval(otpResendTimer);
+    stopOtpTimers();
+    if (Store.clearActiveOtpSession) Store.clearActiveOtpSession();
     document.getElementById('otpVerifyForm').style.display = 'none';
     document.getElementById('otpRequestForm').style.display = '';
+    const verifyBtn = document.getElementById('verifyOtpBtn');
+    if (verifyBtn) verifyBtn.disabled = false;
     clearAuthMessages();
     setTimeout(() => document.getElementById('otpIdentifierInput')?.focus(), 50);
   };
 
-  window.resendOtp = function () {
+  window.resendOtp = async function () {
     if (!currentIdentifier) return;
-    handleSendOtp();
-  };
+    const btn = document.getElementById('otpResendBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ Resending OTP...';
+    }
+    clearAuthMessages();
 
-  function startOtpCountdown() {
-    clearInterval(otpResendTimer);
-    otpCountdown = 60;
-    const timerText = document.getElementById('otpTimerText');
-    const timerCount = document.getElementById('otpTimerCount');
-    const resendBtn = document.getElementById('otpResendBtn');
-
-    if (timerText) timerText.style.display = 'inline';
-    if (resendBtn) resendBtn.disabled = true;
-
-    otpResendTimer = setInterval(() => {
-      otpCountdown--;
-      if (timerCount) timerCount.textContent = otpCountdown + 's';
-      if (otpCountdown <= 0) {
-        clearInterval(otpResendTimer);
-        if (timerText) timerText.style.display = 'none';
-        if (resendBtn) resendBtn.disabled = false;
+    try {
+      const res = await Store.sendOtp(currentIdentifier);
+      if (res.ok) {
+        showAuthSuccess('A new OTP has been sent to your email.');
+        const inputs = document.querySelectorAll('.otp-digit');
+        inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+        inputs[0]?.focus();
+        const verifyBtn = document.getElementById('verifyOtpBtn');
+        if (verifyBtn) verifyBtn.disabled = false;
+        const attemptsEl = document.getElementById('otpAttemptsNotice');
+        if (attemptsEl) attemptsEl.style.display = 'none';
+        startOtpTimers(res.expiresAt, res.resendAllowedAt);
+      } else {
+        showAuthError(res.error || 'Failed to resend OTP.');
+        if (btn) btn.disabled = false;
       }
-    }, 1000);
-  }
+    } catch (err) {
+      showAuthError('Error resending OTP. Please try again.');
+      if (btn) btn.disabled = false;
+    }
+  };
 
   // ── Password Login Handlers ────────────────────────────────────────────────
 
