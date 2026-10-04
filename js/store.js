@@ -843,6 +843,51 @@ const Store = (() => {
     localStorage.removeItem(ADMIN_SESSION_KEY);
   }
 
+  async function customerLogin(email, password) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    
+    // 1. Check Store Admin credentials
+    if (cleanEmail === 'admin@wavenexa.com' && password === 'admin123') {
+      const adminUser = {
+        id: 'admin_master',
+        name: 'Store Administrator',
+        email: 'admin@wavenexa.com',
+        role: 'admin'
+      };
+      sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+      localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+      return { ok: true, role: 'admin', user: adminUser };
+    }
+
+    // 2. Customer check
+    const customers = getCustomers();
+    const user = customers.find(c => c.email.toLowerCase() === cleanEmail && c.password === password);
+    if (user) {
+      const sess = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePhoto: user.profilePhoto || '',
+        provider: 'email'
+      };
+      sessionStorage.setItem(CUSER_KEY, JSON.stringify(sess));
+      localStorage.setItem(CUSER_KEY, JSON.stringify(sess));
+      return { ok: true, role: 'customer', user };
+    }
+    return { ok: false, error: 'Invalid email or password.' };
+  }
+
+  function customerLogout() {
+    sessionStorage.removeItem(CUSER_KEY);
+    localStorage.removeItem(CUSER_KEY);
+  }
+
+  function getCurrentUser() {
+    try {
+      return JSON.parse(sessionStorage.getItem(CUSER_KEY) || localStorage.getItem(CUSER_KEY));
+    } catch { return null; }
+  }
+
   const OTP_KEY = 'tc_active_otp';
 
   function sendOtp(identifier) {
@@ -1131,7 +1176,11 @@ window.addEventListener('load', () => {
 // Auto-prefix paths based on current page location
 function imgPath(src) {
   if (!src) return '';
-  if (src.startsWith('data:') || src.startsWith('http')) return src;
+  if (src.startsWith('data:') || src.startsWith('http') || src.startsWith('/')) return src;
+  const inAdmin = typeof window !== 'undefined' && window.location && (window.location.pathname.includes('/admin/') || window.location.pathname.endsWith('/admin'));
+  if (inAdmin && !src.startsWith('../')) {
+    return '../' + src;
+  }
   return src;
 }
 

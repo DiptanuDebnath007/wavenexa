@@ -24,6 +24,10 @@
       <a href="upload.html" class="admin-nav-link"><span class="nav-icon">➕</span> Add Product</a>
       <a href="promo.html" class="admin-nav-link"><span class="nav-icon">📢</span> Promo Banner</a>
       <a href="payment.html" class="admin-nav-link"><span class="nav-icon">📱</span> Payment QR</a>
+      <div class="admin-nav-section">Shopify Store</div>
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474/orders" class="admin-nav-link" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🛍️</span> Shopify Orders ↗</a>
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474/products" class="admin-nav-link" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🏷️</span> Shopify Products ↗</a>
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474" class="admin-nav-link" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🏬</span> Shopify Admin ↗</a>
       <div class="admin-nav-section">Account</div>
       <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Home</a>
       <a href="../shop.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🛍️</span> Visit Shop</a>
@@ -51,6 +55,37 @@
     </div>
 
     <div class="admin-content">
+      <!-- Quick Action Command Bar -->
+      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+        <a href="orders.html" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+          📦 Website Orders
+        </a>
+        <a href="https://admin.shopify.com/store/fashion-hub-215153474/orders" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:6px;background:#008060;border-color:#008060;">
+          🛍️ Shopify Live Orders ↗
+        </a>
+        <a href="promo.html" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+          📢 Edit Advertisement Banner
+        </a>
+        <a href="https://admin.shopify.com/store/fashion-hub-215153474/products" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+          🏷️ Manage Shopify Catalog ↗
+        </a>
+      </div>
+
+      <!-- Promo Banner Controller Widget -->
+      <div class="card" style="padding:18px 24px;margin-bottom:28px;background:rgba(108,99,255,0.06);border:1px solid rgba(108,99,255,0.2);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-radius:12px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="font-size:2.2rem;">📢</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <strong style="font-size:1.05rem;" id="dashPromoTitle">Summer Sale</strong>
+              <span class="order-status status-confirmed" id="dashPromoStatus">Active</span>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:2px;" id="dashPromoHighlight">Promo Banner & Countdown on Homepage</p>
+          </div>
+        </div>
+        <a href="promo.html" class="btn btn-primary btn-sm">Edit Banner & Countdown ⚙️</a>
+      </div>
+
       <!-- Stats -->
       <div class="stats-grid" id="statsGrid">
         <div class="stat-card" style="--card-color:#6C63FF">
@@ -125,6 +160,24 @@
   document.getElementById('statProducts').textContent = stats.totalProducts;
   const pb = document.getElementById('pendingBadge');
   if (stats.pendingOrders > 0) pb.textContent = stats.pendingOrders;
+
+  // Hydrate Promo Widget
+  const settings = Store.getSettings ? Store.getSettings() : {};
+  const promo = settings.promoBanner || {};
+  const promoTitleEl = document.getElementById('dashPromoTitle');
+  const promoStatusEl = document.getElementById('dashPromoStatus');
+  const promoHighlightEl = document.getElementById('dashPromoHighlight');
+  if (promoTitleEl) promoTitleEl.textContent = promo.title || 'Summer Sale';
+  if (promoHighlightEl) promoHighlightEl.textContent = (promo.highlight ? promo.highlight + ' — ' : '') + (promo.sub || 'Promo Banner & Countdown on Homepage');
+  if (promoStatusEl) {
+    if (promo.enabled !== false) {
+      promoStatusEl.className = 'order-status status-confirmed';
+      promoStatusEl.textContent = 'Active on Store';
+    } else {
+      promoStatusEl.className = 'order-status status-cancelled';
+      promoStatusEl.textContent = 'Hidden / Inactive';
+    }
+  }
 
   // Recent Orders
   const orders = Store.getOrders().slice(0, 6);

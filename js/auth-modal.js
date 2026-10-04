@@ -182,7 +182,7 @@
       </button>
 
       <p class="auth-hint" style="margin-top:16px;">
-        Need assistance? Contact <a href="mailto:support@wavenexa.shop" style="color:var(--primary);text-decoration:none;">support@wavenexa.shop</a>
+        Need assistance? Contact <a href="mailto:support@wavenexa.shop" style="color:var(--primary);text-decoration:none;">support@wavenexa.shop</a> · <a href="admin/login.html" style="color:var(--primary);font-weight:600;text-decoration:none;">🔐 Store Admin Portal</a>
       </p>
     </div>
     `;
@@ -659,11 +659,16 @@
 
   window.updateAuthNavBtn = function () {
     const user = Store.getCurrentUser ? Store.getCurrentUser() : null;
+    const isAdmin = (user && user.role === 'admin') || (Store.isAdminLoggedIn && Store.isAdminLoggedIn());
     const desktopBtn = document.getElementById('authNavBtn');
     const mobileLink = document.getElementById('mobileAuthLink');
 
     if (desktopBtn) {
-      if (user) {
+      if (isAdmin) {
+        desktopBtn.innerHTML = `👑 Admin`;
+        desktopBtn.title = 'Open WaveNexa Admin Portal';
+        desktopBtn.onclick = () => window.location.href = 'admin/dashboard.html';
+      } else if (user) {
         const firstName = (user.name || 'Member').split(' ')[0];
         desktopBtn.innerHTML = `👤 ${firstName}`;
         desktopBtn.title = 'View My Profile';
@@ -676,7 +681,11 @@
     }
 
     if (mobileLink) {
-      if (user) {
+      if (isAdmin) {
+        mobileLink.innerHTML = `👑 Admin Portal`;
+        mobileLink.href = 'admin/dashboard.html';
+        mobileLink.onclick = null;
+      } else if (user) {
         const firstName = (user.name || 'Member').split(' ')[0];
         mobileLink.innerHTML = `👤 Profile (${firstName})`;
         mobileLink.href = 'profile.html';

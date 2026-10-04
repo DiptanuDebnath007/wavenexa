@@ -23,6 +23,10 @@
       <a href="upload.html" class="admin-nav-link"><span class="nav-icon">➕</span> Add Product</a>
       <a href="promo.html" class="admin-nav-link"><span class="nav-icon">📢</span> Promo Banner</a>
       <a href="payment.html" class="admin-nav-link"><span class="nav-icon">📱</span> Payment QR</a>
+      <div class="admin-nav-section">Shopify Store</div>
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474/orders" class="admin-nav-link" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🛍️</span> Shopify Orders ↗</a>
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474/products" class="admin-nav-link" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🏷️</span> Shopify Products ↗</a>
+      <a href="https://admin.shopify.com/store/fashion-hub-215153474" class="admin-nav-link" target="_blank" rel="noopener noreferrer"><span class="nav-icon">🏬</span> Shopify Admin ↗</a>
       <div class="admin-nav-section">Account</div>
       <a href="../index.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🌐</span> View Home</a>
       <a href="../shop.html" class="admin-nav-link" target="_blank"><span class="nav-icon">🛍️</span> Visit Shop</a>
@@ -39,12 +43,23 @@
   <main class="admin-main">
     <div class="admin-topbar">
       <div class="admin-page-title">📦 All Orders</div>
-      <div class="admin-topbar-right">
+      <div class="admin-topbar-right" style="display:flex;gap:10px;align-items:center;">
+        <a href="https://admin.shopify.com/store/fashion-hub-215153474/orders" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#008060;color:#fff;font-weight:600;display:inline-flex;align-items:center;gap:6px;">🛍️ Shopify Live Orders ↗</a>
         <button class="btn btn-outline btn-sm" id="exportBtn">📥 Export CSV</button>
       </div>
     </div>
 
     <div class="admin-content">
+      <!-- Order Hub Info Banner -->
+      <div class="card" style="padding:16px 20px;margin-bottom:20px;background:rgba(0,128,96,0.08);border:1px solid rgba(0,128,96,0.25);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+        <div>
+          <strong style="color:#10b981;font-size:0.95rem;">🛍️ Multi-Channel Order Hub</strong>
+          <p style="font-size:0.83rem;color:var(--text-muted);margin-top:2px;">Manage orders placed on your website below, or jump directly into Shopify Admin to view live Shopify checkout orders and fulfillments.</p>
+        </div>
+        <a href="https://admin.shopify.com/store/fashion-hub-215153474/orders" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#008060;color:#fff;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+          Open Shopify Orders ↗
+        </a>
+      </div>
       <!-- Filters -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
         <div class="filter-tags" id="statusFilters">

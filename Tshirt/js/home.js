@@ -447,4 +447,13 @@ window.addEventListener('load', function () {
       }, 500);
     });
   }
+
+  // Live update when promo banner is modified in Admin
+  window.addEventListener('settingsChange', function (e) {
+    if (e.detail?.promoBanner) {
+      Object.assign(livePromo, e.detail.promoBanner);
+      applyPromoToDom();
+      applyHeroOffset();
+    }
+  });
 })();
