@@ -6,7 +6,7 @@
   'use strict';
 
   window.EMAILJS_CONFIG = {
-    serviceId: 'service_p176j1e',
+    serviceId: 'service_j2ahlkg',
     templateId: 'template_v4451o9',
     publicKey: 'dlLlCT95h6RXooM6x'
   };

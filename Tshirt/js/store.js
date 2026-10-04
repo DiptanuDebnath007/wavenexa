@@ -940,14 +940,14 @@ const Store = (() => {
 
   async function dispatchEmailJs(email, otp, recipientName) {
     const config = window.EMAILJS_CONFIG || {
-      serviceId: 'service_p176j1e',
+      serviceId: 'service_j2ahlkg',
       templateId: 'template_v4451o9',
       publicKey: 'dlLlCT95h6RXooM6x'
     };
 
     const templateParams = {
-      to_email: email,
       email: email,
+      to_email: email,
       user_email: email,
       recipient_email: email,
       to_name: recipientName || email.split('@')[0],
@@ -962,36 +962,46 @@ const Store = (() => {
       warning: 'Do not share this OTP with anyone.'
     };
 
+    let lastError = null;
+
     // Method 1: EmailJS SDK if available
     if (window.emailjs && typeof window.emailjs.send === 'function') {
       try {
         const res = await window.emailjs.send(config.serviceId, config.templateId, templateParams, config.publicKey);
+        console.log('[EmailJS] SDK send success:', res);
         return { ok: true, res };
       } catch (sdkErr) {
+        lastError = sdkErr;
         console.warn('[EmailJS] SDK send failed, attempting direct REST fallback:', sdkErr);
       }
     }
 
     // Method 2: Direct REST API
-    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        service_id: config.serviceId,
-        template_id: config.templateId,
-        user_id: config.publicKey,
-        template_params: templateParams
-      })
-    });
+    try {
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          service_id: config.serviceId,
+          template_id: config.templateId,
+          user_id: config.publicKey,
+          template_params: templateParams
+        })
+      });
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      throw new Error(errText || `Email service returned HTTP ${response.status}`);
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(errText || `Email service returned HTTP ${response.status}`);
+      }
+
+      console.log('[EmailJS] REST API send success');
+      return { ok: true };
+    } catch (restErr) {
+      const finalError = restErr || lastError;
+      throw finalError;
     }
-
-    return { ok: true };
   }
 
   async function sendOtp(identifier, optionalName = '') {
@@ -1029,9 +1039,10 @@ const Store = (() => {
       await dispatchEmailJs(cleanEmail, otp, optionalName);
     } catch (sendErr) {
       console.error('[Store] EmailJS error:', sendErr);
+      const detail = sendErr?.text || sendErr?.message || (typeof sendErr === 'string' ? sendErr : 'Email delivery failed');
       return {
         ok: false,
-        error: 'Unable to send OTP email right now. Please verify EmailJS service settings and try again.'
+        error: `EmailJS error: ${detail}`
       };
     }
 
