@@ -23,7 +23,9 @@
     if (emptyEl) emptyEl.style.display = 'none';
     if (summaryCol) summaryCol.style.display = 'block';
 
-    listEl.innerHTML = cart.map(item => `
+    listEl.innerHTML = cart.map(item => {
+      const colorHex = window.getColorHex ? window.getColorHex(item.color) : '#2A2A2A';
+      return `
       <div class="cart-item" id="item-${item.key}">
         <div class="cart-item-img">
           <img src="${item.image}" alt="${item.title}">
@@ -32,9 +34,9 @@
           <div class="cart-item-name">${item.title}</div>
           <div class="cart-item-meta">
             <span class="cart-item-size">Size: ${item.size}</span>
-            <span class="cart-item-color-badge">
-              <span class="cart-item-color-dot" style="background:${item.color};display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--border);margin-right:4px;"></span>
-              Color
+            <span class="cart-item-color-badge" style="display:inline-flex;align-items:center;gap:4px;">
+              <span class="cart-item-color-dot" style="background:${colorHex};display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--border);"></span>
+              ${item.color}
             </span>
           </div>
           <div class="cart-item-price">${formatPrice(item.price)} × ${item.qty} = <strong>${formatPrice(item.price * item.qty)}</strong></div>
@@ -49,7 +51,8 @@
           <button class="cart-item-remove" onclick="removeItem('${item.key}')">🗑 Remove</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     renderSummary();
   }
@@ -90,7 +93,7 @@
           <div class="mini-cart-img"><img src="${item.image}" alt="${item.title}"></div>
           <div class="mini-cart-info">
             <div class="mini-cart-name">${item.title}</div>
-            <div class="mini-cart-sub">${item.size} · Qty: ${item.qty}</div>
+            <div class="mini-cart-sub">${item.size} · ${item.color} · Qty: ${item.qty}</div>
           </div>
           <div class="mini-cart-price">${formatPrice(item.price * item.qty)}</div>
         </div>

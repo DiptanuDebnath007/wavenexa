@@ -1,8 +1,43 @@
 /* ==========================================================================
    WAVENEXA — Shopify Storefront API & Headless Backend Client
    Handles live Shopify product syncing, Storefront GraphQL queries,
-   official Shopify checkout redirection, and Shopify Admin integration.
+   collections, official Shopify checkout redirection, and admin integration.
    ========================================================================== */
+
+const COLOR_HEX_MAP = {
+  'white': '#FFFFFF',
+  'black': '#1A1A1A',
+  'navy blue': '#1B2A4A',
+  'navy': '#1B2A4A',
+  'grey melange': '#A8A9AD',
+  'grey': '#9E9E9E',
+  'gray': '#9E9E9E',
+  'bottle green': '#1B4D3E',
+  'green': '#2E7D32',
+  'royal blue': '#2962FF',
+  'blue': '#2962FF',
+  'lavender': '#B57EDC',
+  'coral': '#FF6B6B',
+  'charcoal': '#2D2D2D',
+  'olive': '#6B7C45',
+  'purple': '#6A1B9A',
+  'cream': '#F5F5F0',
+  'ivory': '#E8E8E0',
+  'red': '#D32F2F',
+  'maroon': '#800000',
+  'beige': '#F5F5DC',
+  'brown': '#795548',
+  'pink': '#FFC0CB',
+  'yellow': '#FFD700',
+  'orange': '#FF9800'
+};
+
+window.getColorHex = function (colorName) {
+  if (!colorName) return '#2A2A2A';
+  const clean = String(colorName).toLowerCase().trim();
+  if (clean.startsWith('#')) return colorName;
+  return COLOR_HEX_MAP[clean] || '#333333';
+};
 
 const ShopifyClient = (() => {
 
@@ -15,14 +50,15 @@ const ShopifyClient = (() => {
       throw new Error('Shopify Headless credentials are not yet configured.');
     }
 
-    const domain = cfg.storeDomain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-    const url = `https://${domain}/api/${cfg.apiVersion || '2024-10'}/graphql.json`;
+    const domain = cfg.storeDomain.replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim();
+    const version = cfg.apiVersion || '2024-10';
+    const url = `https://${domain}/api/${version}/graphql.json`;
 
     const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': cfg.storefrontAccessToken
+        'X-Shopify-Storefront-Access-Token': cfg.storefrontAccessToken.trim()
       },
       body: JSON.stringify({ query: graphqlQuery, variables })
     });
@@ -74,49 +110,48 @@ const ShopifyClient = (() => {
     let sizes = [];
     let colors = [];
 
-    // Check options
+    // 1. Check options
     if (Array.isArray(node.options)) {
       node.options.forEach(opt => {
         const name = (opt.name || '').toLowerCase();
         if (name.includes('size')) {
-          sizes = opt.values || [];
+          sizes = (opt.values || []).map(s => String(s).trim()).filter(Boolean);
         } else if (name.includes('color') || name.includes('colour')) {
-          colors = opt.values || [];
+          colors = (opt.values || []).map(c => String(c).trim()).filter(Boolean);
         }
       });
     }
 
-    // Default sizes fallback if not explicitly in options
-    if (sizes.length === 0) {
-      sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-    }
-
-    // Map color names to representative hexes or clean values
-    const colorHexMap = {
-      black: '#1A1A1A',
-      charcoal: '#2D2D2D',
-      white: '#FFFFFF',
-      coral: '#FF6B6B',
-      blue: '#2962FF',
-      navy: '#1A237E',
-      olive: '#6B7C45',
-      grey: '#9E9E9E',
-      gray: '#9E9E9E',
-      purple: '#6A1B9A',
-      cream: '#F5F5F0',
-      ivory: '#E8E8E0',
-      red: '#D32F2F',
-      green: '#2E7D32'
-    };
-
-    if (colors.length === 0) {
-      colors = ['#1A1A1A', '#2D2D2D'];
-    } else {
-      colors = colors.map(c => {
-        const lower = String(c).toLowerCase().trim();
-        return colorHexMap[lower] || (lower.startsWith('#') ? lower : '#1A1A1A');
+    // 2. Fallback: extract from variants if options are missing or empty
+    const variantEdges = node.variants?.edges || [];
+    if (sizes.length === 0 && variantEdges.length > 0) {
+      const sizeSet = new Set();
+      variantEdges.forEach(e => {
+        (e.node?.selectedOptions || []).forEach(o => {
+          if ((o.name || '').toLowerCase().includes('size') && o.value) {
+            sizeSet.add(String(o.value).trim());
+          }
+        });
       });
+      sizes = Array.from(sizeSet);
     }
+
+    if (colors.length === 0 && variantEdges.length > 0) {
+      const colorSet = new Set();
+      variantEdges.forEach(e => {
+        (e.node?.selectedOptions || []).forEach(o => {
+          const n = (o.name || '').toLowerCase();
+          if ((n.includes('color') || n.includes('colour')) && o.value) {
+            colorSet.add(String(o.value).trim());
+          }
+        });
+      });
+      colors = Array.from(colorSet);
+    }
+
+    // Defaults if completely missing
+    if (sizes.length === 0) sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    if (colors.length === 0) colors = ['Black', 'White'];
 
     return { sizes, colors };
   }
@@ -148,15 +183,37 @@ const ShopifyClient = (() => {
       return {
         id: v.id,
         title: v.title,
-        price: parseFloat(v.price?.amount || '0'),
-        compareAtPrice: v.compareAtPrice?.amount ? parseFloat(v.compareAtPrice.amount) : null,
+        price: parseFloat(v.price?.amount || price),
+        compareAtPrice: v.compareAtPrice?.amount ? parseFloat(v.compareAtPrice.amount) : originalPrice,
         available: Boolean(v.availableForSale),
         selectedOptions: v.selectedOptions || [],
         imageUrl: v.image?.url || null
       };
     });
 
-    const primaryVariant = variants[0] || null;
+    const primaryVariant = variants.find(v => v.available) || variants[0] || null;
+
+    // Collections
+    const collections = (node.collections?.edges || []).map(e => ({
+      id: e.node?.id || '',
+      title: e.node?.title || '',
+      handle: e.node?.handle || ''
+    }));
+
+    // Determine category
+    let category = node.productType || '';
+    if (!category && collections.length > 0) {
+      const meaningfulCol = collections.find(c => c.handle !== 'all-t-shirts' && c.title !== 'All T Shirts');
+      if (meaningfulCol) category = meaningfulCol.title;
+      else category = collections[0].title;
+    }
+    if (!category) {
+      category = 'Signature';
+    }
+
+    const cleanDescription = (node.description || '').trim() ||
+      (node.descriptionHtml ? node.descriptionHtml.replace(/<[^>]*>?/gm, '').trim() : '') ||
+      `${node.title} — Premium T-shirt from WaveNexa`;
 
     return {
       id: node.handle || node.id.replace('gid://shopify/Product/', ''),
@@ -164,15 +221,17 @@ const ShopifyClient = (() => {
       shopifyVariantId: primaryVariant?.id || null,
       handle: node.handle,
       title: node.title,
-      description: node.description || `${node.title} — Premium T-shirt from WaveNexa`,
+      description: cleanDescription,
       price: price || 699,
       originalPrice: originalPrice,
+      currencyCode: node.priceRange?.minVariantPrice?.currencyCode || 'INR',
       sizes: sizes,
       colors: colors,
       images: images,
-      category: node.productType || (node.tags?.[0] || 'Signature'),
+      category: category,
+      collections: collections,
       stock: node.availableForSale ? 50 : 0,
-      featured: node.tags?.includes('featured') || true,
+      featured: true,
       badge: originalPrice ? 'sale' : (node.tags?.includes('new') ? 'new' : 'bestseller'),
       material: '100% Premium Cotton',
       fit: 'Relaxed Oversized',
@@ -199,6 +258,7 @@ const ShopifyClient = (() => {
               title
               handle
               description
+              descriptionHtml
               availableForSale
               productType
               tags
@@ -218,7 +278,7 @@ const ShopifyClient = (() => {
                   currencyCode
                 }
               }
-              images(first: 8) {
+              images(first: 10) {
                 edges {
                   node {
                     url
@@ -226,7 +286,16 @@ const ShopifyClient = (() => {
                   }
                 }
               }
-              variants(first: 30) {
+              collections(first: 5) {
+                edges {
+                  node {
+                    id
+                    title
+                    handle
+                  }
+                }
+              }
+              variants(first: 50) {
                 edges {
                   node {
                     id
@@ -273,6 +342,45 @@ const ShopifyClient = (() => {
   }
 
   /**
+   * Fetch public Collections from Shopify
+   */
+  async function fetchCollections(first = 20) {
+    if (!window.isShopifyConfigured()) return [];
+
+    const q = `
+      query GetCollections($first: Int!) {
+        collections(first: $first) {
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              image {
+                url
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await query(q, { first });
+      return (data.collections?.edges || []).map(e => ({
+        id: e.node.id,
+        title: e.node.title,
+        handle: e.node.handle,
+        description: e.node.description || '',
+        imageUrl: e.node.image?.url || null
+      }));
+    } catch (err) {
+      console.warn('[Shopify] Error fetching collections:', err);
+      return [];
+    }
+  }
+
+  /**
    * Fetch a single product by handle
    */
   async function fetchProductByHandle(handle) {
@@ -285,11 +393,13 @@ const ShopifyClient = (() => {
           title
           handle
           description
+          descriptionHtml
           availableForSale
           productType
           tags
           priceRange {
             minVariantPrice { amount currencyCode }
+            maxVariantPrice { amount currencyCode }
           }
           compareAtPriceRange {
             maxVariantPrice { amount currencyCode }
@@ -297,6 +407,15 @@ const ShopifyClient = (() => {
           images(first: 10) {
             edges {
               node { url altText }
+            }
+          }
+          collections(first: 5) {
+            edges {
+              node {
+                id
+                title
+                handle
+              }
             }
           }
           variants(first: 50) {
@@ -323,6 +442,7 @@ const ShopifyClient = (() => {
 
     try {
       const data = await query(q, { handle });
+      if (!data.product) return null;
       return normalizeShopifyProduct(data.product);
     } catch (err) {
       console.error('[Shopify] Error fetching product by handle:', err);
@@ -331,32 +451,128 @@ const ShopifyClient = (() => {
   }
 
   /**
+   * Fetch product by either ID or handle
+   */
+  async function fetchProductByIdOrHandle(idOrHandle) {
+    if (!idOrHandle) return null;
+    const clean = String(idOrHandle).trim();
+
+    // If it looks like a handle (slug with hyphens or words)
+    if (!clean.startsWith('gid://') && !/^\d+$/.test(clean)) {
+      const prod = await fetchProductByHandle(clean);
+      if (prod) return prod;
+    }
+
+    // Try node query with GID
+    const gid = clean.startsWith('gid://') ? clean : `gid://shopify/Product/${clean}`;
+    const q = `
+      query GetProductById($id: ID!) {
+        node(id: $id) {
+          ... on Product {
+            id
+            title
+            handle
+            description
+            descriptionHtml
+            availableForSale
+            productType
+            tags
+            priceRange {
+              minVariantPrice { amount currencyCode }
+              maxVariantPrice { amount currencyCode }
+            }
+            compareAtPriceRange {
+              maxVariantPrice { amount currencyCode }
+            }
+            images(first: 10) {
+              edges {
+                node { url altText }
+              }
+            }
+            collections(first: 5) {
+              edges {
+                node { id title handle }
+              }
+            }
+            variants(first: 50) {
+              edges {
+                node {
+                  id
+                  title
+                  availableForSale
+                  price { amount currencyCode }
+                  compareAtPrice { amount currencyCode }
+                  selectedOptions { name value }
+                  image { url }
+                }
+              }
+            }
+            options {
+              id
+              name
+              values
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await query(q, { id: gid });
+      if (data.node) return normalizeShopifyProduct(data.node);
+    } catch (e) {
+      // Fallback: try by handle if ID failed
+      return await fetchProductByHandle(clean);
+    }
+    return null;
+  }
+
+  /**
+   * Helper: Match product variant for a specific size and color
+   */
+  function findVariant(product, size, color) {
+    if (!product || !Array.isArray(product.variants) || product.variants.length === 0) {
+      return null;
+    }
+    return product.variants.find(v => {
+      const opts = v.selectedOptions || [];
+      const sizeMatch = !size || opts.some(o => (o.name || '').toLowerCase().includes('size') && String(o.value).toLowerCase() === String(size).toLowerCase());
+      const colorMatch = !color || opts.some(o => ((o.name || '').toLowerCase().includes('color') || (o.name || '').toLowerCase().includes('colour')) && String(o.value).toLowerCase() === String(color).toLowerCase());
+      return sizeMatch && colorMatch;
+    }) || product.variants.find(v => v.available) || product.variants[0];
+  }
+
+  /**
    * Create a Shopify Cart and generate Checkout URL via Storefront API
    */
   async function createCheckout(cartItems) {
     if (!window.isShopifyConfigured()) {
-      throw new Error('Shopify Headless API is not configured yet. Please configure your store domain and token.');
+      throw new Error('Shopify Headless API is not configured yet. Please check your storefront token.');
     }
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       throw new Error('Your cart is empty.');
     }
 
-    // Build CartLineInput array
-    // Requires Shopify Variant GID (e.g. gid://shopify/ProductVariant/...)
     const lines = [];
 
     for (const item of cartItems) {
       let variantId = item.shopifyVariantId;
 
-      // If missing variant ID, try to retrieve from product handle
-      if (!variantId && item.id) {
-        try {
-          const liveProd = await fetchProductByHandle(item.id);
-          if (liveProd && liveProd.shopifyVariantId) {
-            variantId = liveProd.shopifyVariantId;
-          }
-        } catch (e) { }
+      // If missing variant ID, resolve from product in Store or live Shopify API
+      if (!variantId && (item.productId || item.id)) {
+        const prodId = item.productId || item.id;
+        let prod = typeof Store !== 'undefined' ? Store.getProduct(prodId) : null;
+        if (!prod) {
+          try {
+            prod = await fetchProductByIdOrHandle(prodId);
+          } catch (_) { }
+        }
+        if (prod) {
+          const matchedVariant = findVariant(prod, item.size, item.color);
+          if (matchedVariant) variantId = matchedVariant.id;
+          else variantId = prod.shopifyVariantId;
+        }
       }
 
       if (variantId) {
@@ -369,7 +585,7 @@ const ShopifyClient = (() => {
 
     if (lines.length === 0) {
       throw new Error(
-        'Could not match cart items with Shopify product variants. Please make sure products are imported/synced from your Shopify store.'
+        'Could not match cart items with Shopify product variants. Please make sure products are synced from your Shopify store.'
       );
     }
 
@@ -418,19 +634,23 @@ const ShopifyClient = (() => {
    */
   async function redirectToCheckout(cartItems) {
     try {
-      showToast('Connecting to official Shopify Checkout...', 'info', 2500);
+      if (typeof showToast === 'function') {
+        showToast('Connecting to official Shopify Checkout...', 'info', 2500);
+      }
       const res = await createCheckout(cartItems);
       if (res.ok && res.checkoutUrl) {
-        showToast('Redirecting to Shopify Checkout...', 'success', 2000);
+        if (typeof showToast === 'function') {
+          showToast('Redirecting to Shopify Checkout...', 'success', 2000);
+        }
         setTimeout(() => {
           window.location.href = res.checkoutUrl;
-        }, 600);
+        }, 500);
       }
     } catch (err) {
       console.warn('[Shopify Checkout Error]', err);
-      // If error is about configuration or variant matching, open helper modal
-      showToast(err.message, 'error', 4500);
-      openShopifyModal();
+      if (typeof showToast === 'function') {
+        showToast(err.message, 'error', 4500);
+      }
     }
   }
 
@@ -446,11 +666,6 @@ const ShopifyClient = (() => {
    * Build & attach the Shopify Headless Setup & Admin launcher modal
    */
   function initUI() {
-    // Backend functions (Storefront API, live cart checkout, sync) run silently in headless mode.
-    // No floating badges or admin links are added to the public storefront.
-  }
-
-    // 3. Create Shopify Modal in DOM if not present
     if (!document.getElementById('shopifyModal')) {
       const modal = document.createElement('div');
       modal.id = 'shopifyModal';
@@ -473,7 +688,6 @@ const ShopifyClient = (() => {
             </div>
           </div>
 
-          <!-- Quick Action Buttons -->
           <div class="shopify-action-cards">
             <a href="${window.getShopifyAdminUrl()}" target="_blank" rel="noopener noreferrer" class="shopify-action-btn primary" id="openShopifyAdminBtn">
               <span class="btn-icon">⚡</span>
@@ -484,7 +698,6 @@ const ShopifyClient = (() => {
             </a>
           </div>
 
-          <!-- Connection Form -->
           <div class="shopify-form-section">
             <div class="shopify-section-title">
               <h4>Headless App API Credentials</h4>
@@ -494,8 +707,7 @@ const ShopifyClient = (() => {
             </div>
             
             <p class="shopify-help-text">
-              Enter your Shopify store domain and Storefront API Access Token generated by the 
-              <strong>"Headless"</strong> app (Sales Channels &rarr; Headless) in your Shopify Admin.
+              Configure your Shopify store domain and public Storefront API Access Token.
             </p>
 
             <form id="shopifyConfigForm" onsubmit="event.preventDefault(); ShopifyClient.saveForm();">
@@ -505,8 +717,8 @@ const ShopifyClient = (() => {
               </div>
 
               <div class="form-group" style="margin-bottom:12px">
-                <label class="form-label" style="font-size:0.85rem;color:var(--text-muted)">Storefront API Access Token (Headless App)</label>
-                <input type="text" class="form-control" id="shToken" placeholder="Paste token from Headless app" value="${window.ShopifyConfig.storefrontAccessToken && !window.ShopifyConfig.storefrontAccessToken.includes('PASTE_YOUR_') ? window.ShopifyConfig.storefrontAccessToken : ''}">
+                <label class="form-label" style="font-size:0.85rem;color:var(--text-muted)">Storefront API Access Token (Public Token)</label>
+                <input type="text" class="form-control" id="shToken" placeholder="Paste Storefront API token" value="${window.ShopifyConfig.storefrontAccessToken || ''}">
               </div>
 
               <div class="form-group" style="margin-bottom:16px">
@@ -526,21 +738,6 @@ const ShopifyClient = (() => {
               </div>
             </form>
           </div>
-
-          <!-- Guide collapsible -->
-          <div class="shopify-guide-box">
-            <details>
-              <summary><strong>How to get Storefront Token in 1 minute?</strong></summary>
-              <ol style="margin-top:10px;padding-left:18px;font-size:0.82rem;line-height:1.6;color:var(--text-muted)">
-                <li>Log in to your <strong>Shopify Admin</strong> (link above).</li>
-                <li>Go to <strong>Apps & Sales Channels</strong> &rarr; install or open the <strong>Headless</strong> app.</li>
-                <li>Click <strong>Add storefront</strong> &rarr; name it (e.g. "WaveNexa").</li>
-                <li>Under <strong>Storefront API</strong>, copy the public <strong>Storefront API access token</strong>.</li>
-                <li>Paste your domain & token here and click <strong>Save & Sync</strong>.</li>
-              </ol>
-            </details>
-          </div>
-
         </div>
       </div>
       `;
@@ -581,7 +778,6 @@ const ShopifyClient = (() => {
 
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Testing...'; }
 
-    // Temporarily apply values to test
     const tempConfig = {
       storeDomain: domainInput,
       storefrontAccessToken: tokenInput,
@@ -599,7 +795,6 @@ const ShopifyClient = (() => {
         feedback.style.background = 'rgba(16, 185, 129, 0.15)';
         feedback.style.color = '#10b981';
         feedback.innerHTML = `✅ <strong>Connected to Shopify!</strong><br>Store: ${result.shop.name} (${result.shop.primaryDomain?.host || domainInput})<br>Currency: ${result.shop.paymentSettings?.currencyCode || 'INR'}`;
-        // Automatically save
         saveShopifyConfig(tempConfig);
         updateUIState(true);
       } else {
@@ -616,7 +811,7 @@ const ShopifyClient = (() => {
     const versionInput = document.getElementById('shVersion')?.value.trim() || '2024-10';
 
     if (!domainInput) {
-      showToast('Please enter your Shopify store domain', 'error');
+      if (typeof showToast === 'function') showToast('Please enter your Shopify store domain', 'error');
       return;
     }
 
@@ -629,11 +824,10 @@ const ShopifyClient = (() => {
     const isConf = window.isShopifyConfigured();
     updateUIState(isConf);
 
-    showToast('Shopify configuration saved!', 'success');
+    if (typeof showToast === 'function') showToast('Shopify configuration saved!', 'success');
 
-    // Trigger product sync if configured
     if (isConf && typeof Store !== 'undefined' && Store.syncShopifyProducts) {
-      Store.syncShopifyProducts();
+      Store.syncShopifyProducts(true);
     }
 
     setTimeout(closeModal, 800);
@@ -644,12 +838,6 @@ const ShopifyClient = (() => {
     if (pill) {
       pill.textContent = isConfigured ? '🟢 Active' : '🟡 Needs Setup';
     }
-    const widgetBtn = document.getElementById('shopifyWidgetBtn');
-    if (widgetBtn) {
-      widgetBtn.className = `shopify-badge-btn ${isConfigured ? 'connected' : 'setup-needed'}`;
-      const label = widgetBtn.querySelector('.shopify-badge-label');
-      if (label) label.textContent = isConfigured ? 'Shopify Connected' : 'Connect Shopify';
-    }
     const adminLink = document.getElementById('openShopifyAdminBtn');
     if (adminLink) {
       adminLink.href = window.getShopifyAdminUrl();
@@ -659,7 +847,6 @@ const ShopifyClient = (() => {
     });
   }
 
-  // Auto initialize on DOMContentLoaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initUI);
   } else {
@@ -670,7 +857,10 @@ const ShopifyClient = (() => {
     query,
     testConnection,
     fetchProducts,
+    fetchCollections,
     fetchProductByHandle,
+    fetchProductByIdOrHandle,
+    findVariant,
     createCheckout,
     redirectToCheckout,
     openAdmin,
@@ -681,3 +871,6 @@ const ShopifyClient = (() => {
     normalizeShopifyProduct
   };
 })();
+
+window.ShopifyClient = ShopifyClient;
+

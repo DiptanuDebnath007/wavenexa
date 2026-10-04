@@ -212,9 +212,52 @@ window.addEventListener('load', function () {
     function renderFeaturedProducts() {
       const grid = document.getElementById('featuredGrid');
       if (!grid) return;
-      const products = Store.getFeaturedProducts().slice(0, 4);
+
+      let products = Store.getFeaturedProducts();
+      if (products.length === 0) {
+        products = Store.getProducts().slice(0, 4);
+      } else {
+        products = products.slice(0, 4);
+      }
+
+      if (products.length === 0) {
+        const isShopify = typeof Store !== 'undefined' && Store.isShopifyLive && Store.isShopifyLive();
+        if (isShopify && Store.isSyncing && Store.isSyncing()) {
+          // Shimmer loading skeleton
+          grid.innerHTML = Array(4).fill(0).map(() => `
+            <div class="product-card skeleton-card" style="pointer-events:none;opacity:0.6;">
+              <div class="product-card-img" style="min-height:280px;background:rgba(255,255,255,0.06);border-radius:12px;animation:pulse 1.5s infinite;"></div>
+              <div class="product-card-body" style="padding:16px 0;">
+                <div style="height:12px;width:35%;background:rgba(255,255,255,0.08);border-radius:4px;margin-bottom:8px;"></div>
+                <div style="height:16px;width:75%;background:rgba(255,255,255,0.1);border-radius:4px;margin-bottom:8px;"></div>
+                <div style="height:14px;width:40%;background:rgba(255,255,255,0.08);border-radius:4px;"></div>
+              </div>
+            </div>
+          `).join('');
+          return;
+        }
+
+        const syncErr = typeof Store !== 'undefined' && Store.getSyncError ? Store.getSyncError() : null;
+        if (syncErr) {
+          grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--text-muted);">
+              <p>⚠️ Unable to load live products (${syncErr})</p>
+              <button class="btn btn-outline btn-sm" onclick="Store.syncShopifyProducts(true)" style="margin-top:10px;">Retry</button>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--text-muted);">
+            <p>No products available right now. Please check back soon!</p>
+          </div>
+        `;
+        return;
+      }
+
       grid.innerHTML = products.map(p => `
-      <div class="product-card reveal" onclick="location.href='product.html?id=${p.id}'">
+      <div class="product-card reveal" onclick="location.href='product.html?id=${encodeURIComponent(p.id)}'">
         <div class="product-card-img">
           <img src="${p.images[0]}" alt="${p.title}" loading="lazy">
           ${getBadgeHTML(p.badge)}
@@ -234,20 +277,31 @@ window.addEventListener('load', function () {
         </div>
       </div>
     `).join('');
-      initReveal();
+      if (typeof initReveal === 'function') initReveal();
     }
 
     window.quickAdd = function (id) {
       const product = Store.getProduct(id);
       if (!product) return;
-      const size = product.sizes[Math.floor(product.sizes.length / 2)];
-      const color = product.colors[0];
+      const size = product.sizes ? product.sizes[Math.floor(product.sizes.length / 2)] : 'M';
+      const color = product.colors ? product.colors[0] : 'Black';
       Store.addToCart(id, size, color, 1);
       showToast(`${product.title} added to cart!`, 'cart');
       updateCartBadge();
     };
 
     renderFeaturedProducts();
+
+    // Re-render when Shopify products finish syncing
+    window.addEventListener('shopifyProductsSynced', () => {
+      renderFeaturedProducts();
+    });
+    window.addEventListener('shopifySyncError', () => {
+      renderFeaturedProducts();
+    });
+    window.addEventListener('storeChange', (e) => {
+      if (e.detail?.key === 'tc_products') renderFeaturedProducts();
+    });
   })();
 }); // end window load
 

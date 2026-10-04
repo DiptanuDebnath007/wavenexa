@@ -1,0 +1,21 @@
+# Environment & credentials
+.env
+.env.*
+!.env.example
+*.local
+
+# Dependencies & caches
+node_modules/
+.npm
+.cache
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Scratch & temporary test scripts
+scripts/test*.js
+scripts/test*.cjs
+scripts/inspect*.js
+scripts/inspect*.cjs

@@ -9,11 +9,16 @@ const Store = (() => {
   // ── Keys ──────────────────────────────────────
   const KEYS = {
     products: 'tc_products',
+    collections: 'tc_collections',
     orders: 'tc_orders',
     cart: 'tc_cart',
     settings: 'tc_settings',
     auth: 'tc_auth'
   };
+
+  let isSyncing = false;
+  let syncPromise = null;
+  let syncError = null;
 
   // ── Sample Products ───────────────────────────
   const SAMPLE_PRODUCTS = [
@@ -181,9 +186,28 @@ const Store = (() => {
 
   // ── Init ─────────────────────────────────────
   function init() {
-    if (!localStorage.getItem(KEYS.products)) {
-      localStorage.setItem(KEYS.products, JSON.stringify(SAMPLE_PRODUCTS));
+    const isShopify = typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured();
+    const existingRaw = localStorage.getItem(KEYS.products);
+
+    if (isShopify) {
+      if (existingRaw) {
+        try {
+          const parsed = JSON.parse(existingRaw);
+          // If stored products are only the sample products (p001 etc), clear them
+          const hasRealShopify = Array.isArray(parsed) && parsed.some(p => p.shopifyId || (p.handle && !p.id.startsWith('p00')));
+          if (!hasRealShopify) {
+            localStorage.removeItem(KEYS.products);
+          }
+        } catch (_) {
+          localStorage.removeItem(KEYS.products);
+        }
+      }
+    } else {
+      if (!existingRaw) {
+        localStorage.setItem(KEYS.products, JSON.stringify(SAMPLE_PRODUCTS));
+      }
     }
+
     if (!localStorage.getItem(KEYS.orders)) {
       localStorage.setItem(KEYS.orders, JSON.stringify([]));
     }
@@ -193,9 +217,12 @@ const Store = (() => {
     if (!localStorage.getItem(KEYS.settings)) {
       localStorage.setItem(KEYS.settings, JSON.stringify(DEFAULT_SETTINGS));
     }
-    // Auto-sync Shopify products if configured
-    if (typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured()) {
-      setTimeout(() => { syncShopifyProducts().catch(() => {}); }, 100);
+
+    // Auto-sync Shopify products immediately if configured
+    if (isShopify) {
+      syncShopifyProducts().catch(err => {
+        console.warn('[Store] Initial Shopify sync error:', err);
+      });
     }
   }
 
@@ -206,12 +233,53 @@ const Store = (() => {
   }
   function set(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
-    window.dispatchEvent(new CustomEvent('storeChange', { detail: { key } }));
+    window.dispatchEvent(new CustomEvent('storeChange', { detail: { key, data } }));
   }
 
   // ── Products ──────────────────────────────────
-  function getProducts() { return get(KEYS.products); }
-  function getProduct(id) { return getProducts().find(p => p.id === id) || null; }
+  function getProducts() {
+    const prods = get(KEYS.products);
+    const isShopify = typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured();
+    if (isShopify) {
+      // Filter out any lingering fake sample products
+      return prods.filter(p => p.shopifyId || (p.handle && !p.id.startsWith('p00')));
+    }
+    return prods.length > 0 ? prods : SAMPLE_PRODUCTS;
+  }
+
+  function getProduct(id) {
+    if (!id) return null;
+    const clean = String(id).trim();
+    return getProducts().find(p =>
+      p.id === clean ||
+      p.handle === clean ||
+      p.shopifyId === clean ||
+      (p.shopifyId && p.shopifyId.replace('gid://shopify/Product/', '') === clean) ||
+      (p.externalId && String(p.externalId) === clean)
+    ) || null;
+  }
+
+  async function loadProduct(id) {
+    let existing = getProduct(id);
+    if (existing) return existing;
+
+    if (typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured()) {
+      try {
+        const remote = await ShopifyClient.fetchProductByIdOrHandle(id);
+        if (remote) {
+          const prods = getProducts();
+          const idx = prods.findIndex(p => p.id === remote.id || p.shopifyId === remote.shopifyId);
+          if (idx >= 0) prods[idx] = remote;
+          else prods.push(remote);
+          set(KEYS.products, prods);
+          return remote;
+        }
+      } catch (err) {
+        console.warn('[Store] Failed to fetch product remotely:', id, err);
+      }
+    }
+    return null;
+  }
 
   function normalizeQuikinkProduct(raw = {}) {
     const title = raw.title || raw.name || raw.productName || raw.product_name || 'Quikink Product';
@@ -365,20 +433,38 @@ const Store = (() => {
 
   // ── Cart ──────────────────────────────────────
   function getCart() { return get(KEYS.cart); }
-  function addToCart(productId, size, color, qty = 1) {
+  function addToCart(productId, size, color, qty = 1, variantId = null) {
     const cart = getCart();
     const product = getProduct(productId);
     if (!product) return false;
+
+    // Resolve specific Shopify variant
+    let matchedVariant = null;
+    if (typeof ShopifyClient !== 'undefined' && ShopifyClient.findVariant) {
+      matchedVariant = ShopifyClient.findVariant(product, size, color);
+    }
+    const finalVariantId = variantId || matchedVariant?.id || product.shopifyVariantId || null;
+    const finalPrice = matchedVariant ? matchedVariant.price : product.price;
+    const finalImage = matchedVariant?.imageUrl || product.images[0] || '';
+
     const key = `${productId}_${size}_${color}`;
     const existing = cart.find(i => i.key === key);
     if (existing) {
       existing.qty += qty;
+      if (finalVariantId) existing.shopifyVariantId = finalVariantId;
+      if (finalPrice) existing.price = finalPrice;
     } else {
       cart.push({
-        key, productId, size, color, qty,
+        key,
+        id: product.id,
+        productId: product.id,
+        shopifyVariantId: finalVariantId,
+        size,
+        color,
+        qty,
         title: product.title,
-        price: product.price,
-        image: product.images[0] || ''
+        price: finalPrice,
+        image: finalImage
       });
     }
     set(KEYS.cart, cart);
@@ -479,20 +565,60 @@ const Store = (() => {
   }
 
   // ── Shopify Live Backend Integration ─────────
-  async function syncShopifyProducts() {
-    if (typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured()) {
+  async function syncShopifyProducts(forceRefresh = false) {
+    if (typeof ShopifyClient === 'undefined' || !window.isShopifyConfigured || !window.isShopifyConfigured()) {
+      return getProducts();
+    }
+
+    if (isSyncing && syncPromise && !forceRefresh) {
+      return syncPromise;
+    }
+
+    isSyncing = true;
+    syncError = null;
+
+    syncPromise = (async () => {
       try {
-        const liveProducts = await ShopifyClient.fetchProducts(50);
-        if (Array.isArray(liveProducts) && liveProducts.length > 0) {
+        const [liveProducts, collections] = await Promise.all([
+          ShopifyClient.fetchProducts(50),
+          ShopifyClient.fetchCollections(20).catch(() => [])
+        ]);
+
+        if (Array.isArray(collections) && collections.length > 0) {
+          localStorage.setItem(KEYS.collections, JSON.stringify(collections));
+        }
+
+        if (Array.isArray(liveProducts)) {
           set(KEYS.products, liveProducts);
-          window.dispatchEvent(new CustomEvent('shopifyProductsSynced', { detail: liveProducts }));
+          window.dispatchEvent(new CustomEvent('shopifyProductsSynced', {
+            detail: { products: liveProducts, collections }
+          }));
           return liveProducts;
         }
       } catch (err) {
-        console.warn('[Store] Shopify live sync warning:', err);
+        console.error('[Store] Shopify live sync error:', err);
+        syncError = err.message;
+        window.dispatchEvent(new CustomEvent('shopifySyncError', { detail: { error: err.message } }));
+        throw err;
+      } finally {
+        isSyncing = false;
       }
+      return getProducts();
+    })();
+
+    return syncPromise;
+  }
+
+  function getCollections() {
+    try {
+      return JSON.parse(localStorage.getItem(KEYS.collections)) || [];
+    } catch {
+      return [];
     }
-    return getProducts();
+  }
+
+  function isShopifyLive() {
+    return typeof ShopifyClient !== 'undefined' && window.isShopifyConfigured && window.isShopifyConfigured();
   }
 
   function openShopifyAdmin() {
@@ -881,14 +1007,17 @@ const Store = (() => {
   // Public API
   return {
     init,
-    getProducts, getProduct, addProduct, updateProduct, deleteProduct,
+    getProducts, getProduct, loadProduct, addProduct, updateProduct, deleteProduct,
     getFeaturedProducts, searchProducts, filterProducts,
+    getCollections, isShopifyLive,
     syncQuikinkInventory, importQuikinkInventory,
     getCart, addToCart, updateCartQty, removeFromCart, clearCart,
     getCartCount, getCartTotal,
     getOrders, getOrder, addOrder, updateOrderStatus,
     getSettings, updateSettings,
     syncShopifyProducts, openShopifyAdmin,
+    isSyncing: () => isSyncing,
+    getSyncError: () => syncError,
     registerCustomer, customerLogin, customerLogout, getCurrentUser,
     sendOtp, verifyOtp, cleanPhone,
     getCustomerProfile, updateCustomerProfile, getCustomerOrders,
