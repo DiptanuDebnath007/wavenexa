@@ -34,7 +34,7 @@
 
       <!-- Main Tabs -->
       <div class="auth-tabs" id="authMainTabs">
-        <button class="auth-tab ${currentTab === 'otp' ? 'active' : ''}" id="tabOtp" onclick="switchAuthTab('otp')">⚡ Mobile / Email OTP</button>
+        <button class="auth-tab ${currentTab === 'otp' ? 'active' : ''}" id="tabOtp" onclick="switchAuthTab('otp')">✉️ Email Verification</button>
         <button class="auth-tab ${currentTab === 'password' ? 'active' : ''}" id="tabPassword" onclick="switchAuthTab('password')">🔑 Password</button>
         <button class="auth-tab ${currentTab === 'register' ? 'active' : ''}" id="tabRegister" onclick="switchAuthTab('register')">✨ Register</button>
       </div>
@@ -44,36 +44,36 @@
       <div class="auth-success" id="authSuccess"></div>
 
       <!-- ═════════════════════════════════════════════
-           1. OTP AUTHENTICATION FLOW
+           1. EMAIL VERIFICATION FLOW
            ═════════════════════════════════════════════ -->
       <div id="otpSection" style="${currentTab === 'otp' ? '' : 'display:none;'}">
         
-        <!-- Step 1: Request OTP -->
+        <!-- Step 1: Request Email Code -->
         <form id="otpRequestForm" onsubmit="handleSendOtp(event)" style="${otpStep === 'request' ? '' : 'display:none;'}">
           <div class="form-group">
-            <label class="form-label">Phone Number or Email Address</label>
-            <input type="text" class="form-control" id="otpIdentifierInput" placeholder="+91 98765 43210 or you@email.com" autocomplete="username" required>
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="otpIdentifierInput" placeholder="you@email.com" autocomplete="email" required>
             <small style="color:var(--text-dim);font-size:0.75rem;margin-top:4px;display:block;">
-              We will send a 6-digit verification code via SMS or Email
+              We will send a 6-digit verification code to your email inbox
             </small>
           </div>
           <button type="submit" class="btn btn-primary btn-full btn-lg" id="sendOtpBtn">
-            📲 Send Verification Code
+            ✉️ Send Verification Code
           </button>
         </form>
 
-        <!-- Step 2: Verify OTP -->
+        <!-- Step 2: Verify Email Code -->
         <form id="otpVerifyForm" onsubmit="handleVerifyOtp(event)" style="${otpStep === 'verify' ? '' : 'display:none;'}">
           <div style="text-align:center;margin-bottom:12px;">
-            <span style="font-size:0.85rem;color:var(--text-muted);">Code sent to </span>
+            <span style="font-size:0.85rem;color:var(--text-muted);">Verification code sent to </span>
             <strong id="otpTargetDisplay" style="color:var(--primary);font-size:0.9rem;"></strong>
-            <button type="button" onclick="resetOtpFlow()" style="background:none;border:none;color:var(--accent);font-size:0.8rem;cursor:pointer;margin-left:6px;text-decoration:underline;">Change</button>
+            <button type="button" onclick="resetOtpFlow()" style="background:none;border:none;color:var(--accent);font-size:0.8rem;cursor:pointer;margin-left:6px;text-decoration:underline;">Change Email</button>
           </div>
 
-          <!-- Simulated SMS Delivery Notification Card -->
+          <!-- Email Delivery Notification Card -->
           <div class="otp-sim-banner" id="otpSimBanner">
             <div>
-              <span style="display:block;font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">WaveNexa Security Code</span>
+              <span style="display:block;font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">📧 WaveNexa Email Security Code</span>
               <span class="otp-sim-code" id="otpSimCodeDisplay">------</span>
             </div>
             <button type="button" class="otp-autofill-btn" id="otpAutofillBtn" onclick="autofillOtp()">
@@ -93,18 +93,18 @@
 
           <!-- Optional Name for New Members -->
           <div class="form-group" id="otpNameGroup" style="display:none;margin-top:12px;">
-            <label class="form-label">Your Name (for profile & order updates)</label>
+            <label class="form-label">Your Name (for order delivery)</label>
             <input type="text" class="form-control" id="otpNameInput" placeholder="Enter your full name">
           </div>
 
           <button type="submit" class="btn btn-primary btn-full btn-lg" id="verifyOtpBtn">
-            🚀 Verify & Continue
+            🚀 Verify Email & Continue
           </button>
 
           <div class="otp-timer-row">
-            <span id="otpTimerText">Resend code in <strong id="otpTimerCount">60s</strong></span>
+            <span id="otpTimerText">Resend email in <strong id="otpTimerCount">60s</strong></span>
             <button type="button" class="otp-resend-btn" id="otpResendBtn" disabled onclick="resendOtp()">
-              🔄 Resend Code
+              🔄 Resend Email
             </button>
           </div>
         </form>
@@ -116,13 +116,13 @@
            ═════════════════════════════════════════════ -->
       <form class="auth-form" id="passwordLoginForm" style="${currentTab === 'password' ? '' : 'display:none;'}" onsubmit="handlePasswordLogin(event)">
         <div class="form-group">
-          <label class="form-label">Email Address or Phone Number</label>
-          <input type="text" class="form-control" id="loginIdInput" placeholder="you@email.com or +91..." autocomplete="username" required>
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="loginIdInput" placeholder="you@email.com" autocomplete="email" required>
         </div>
         <div class="form-group">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <label class="form-label" style="margin-bottom:0;">Password</label>
-            <a href="javascript:void(0)" onclick="switchAuthTab('otp')" style="font-size:0.75rem;color:var(--primary);text-decoration:none;">Forgot? Use OTP 📲</a>
+            <a href="javascript:void(0)" onclick="switchAuthTab('otp')" style="font-size:0.75rem;color:var(--primary);text-decoration:none;">Forgot? Verify with Email ✉️</a>
           </div>
           <div class="pw-wrap">
             <input type="password" class="form-control" id="loginPwInput" placeholder="Enter your password" autocomplete="current-password" required>
@@ -361,16 +361,16 @@
     if (succ) succ.style.display = 'none';
   }
 
-  // ── OTP Handlers ───────────────────────────────────────────────────────────
+  // ── Email Verification Handlers ───────────────────────────────────────────
 
   window.handleSendOtp = async function (e) {
     if (e && e.preventDefault) e.preventDefault();
     const input = document.getElementById('otpIdentifierInput');
     const btn = document.getElementById('sendOtpBtn');
-    const idVal = input ? input.value.trim() : '';
+    const emailVal = input ? input.value.trim().toLowerCase() : '';
 
-    if (!idVal) {
-      showAuthError('Please enter your mobile phone number or email address.');
+    if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      showAuthError('Please enter a valid email address (e.g. you@email.com).');
       return;
     }
 
@@ -381,7 +381,7 @@
     clearAuthMessages();
 
     try {
-      const res = Store.sendOtp(idVal);
+      const res = Store.sendOtp(emailVal);
       if (res.ok) {
         currentIdentifier = res.identifier;
         otpStep = 'verify';
@@ -394,28 +394,25 @@
 
         // Check if user is known; if not, show optional name input
         const customers = Store.getCustomers ? Store.getCustomers() : [];
-        const isKnown = customers.some(c => {
-          if (res.isEmail) return c.email && c.email.toLowerCase() === res.identifier.toLowerCase();
-          return Store.cleanPhone(c.phone) === Store.cleanPhone(res.identifier);
-        });
+        const isKnown = customers.some(c => c.email && c.email.toLowerCase() === res.identifier.toLowerCase());
         const nameGroup = document.getElementById('otpNameGroup');
         if (nameGroup) nameGroup.style.display = isKnown ? 'none' : 'block';
 
-        showAuthSuccess(`Code sent! Your security OTP is ${res.code}`);
+        showAuthSuccess(`Email sent! Your verification code is ${res.code}`);
         startOtpCountdown();
         setTimeout(() => {
           const first = document.querySelector('.otp-digit[data-idx="0"]');
           if (first) { first.focus(); first.select(); }
         }, 150);
       } else {
-        showAuthError(res.error || 'Failed to send OTP.');
+        showAuthError(res.error || 'Failed to send verification code.');
       }
     } catch (err) {
-      showAuthError('Something went wrong sending the OTP code.');
+      showAuthError('Something went wrong sending the verification code.');
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = '📲 Send Verification Code';
+        btn.textContent = '✉️ Send Verification Code';
       }
     }
   };
@@ -454,7 +451,7 @@
       if (res.ok) {
         clearInterval(otpResendTimer);
         const firstName = (res.user.name || 'Member').split(' ')[0];
-        showAuthSuccess(`Welcome, ${firstName}! 🎉 Login successful.`);
+        showAuthSuccess(`Email verified! Welcome, ${firstName}! 🎉`);
         setTimeout(() => {
           closeAuthModal();
           updateAuthNavBtn();
@@ -469,7 +466,7 @@
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = '🚀 Verify & Continue';
+        btn.textContent = '🚀 Verify Email & Continue';
       }
     }
   };

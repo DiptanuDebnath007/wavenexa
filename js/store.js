@@ -892,23 +892,12 @@ const Store = (() => {
 
   function sendOtp(identifier) {
     if (!identifier || typeof identifier !== 'string') {
-      return { ok: false, error: 'Please enter a valid mobile number or email.' };
+      return { ok: false, error: 'Please enter a valid email address.' };
     }
-    const raw = identifier.trim();
-    const isEmail = raw.includes('@');
+    const raw = identifier.trim().toLowerCase();
 
-    let cleanId = '';
-    if (isEmail) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) {
-        return { ok: false, error: 'Please enter a valid email address.' };
-      }
-      cleanId = raw.toLowerCase();
-    } else {
-      cleanId = cleanPhone(raw);
-      const digitsOnly = cleanId.replace(/\D/g, '');
-      if (digitsOnly.length < 10) {
-        return { ok: false, error: 'Please enter a valid 10-digit mobile number.' };
-      }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) {
+      return { ok: false, error: 'Please enter a valid email address (e.g. you@email.com).' };
     }
 
     // Generate secure 6-digit OTP code
@@ -916,10 +905,10 @@ const Store = (() => {
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins validity
 
     const otpPayload = {
-      identifier: cleanId,
+      identifier: raw,
       code,
       expiresAt,
-      isEmail
+      isEmail: true
     };
 
     sessionStorage.setItem(OTP_KEY, JSON.stringify(otpPayload));
@@ -927,10 +916,10 @@ const Store = (() => {
     return {
       ok: true,
       code,
-      identifier: cleanId,
-      isEmail,
+      identifier: raw,
+      isEmail: true,
       expiresAt,
-      message: isEmail ? `Verification code sent to ${cleanId}` : `SMS code sent to ${cleanId}`
+      message: `Verification code sent to your email (${raw})`
     };
   }
 
@@ -938,64 +927,61 @@ const Store = (() => {
     try {
       const stored = JSON.parse(sessionStorage.getItem(OTP_KEY));
       if (!stored) {
-        return { ok: false, error: 'No active verification code found. Please request a new code.' };
+        return { ok: false, error: 'No active email verification code found. Please request a new code.' };
       }
 
       if (Date.now() > stored.expiresAt) {
         sessionStorage.removeItem(OTP_KEY);
-        return { ok: false, error: 'Verification code has expired. Please request a new code.' };
+        return { ok: false, error: 'Email verification code has expired. Please request a new code.' };
       }
 
-      const isEmail = identifier.includes('@');
-      const cleanInputId = isEmail ? identifier.trim().toLowerCase() : cleanPhone(identifier);
+      const cleanInputId = (identifier || '').trim().toLowerCase();
 
       if (stored.identifier !== cleanInputId) {
-        return { ok: false, error: 'Verification code does not match this account.' };
+        return { ok: false, error: 'Verification code does not match this email address.' };
       }
 
       const cleanCode = (inputCode || '').trim();
       // Accepts generated OTP or universal testing code 123456
       if (cleanCode !== stored.code && cleanCode !== '123456') {
-        return { ok: false, error: 'Incorrect verification code. Please check and try again.' };
+        return { ok: false, error: 'Incorrect verification code. Please check your email inbox and try again.' };
       }
 
       // Valid OTP! Find or create user
       sessionStorage.removeItem(OTP_KEY);
       const customers = getCustomers();
-      let user = customers.find(c => {
-        if (isEmail) return c.email.toLowerCase() === cleanInputId;
-        return cleanPhone(c.phone) === cleanInputId;
-      });
+      let user = customers.find(c => c.email && c.email.toLowerCase() === cleanInputId);
 
       let isNew = false;
       if (!user) {
         isNew = true;
         user = normalizeCustomer({
           id: 'u' + Date.now(),
-          name: (optionalName || '').trim() || (isEmail ? cleanInputId.split('@')[0] : 'Member ' + cleanInputId.slice(-4)),
-          email: isEmail ? cleanInputId : '',
-          phone: !isEmail ? cleanInputId : '',
-          password: 'otp-auth-' + Date.now(),
-          provider: isEmail ? 'email_otp' : 'phone_otp',
+          name: (optionalName || '').trim() || cleanInputId.split('@')[0],
+          email: cleanInputId,
+          phone: '',
+          password: 'email-verified-' + Date.now(),
+          provider: 'email_verification',
           createdAt: new Date().toISOString()
         });
         customers.push(user);
         localStorage.setItem(CUST_KEY, JSON.stringify(customers));
       }
 
-      // Establish customer session
-      sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+      // Set active session
+      const sessionUser = {
         id: user.id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || '',
         profilePhoto: user.profilePhoto || '',
-        provider: user.provider || (isEmail ? 'email_otp' : 'phone_otp')
-      }));
+        provider: 'email_verification'
+      };
+      sessionStorage.setItem(CUSER_KEY, JSON.stringify(sessionUser));
 
-      return { ok: true, user, isNew };
+      return { ok: true, user: sessionUser, isNew };
     } catch (err) {
-      return { ok: false, error: 'Failed to verify code. Please try again.' };
+      return { ok: false, error: 'Verification failed. Please try again.' };
     }
   }
 
