@@ -635,12 +635,12 @@ const ShopifyClient = (() => {
   async function redirectToCheckout(cartItems) {
     try {
       if (typeof showToast === 'function') {
-        showToast('Connecting to official Shopify Checkout...', 'info', 2500);
+        showToast('Redirecting to payment gate way .......', 'info', 2500);
       }
       const res = await createCheckout(cartItems);
       if (res.ok && res.checkoutUrl) {
         if (typeof showToast === 'function') {
-          showToast('Redirecting to Shopify Checkout...', 'success', 2000);
+          showToast('Opening Razorpay...', 'success', 2000);
         }
         setTimeout(() => {
           window.location.href = res.checkoutUrl;
