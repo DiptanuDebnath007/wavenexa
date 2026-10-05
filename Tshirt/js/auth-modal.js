@@ -174,13 +174,6 @@
         <div id="googleLoginBtn"></div>
       </div>
 
-      <button type="button" class="google-custom-btn" id="googleCustomBtn" onclick="handleGoogleOneClick()">
-        <span class="google-btn-inner">
-          <img src="assets/google-white-outline.png" alt="Google" class="google-btn-icon">
-          <span class="google-btn-text">Continue with Google</span>
-        </span>
-      </button>
-
       <p class="auth-hint" style="margin-top:16px;">
         Need assistance? Contact <a href="mailto:support@wavenexa.shop" style="color:var(--primary);text-decoration:none;">support@wavenexa.shop</a> · <a href="admin/login.html" style="color:var(--primary);font-weight:600;text-decoration:none;">🔐 Store Admin Portal</a>
       </p>
@@ -715,18 +708,21 @@
           width: computedWidth,
           logo_alignment: 'center'
         });
-        // If official button rendered, hide custom button
-        const customBtn = document.getElementById('googleCustomBtn');
-        if (customBtn) customBtn.style.display = 'none';
       } catch (err) {
-        // Fallback to custom button
-        const customBtn = document.getElementById('googleCustomBtn');
-        if (customBtn) customBtn.style.display = 'flex';
+        console.warn('Google Identity Services render error:', err);
       }
     } else {
-      // Use custom Google button
-      const customBtn = document.getElementById('googleCustomBtn');
-      if (customBtn) customBtn.style.display = 'flex';
+      // Retry once GIS library loads
+      let retries = 0;
+      const interval = setInterval(() => {
+        retries++;
+        if (window.google && window.google.accounts && window.google.accounts.id) {
+          clearInterval(interval);
+          initGoogleAuth();
+        } else if (retries > 20) {
+          clearInterval(interval);
+        }
+      }, 250);
     }
   }
 
