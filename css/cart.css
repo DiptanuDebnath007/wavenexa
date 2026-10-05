@@ -3,7 +3,7 @@
    ============================================= */
 
 .cart-page {
-  padding-top: 32px;
+  padding-top: calc(var(--nav-h) + 32px);
   padding-bottom: 80px;
   min-height: calc(100vh - var(--nav-h) - 80px);
 }
