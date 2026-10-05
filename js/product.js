@@ -48,18 +48,80 @@
     return;
   }
 
-  // ── Page Meta ─────────────────────────────────
-  document.title = `${product.title} — WaveNexa`;
+  // ── Page Meta & SEO ───────────────────────────
+  document.title = `${product.title} | WaveNexa Premium T-Shirts`;
   const pageTitleEl = document.getElementById('pageTitle');
-  if (pageTitleEl) pageTitleEl.textContent = `${product.title} — WaveNexa`;
+  if (pageTitleEl) pageTitleEl.textContent = `${product.title} | WaveNexa Premium T-Shirts`;
   const breadProductEl = document.getElementById('breadProduct');
   if (breadProductEl) breadProductEl.textContent = product.title;
+
+  const prodCanonical = `https://www.wavenexa.shop/product.html?id=${encodeURIComponent(product.id)}`;
+  const metaDesc = document.getElementById('metaDescription') || document.querySelector('meta[name="description"]');
+  if (metaDesc) {
+    const descText = product.description || `Shop ${product.title} at WaveNexa. Premium quality cotton T-shirt with signature streetwear styling.`;
+    metaDesc.setAttribute('content', descText.slice(0, 160));
+  }
+
+  const canonicalEl = document.getElementById('canonicalUrl') || document.querySelector('link[rel="canonical"]');
+  if (canonicalEl) {
+    canonicalEl.setAttribute('href', prodCanonical);
+  }
+
+  const absImg = (product.images && product.images[0])
+    ? (product.images[0].startsWith('http') ? product.images[0] : `https://www.wavenexa.shop/${product.images[0].replace(/^\//, '')}`)
+    : 'https://www.wavenexa.shop/assets/wavenexa-logo-512.png';
+
+  const ogTitle = document.getElementById('ogTitle');
+  if (ogTitle) ogTitle.setAttribute('content', `${product.title} | WaveNexa`);
+  const ogDesc = document.getElementById('ogDescription');
+  if (ogDesc) ogDesc.setAttribute('content', (product.description || `${product.title} by WaveNexa`).slice(0, 160));
+  const ogUrl = document.getElementById('ogUrl');
+  if (ogUrl) ogUrl.setAttribute('content', prodCanonical);
+  const ogImg = document.getElementById('ogImage');
+  if (ogImg) ogImg.setAttribute('content', absImg);
+
+  const twTitle = document.getElementById('twTitle');
+  if (twTitle) twTitle.setAttribute('content', `${product.title} | WaveNexa`);
+  const twDesc = document.getElementById('twDescription');
+  if (twDesc) twDesc.setAttribute('content', (product.description || `${product.title} by WaveNexa`).slice(0, 160));
+  const twImg = document.getElementById('twImage');
+  if (twImg) twImg.setAttribute('content', absImg);
+
+  // Schema.org Product Structured Data
+  const schemaEl = document.getElementById('productSchema');
+  if (schemaEl) {
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": product.title,
+      "image": (product.images || []).map(img => img.startsWith('http') ? img : `https://www.wavenexa.shop/${img.replace(/^\//, '')}`),
+      "description": product.description || `WaveNexa ${product.title} premium streetwear t-shirt`,
+      "sku": String(product.id),
+      "brand": {
+        "@type": "Brand",
+        "name": "WaveNexa"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": prodCanonical,
+        "priceCurrency": "INR",
+        "price": String(product.price),
+        "availability": (product.stock === undefined || product.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "itemCondition": "https://schema.org/NewCondition",
+        "seller": {
+          "@type": "Organization",
+          "name": "WaveNexa"
+        }
+      }
+    };
+    schemaEl.textContent = JSON.stringify(schemaData, null, 2);
+  }
 
   // ── Gallery ───────────────────────────────────
   const thumbsEl = document.getElementById('thumbs');
   if (mainImg) {
     mainImg.src = product.images[0] || 'assets/tshirt_black.jpg';
-    mainImg.alt = product.title;
+    mainImg.alt = `WaveNexa ${product.title} - ${product.category || 'Clothing'} T-Shirt`;
   }
 
   if (thumbsEl && product.images && product.images.length > 1) {

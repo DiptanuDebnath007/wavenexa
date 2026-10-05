@@ -1,0 +1,21 @@
+# robots.txt for WaveNexa (https://www.wavenexa.shop/)
+User-agent: *
+Allow: /
+Allow: /shop.html
+Allow: /product.html
+Allow: /assets/
+Allow: /css/
+Allow: /js/
+Allow: /logo/
+
+# Disallow private and checkout areas
+Disallow: /admin/
+Disallow: /admin
+Disallow: /cart.html
+Disallow: /cart
+Disallow: /profile.html
+Disallow: /profile
+Disallow: /orders.html
+Disallow: /orders
+
+Sitemap: https://www.wavenexa.shop/sitemap.xml

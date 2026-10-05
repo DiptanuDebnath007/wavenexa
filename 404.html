@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | WaveNexa</title>
+  <meta name="description" content="Sorry, the page you are looking for does not exist on WaveNexa. Browse our premium T-shirts and streetwear collections.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="wavenexa-favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#08080f">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .not-found-page {
+      min-height: calc(100vh - var(--nav-h) - 100px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 40px) 20px 60px;
+      text-align: center;
+    }
+    .not-found-card {
+      max-width: 540px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 32px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+    .not-found-code {
+      font-size: 5rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .not-found-title {
+      font-size: 1.6rem;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .not-found-desc {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .not-found-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="WaveNexa home">
+        <img src="logo/logo.png" alt="WaveNexa Logo">
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="index.html#about">About</a>
+      </div>
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="not-found-page">
+    <div class="not-found-card">
+      <div class="not-found-code">404</div>
+      <h1 class="not-found-title">Page Not Found</h1>
+      <p class="not-found-desc">
+        The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+      </p>
+      <div class="not-found-actions">
+        <a href="index.html" class="btn btn-primary">← Back to Home</a>
+        <a href="shop.html" class="btn btn-outline">Explore Shop →</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:20px;">
+        <p>© 2026 WaveNexa. All rights reserved. Premium T-Shirts &amp; Streetwear.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/store.js"></script>
+</body>
+
+</html>

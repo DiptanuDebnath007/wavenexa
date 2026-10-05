@@ -259,7 +259,7 @@ window.addEventListener('load', function () {
       grid.innerHTML = products.map(p => `
       <div class="product-card reveal" onclick="location.href='product.html?id=${encodeURIComponent(p.id)}'">
         <div class="product-card-img">
-          <img src="${p.images[0]}" alt="${p.title}" loading="lazy">
+          <img src="${p.images[0]}" alt="WaveNexa ${p.title} - ${p.category} T-Shirt" loading="lazy">
           ${getBadgeHTML(p.badge)}
           <div class="product-card-wishlist">♡</div>
         </div>
