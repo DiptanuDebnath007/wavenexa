@@ -172,14 +172,13 @@
 
       <div class="google-login-wrap" id="googleLoginBtnWrap">
         <div id="googleLoginBtn"></div>
-        <div class="google-oauth-icon-overlay" id="googleOAuthOverlay" aria-hidden="true">
-          <img src="assets/google-white-outline.png" alt="Google" class="google-white-outline-logo">
-        </div>
       </div>
 
       <button type="button" class="google-custom-btn" id="googleCustomBtn" onclick="handleGoogleOneClick()">
-        <span class="google-btn-text">Continue with Google</span>
-        <img src="assets/google-white-outline.png" alt="Google" class="google-btn-icon-right">
+        <span class="google-btn-inner">
+          <img src="assets/google-white-outline.png" alt="Google" class="google-btn-icon">
+          <span class="google-btn-text">Continue with Google</span>
+        </span>
       </button>
 
       <p class="auth-hint" style="margin-top:16px;">
@@ -706,19 +705,23 @@
           client_id: window.GOOGLE_CLIENT_ID,
           callback: handleGoogleCredentialResponse
         });
+        const wrapEl = document.getElementById('googleLoginBtnWrap');
+        const computedWidth = wrapEl ? Math.min(360, Math.max(240, Math.floor(wrapEl.clientWidth || 340))) : 340;
         google.accounts.id.renderButton(googleWrap, {
           theme: 'outline',
           size: 'large',
           text: 'continue_with',
           shape: 'pill',
-          width: '100%',
+          width: computedWidth,
           logo_alignment: 'center'
         });
         // If official button rendered, hide custom button
-        document.getElementById('googleCustomBtn').style.display = 'none';
+        const customBtn = document.getElementById('googleCustomBtn');
+        if (customBtn) customBtn.style.display = 'none';
       } catch (err) {
         // Fallback to custom button
-        document.getElementById('googleCustomBtn').style.display = 'flex';
+        const customBtn = document.getElementById('googleCustomBtn');
+        if (customBtn) customBtn.style.display = 'flex';
       }
     } else {
       // Use custom Google button
