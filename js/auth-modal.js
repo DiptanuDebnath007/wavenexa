@@ -175,7 +175,7 @@
       </div>
 
       <p class="auth-hint" style="margin-top:16px;">
-        Need assistance? Contact <a href="mailto:support@wavenexa.shop" style="color:var(--primary);text-decoration:none;">support@wavenexa.shop</a> · <a href="admin/login.html" style="color:var(--primary);font-weight:600;text-decoration:none;">🔐 Store Admin Portal</a>
+        Need assistance? Contact <a href="mailto:support@wavenexa.shop" style="color:var(--primary);text-decoration:none;">support@wavenexa.shop</a>
       </p>
     </div>
     `;

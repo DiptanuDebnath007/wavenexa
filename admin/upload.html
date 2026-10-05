@@ -8,6 +8,8 @@
   <link rel="apple-touch-icon" href="../logo/logo.png">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
+  <script src="../js/store.js"></script>
+  <script>if (!Store.isAdminLoggedIn()) { window.location.replace("login.html"); }</script>
 </head>
 <body>
 <div class="admin-layout">
