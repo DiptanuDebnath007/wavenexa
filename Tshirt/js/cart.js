@@ -4,7 +4,7 @@
 
 (function () {
   let customerData = {};
-  let paymentMethod = 'qr';
+  let paymentMethod = 'cod';
 
   function renderCart() {
     const cart = Store.getCart();
@@ -140,7 +140,7 @@
     });
     if (step === 1) document.getElementById('cartStep').style.display = 'block';
     if (step === 2) { document.getElementById('detailsStep').style.display = 'block'; renderMiniCart('miniCartSummary'); }
-    if (step === 3) { document.getElementById('paymentStep').style.display = 'block'; renderMiniCart('paymentMiniCart'); loadQRCode(); }
+    if (step === 3) { document.getElementById('paymentStep').style.display = 'block'; renderMiniCart('paymentMiniCart'); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -183,30 +183,10 @@
   });
 
   // ── Payment Method Selection ──────────────────
-  document.getElementById('payQR')?.addEventListener('click', () => {
-    paymentMethod = 'qr';
-    document.getElementById('payQR').classList.add('active');
-    document.getElementById('payCOD').classList.remove('active');
-    document.getElementById('qrSection').style.display = 'block';
-    document.getElementById('codSection').style.display = 'none';
-  });
   document.getElementById('payCOD')?.addEventListener('click', () => {
     paymentMethod = 'cod';
     document.getElementById('payCOD').classList.add('active');
-    document.getElementById('payQR').classList.remove('active');
-    document.getElementById('codSection').style.display = 'block';
-    document.getElementById('qrSection').style.display = 'none';
   });
-
-  function loadQRCode() {
-    const settings = Store.getSettings();
-    const wrap = document.getElementById('qrImgWrap');
-    const note = document.getElementById('qrNote');
-    if (settings.qrCode && wrap) {
-      wrap.innerHTML = `<img src="${settings.qrCode}" alt="Payment QR Code" class="qr-img">`;
-    }
-    if (settings.qrNote && note) note.textContent = settings.qrNote;
-  }
 
   // ── Confirm Order ─────────────────────────────
   document.getElementById('confirmOrderBtn')?.addEventListener('click', () => {
