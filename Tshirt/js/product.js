@@ -321,6 +321,31 @@
     }
   });
 
+  // ── Wishlist Toggle ───────────────────────────
+  const wishlistBtn = document.getElementById('wishlistToggleBtn');
+  function updateProductWishlistUI() {
+    if (!wishlistBtn || !product) return;
+    const inWish = Store.isInWishlist ? Store.isInWishlist(product.id) : false;
+    wishlistBtn.innerHTML = inWish ? '❤️ Wishlisted' : '🤍 Wishlist';
+    wishlistBtn.classList.toggle('active', inWish);
+    if (inWish) {
+      wishlistBtn.style.borderColor = '#ff4757';
+      wishlistBtn.style.color = '#ff4757';
+    } else {
+      wishlistBtn.style.borderColor = '';
+      wishlistBtn.style.color = '';
+    }
+  }
+  updateProductWishlistUI();
+
+  wishlistBtn?.addEventListener('click', () => {
+    if (!product) return;
+    const res = Store.toggleWishlist(product);
+    updateProductWishlistUI();
+    showToast(res.added ? `Added "${product.title}" to Wishlist!` : `Removed "${product.title}" from Wishlist`, res.added ? 'success' : 'info');
+    if (typeof updateWishlistBadge === 'function') updateWishlistBadge();
+  });
+
   // ── Related Products ──────────────────────────
   function renderRelated() {
     const all = Store.getProducts();

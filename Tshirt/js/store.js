@@ -13,7 +13,8 @@ const Store = (() => {
     orders: 'tc_orders',
     cart: 'tc_cart',
     settings: 'tc_settings',
-    auth: 'tc_auth'
+    auth: 'tc_auth',
+    wishlist: 'tc_wishlist'
   };
 
   let isSyncing = false;
@@ -483,6 +484,92 @@ const Store = (() => {
   function getCartCount() { return getCart().reduce((sum, i) => sum + i.qty, 0); }
   function getCartTotal() { return getCart().reduce((sum, i) => sum + i.price * i.qty, 0); }
 
+  // ── Wishlist ──────────────────────────────────
+  function getWishlist() {
+    const raw = get(KEYS.wishlist);
+    if (!Array.isArray(raw)) return [];
+    return raw.map(item => {
+      if (typeof item === 'string') {
+        const prod = getProduct(item);
+        if (prod) return { ...prod, addedAt: new Date().toISOString() };
+        return { id: item, title: 'Product #' + item, price: 699, images: ['assets/tshirt_black.jpg'], addedAt: new Date().toISOString() };
+      }
+      return item;
+    });
+  }
+
+  function isInWishlist(productId) {
+    if (!productId) return false;
+    const wishlist = get(KEYS.wishlist);
+    if (!Array.isArray(wishlist)) return false;
+    return wishlist.some(i => (typeof i === 'string' ? i === productId : i.id === productId));
+  }
+
+  function addToWishlist(productOrId) {
+    const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
+    if (!id) return false;
+    if (isInWishlist(id)) return true;
+
+    const prod = (typeof productOrId === 'object' && productOrId.title) ? productOrId : getProduct(id);
+    const item = prod ? {
+      id: prod.id,
+      title: prod.title,
+      price: prod.price,
+      originalPrice: prod.originalPrice || null,
+      images: Array.isArray(prod.images) && prod.images.length ? prod.images : ['assets/tshirt_black.jpg'],
+      category: prod.category || 'Streetwear',
+      badge: prod.badge || '',
+      stock: prod.stock ?? 25,
+      sizes: prod.sizes || ['S', 'M', 'L', 'XL'],
+      colors: prod.colors || ['Black'],
+      addedAt: new Date().toISOString()
+    } : {
+      id,
+      title: 'WaveNexa T-Shirt #' + id,
+      price: 699,
+      images: ['assets/tshirt_black.jpg'],
+      category: 'Streetwear',
+      stock: 20,
+      sizes: ['M', 'L'],
+      colors: ['Black'],
+      addedAt: new Date().toISOString()
+    };
+
+    const current = get(KEYS.wishlist) || [];
+    current.unshift(item);
+    set(KEYS.wishlist, current);
+    return true;
+  }
+
+  function removeFromWishlist(productId) {
+    const current = get(KEYS.wishlist) || [];
+    const updated = current.filter(i => (typeof i === 'string' ? i !== productId : i.id !== productId));
+    set(KEYS.wishlist, updated);
+    return true;
+  }
+
+  function toggleWishlist(productOrId) {
+    const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
+    if (!id) return { added: false, count: getWishlistCount() };
+    if (isInWishlist(id)) {
+      removeFromWishlist(id);
+      return { added: false, count: getWishlistCount() };
+    } else {
+      addToWishlist(productOrId);
+      return { added: true, count: getWishlistCount() };
+    }
+  }
+
+  function getWishlistCount() {
+    const wishlist = get(KEYS.wishlist);
+    return Array.isArray(wishlist) ? wishlist.length : 0;
+  }
+
+  function clearWishlist() {
+    set(KEYS.wishlist, []);
+    return true;
+  }
+
   // ── Orders ────────────────────────────────────
   function getOrders() { return get(KEYS.orders); }
   function getOrder(id) { return getOrders().find(o => o.id === id) || null; }
@@ -777,10 +864,28 @@ const Store = (() => {
       googleAuth: !!user.googleAuth,
       profilePhoto: user.profilePhoto || '',
       phone: user.phone || '',
+      gender: user.gender || 'Male',
       address: user.address || '',
       city: user.city || '',
       state: user.state || '',
       pin: user.pin || '',
+      savedAddresses: Array.isArray(user.savedAddresses) ? user.savedAddresses : (user.address ? [{
+        id: 'addr_default',
+        name: user.name || 'Customer',
+        phone: user.phone || '',
+        street: user.address,
+        city: user.city || '',
+        state: user.state || '',
+        pin: user.pin || '',
+        type: 'HOME',
+        isDefault: true
+      }] : []),
+      panNumber: user.panNumber || '',
+      panName: user.panName || '',
+      panVerified: !!user.panVerified,
+      walletBalance: Number(user.walletBalance || 0),
+      savedUpi: Array.isArray(user.savedUpi) ? user.savedUpi : [],
+      savedCards: Array.isArray(user.savedCards) ? user.savedCards : [],
       createdAt: user.createdAt || new Date().toISOString()
     };
   }
@@ -794,7 +899,20 @@ const Store = (() => {
 
   function getCustomerProfile(userId) {
     const customers = getCustomers();
-    return customers.find(c => c.id === userId) || null;
+    let found = customers.find(c => c.id === userId);
+    if (!found) {
+      const sessionUser = getCurrentUser();
+      if (sessionUser && sessionUser.email) {
+        found = customers.find(c => c.email && c.email.toLowerCase() === sessionUser.email.toLowerCase());
+      }
+    }
+    if (!found) {
+      const sessionUser = getCurrentUser();
+      if (sessionUser) {
+        found = normalizeCustomer(sessionUser);
+      }
+    }
+    return found ? normalizeCustomer(found) : null;
   }
 
   function getCustomerOrders(userOrEmail) {
@@ -855,20 +973,37 @@ const Store = (() => {
     const index = customers.findIndex(c => c.id === userId);
 
     if (index === -1) {
+      const sessionUser = getCurrentUser();
+      if (sessionUser && (sessionUser.id === userId || !userId)) {
+        const newCustomer = normalizeCustomer({ ...sessionUser, ...updates });
+        customers.push(newCustomer);
+        localStorage.setItem(CUST_KEY, JSON.stringify(customers));
+        setCustomerSession({ ...sessionUser, ...newCustomer });
+        return { ok: true, user: newCustomer };
+      }
       return { ok: false, error: 'Customer not found.' };
     }
 
     const current = customers[index];
     const next = {
       ...current,
-      name: (updates.name || current.name).trim(),
-      phone: updates.phone ?? current.phone,
-      address: updates.address ?? current.address,
-      city: updates.city ?? current.city,
-      state: updates.state ?? current.state,
-      pin: updates.pin ?? current.pin,
-      profilePhoto: updates.profilePhoto ?? current.profilePhoto,
-      email: current.email
+      ...updates,
+      name: updates.name ? updates.name.trim() : current.name,
+      email: updates.email ? updates.email.trim().toLowerCase() : current.email,
+      phone: updates.phone !== undefined ? updates.phone : current.phone,
+      gender: updates.gender !== undefined ? updates.gender : current.gender,
+      address: updates.address !== undefined ? updates.address : current.address,
+      city: updates.city !== undefined ? updates.city : current.city,
+      state: updates.state !== undefined ? updates.state : current.state,
+      pin: updates.pin !== undefined ? updates.pin : current.pin,
+      profilePhoto: updates.profilePhoto !== undefined ? updates.profilePhoto : current.profilePhoto,
+      savedAddresses: updates.savedAddresses !== undefined ? updates.savedAddresses : current.savedAddresses,
+      panNumber: updates.panNumber !== undefined ? updates.panNumber : current.panNumber,
+      panName: updates.panName !== undefined ? updates.panName : current.panName,
+      panVerified: updates.panVerified !== undefined ? updates.panVerified : current.panVerified,
+      walletBalance: updates.walletBalance !== undefined ? updates.walletBalance : current.walletBalance,
+      savedUpi: updates.savedUpi !== undefined ? updates.savedUpi : current.savedUpi,
+      savedCards: updates.savedCards !== undefined ? updates.savedCards : current.savedCards
     };
 
     try {
@@ -876,7 +1011,7 @@ const Store = (() => {
       localStorage.setItem(CUST_KEY, JSON.stringify(customers));
 
       const currentSession = getCurrentUser();
-      if (currentSession && currentSession.id === userId) {
+      if (currentSession && (currentSession.id === userId || currentSession.email === current.email)) {
         setCustomerSession({
           ...currentSession,
           id: next.id,
@@ -892,7 +1027,7 @@ const Store = (() => {
     } catch (error) {
       return {
         ok: false,
-        error: 'Unable to save the profile photo. Please try a smaller image.'
+        error: 'Unable to save profile changes. Please try again.'
       };
     }
   }
@@ -1298,6 +1433,7 @@ const Store = (() => {
     syncQuikinkInventory, importQuikinkInventory,
     getCart, addToCart, updateCartQty, removeFromCart, clearCart,
     getCartCount, getCartTotal,
+    getWishlist, isInWishlist, addToWishlist, removeFromWishlist, toggleWishlist, getWishlistCount, clearWishlist,
     getOrders, getOrder, addOrder, updateOrderStatus,
     getSettings, updateSettings,
     syncShopifyProducts, openShopifyAdmin,
@@ -1344,6 +1480,14 @@ function showToast(message, type = 'info', duration = 3500) {
 function updateCartBadge() {
   const count = Store.getCartCount();
   document.querySelectorAll('.cart-badge').forEach(badge => {
+    badge.textContent = count;
+    badge.classList.toggle('show', count > 0);
+  });
+}
+
+function updateWishlistBadge() {
+  const count = Store.getWishlistCount ? Store.getWishlistCount() : 0;
+  document.querySelectorAll('.wishlist-badge').forEach(badge => {
     badge.textContent = count;
     badge.classList.toggle('show', count > 0);
   });
@@ -1405,10 +1549,12 @@ function getDiscount(price, original) {
 
 window.addEventListener('load', () => {
   updateCartBadge();
+  updateWishlistBadge();
   initNavbar();
   initReveal();
   window.addEventListener('storeChange', ({ detail }) => {
     if (detail.key === 'tc_cart') updateCartBadge();
+    if (detail.key === 'tc_wishlist') updateWishlistBadge();
   });
 });
 

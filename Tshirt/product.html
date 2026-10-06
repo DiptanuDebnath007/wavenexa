@@ -63,6 +63,7 @@
         <a href="shop.html" class="active">Shop</a>
       </div>
       <div class="nav-actions">
+        <a href="profile.html?view=wishlist" class="nav-wishlist-btn" title="Wishlist">🤍 <span class="wishlist-badge" id="wishlist-badge">0</span></a>
         <a href="cart.html" class="nav-cart-btn" title="Cart">🛒 <span class="cart-badge" id="cart-badge">0</span></a>
         <button class="btn btn-outline btn-sm" id="authNavBtn" onclick="openAuthModal()">🔑 Login</button>
         <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
@@ -168,6 +169,9 @@
           <a href="cart.html" class="btn btn-accent btn-lg" id="buyNowBtn">
             ⚡ Buy Now
           </a>
+          <button class="btn btn-outline btn-lg" id="wishlistToggleBtn" type="button" title="Save to Wishlist">
+            🤍 Wishlist
+          </button>
         </div>
 
         <!-- Meta Info -->

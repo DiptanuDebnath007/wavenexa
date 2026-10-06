@@ -256,12 +256,18 @@ window.addEventListener('load', function () {
         return;
       }
 
-      grid.innerHTML = products.map(p => `
+      grid.innerHTML = products.map(p => {
+        const inWish = Store.isInWishlist ? Store.isInWishlist(p.id) : false;
+        return `
       <div class="product-card reveal" onclick="location.href='product.html?id=${encodeURIComponent(p.id)}'">
         <div class="product-card-img">
           <img src="${p.images[0]}" alt="WaveNexa ${p.title} - ${p.category} T-Shirt" loading="lazy">
           ${getBadgeHTML(p.badge)}
-          <div class="product-card-wishlist">♡</div>
+          <div class="product-card-wishlist ${inWish ? 'active' : ''}" 
+               onclick="event.stopPropagation(); toggleCardWishlist('${p.id}', this)"
+               title="${inWish ? 'Remove from Wishlist' : 'Add to Wishlist'}">
+            ${inWish ? '❤️' : '♡'}
+          </div>
         </div>
         <div class="product-card-body">
           <div class="product-card-cat">${p.category}</div>
@@ -276,9 +282,22 @@ window.addEventListener('load', function () {
           <button class="product-card-quick-add" onclick="event.stopPropagation(); quickAdd('${p.id}')">+ Quick Add</button>
         </div>
       </div>
-    `).join('');
+    `}).join('');
       if (typeof initReveal === 'function') initReveal();
     }
+
+    window.toggleCardWishlist = function (id, btnEl) {
+      const p = Store.getProduct(id);
+      if (!p) return;
+      const res = Store.toggleWishlist(p);
+      if (btnEl) {
+        btnEl.classList.toggle('active', res.added);
+        btnEl.textContent = res.added ? '❤️' : '♡';
+        btnEl.setAttribute('title', res.added ? 'Remove from Wishlist' : 'Add to Wishlist');
+      }
+      showToast(res.added ? `Added "${p.title}" to Wishlist!` : `Removed "${p.title}" from Wishlist`, res.added ? 'success' : 'info');
+      if (typeof updateWishlistBadge === 'function') updateWishlistBadge();
+    };
 
     window.quickAdd = function (id) {
       const product = Store.getProduct(id);
