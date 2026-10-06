@@ -782,15 +782,96 @@
         desktopBtn.innerHTML = `👑 Admin`;
         desktopBtn.title = 'Open WaveNexa Admin Portal';
         desktopBtn.onclick = () => window.location.href = 'admin/dashboard.html';
+        const existingDropdown = document.getElementById('userNavDropdown');
+        if (existingDropdown) existingDropdown.remove();
       } else if (user) {
         const firstName = (user.name || 'Member').split(' ')[0];
-        desktopBtn.innerHTML = `👤 ${firstName}`;
-        desktopBtn.title = 'View My Profile';
-        desktopBtn.onclick = () => window.location.href = 'profile.html';
+        desktopBtn.title = 'Your Account';
+
+        // Wrap button in .user-dropdown-wrap if not already wrapped
+        let wrap = desktopBtn.parentElement;
+        if (!wrap || !wrap.classList.contains('user-dropdown-wrap')) {
+          wrap = document.createElement('div');
+          wrap.className = 'user-dropdown-wrap';
+          wrap.id = 'userDropdownWrap';
+          desktopBtn.parentNode.insertBefore(wrap, desktopBtn);
+          wrap.appendChild(desktopBtn);
+        }
+
+        desktopBtn.className = 'btn btn-outline btn-sm user-dropdown-toggle';
+        desktopBtn.innerHTML = `👤 <span>${firstName}</span> <span class="dropdown-arrow">▾</span>`;
+        desktopBtn.onclick = (e) => {
+          e.stopPropagation();
+          wrap.classList.toggle('open');
+        };
+
+        // Inject or update dropdown menu (Photo 1)
+        let dropdown = document.getElementById('userNavDropdown');
+        if (!dropdown) {
+          dropdown = document.createElement('div');
+          dropdown.id = 'userNavDropdown';
+          dropdown.className = 'user-nav-dropdown';
+          wrap.appendChild(dropdown);
+        }
+
+        dropdown.innerHTML = `
+          <div class="dropdown-header">
+            <div class="dropdown-title">Your Account</div>
+            <div class="dropdown-name">Hello, ${(user.name || 'Customer').split(' ')[0]}</div>
+          </div>
+          <div class="dropdown-list">
+            <a href="profile.html?view=profile" class="dropdown-item">
+              <span class="d-icon">👤</span> My Profile
+            </a>
+            <a href="profile.html?view=orders" class="dropdown-item">
+              <span class="d-icon">📦</span> Orders
+            </a>
+            <a href="profile.html?view=coupons" class="dropdown-item">
+              <span class="d-icon">🏷️</span> Coupons
+            </a>
+            <a href="profile.html?view=vip" class="dropdown-item">
+              <span class="d-icon">⚡</span> WaveNexa VIP Zone
+            </a>
+            <a href="profile.html?view=wallet" class="dropdown-item">
+              <span class="d-icon">💳</span> Saved Cards &amp; Wallet
+            </a>
+            <a href="profile.html?view=addresses" class="dropdown-item">
+              <span class="d-icon">📍</span> Saved Addresses
+            </a>
+            <a href="profile.html?view=wishlist" class="dropdown-item">
+              <span class="d-icon">🤍</span> Wishlist
+            </a>
+            <a href="profile.html?view=notifications" class="dropdown-item">
+              <span class="d-icon">🔔</span> Notifications
+            </a>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item dropdown-logout" id="navDropdownLogout">
+              <span class="d-icon">↪️</span> Logout
+            </button>
+          </div>
+        `;
+
+        document.getElementById('navDropdownLogout')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (confirm('Are you sure you want to log out?')) {
+            Store.customerLogout();
+            window.location.href = 'index.html';
+          }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('open');
+          }
+        });
       } else {
+        desktopBtn.className = 'btn btn-outline btn-sm';
         desktopBtn.innerHTML = '🔑 Login';
         desktopBtn.title = 'Sign In / Register';
         desktopBtn.onclick = () => openAuthModal('otp');
+        const existingDropdown = document.getElementById('userNavDropdown');
+        if (existingDropdown) existingDropdown.remove();
       }
     }
 
@@ -801,7 +882,7 @@
         mobileLink.onclick = null;
       } else if (user) {
         const firstName = (user.name || 'Member').split(' ')[0];
-        mobileLink.innerHTML = `👤 Profile (${firstName})`;
+        mobileLink.innerHTML = `👤 Account (${firstName})`;
         mobileLink.href = 'profile.html';
         mobileLink.onclick = null;
       } else {

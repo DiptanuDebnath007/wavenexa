@@ -2442,3 +2442,134 @@ select.form-control {
 .shopify-guide-box summary:hover {
   color: var(--primary);
 }
+
+/* =============================================
+   Navbar User Profile Dropdown Menu (Photo 1)
+   ============================================= */
+.user-dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.user-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.user-dropdown-toggle .dropdown-arrow {
+  font-size: 0.68rem;
+  transition: transform 0.2s ease;
+  opacity: 0.75;
+}
+
+.user-dropdown-wrap.open .user-dropdown-toggle .dropdown-arrow,
+.user-dropdown-wrap:hover .user-dropdown-toggle .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.user-nav-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  background: rgba(18, 20, 32, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(108, 99, 255, 0.2);
+  backdrop-filter: blur(24px);
+  padding: 8px 0;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.97);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+  pointer-events: none;
+}
+
+.user-dropdown-wrap.open .user-nav-dropdown,
+.user-dropdown-wrap:hover .user-nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.user-nav-dropdown .dropdown-header {
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-nav-dropdown .dropdown-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.user-nav-dropdown .dropdown-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-nav-dropdown .dropdown-list {
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-nav-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-nav-dropdown .dropdown-item:hover {
+  background: rgba(108, 99, 255, 0.12);
+  color: #fff;
+}
+
+.user-nav-dropdown .dropdown-item .d-icon {
+  font-size: 1rem;
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-nav-dropdown .dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 6px 0;
+}
+
+.user-nav-dropdown .dropdown-item.dropdown-logout {
+  color: #ff859d;
+}
+
+.user-nav-dropdown .dropdown-item.dropdown-logout:hover {
+  background: rgba(255, 101, 132, 0.14);
+  color: #fff;
+}
