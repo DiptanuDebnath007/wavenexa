@@ -642,9 +642,130 @@ const Store = (() => {
     };
   }
 
-  // ── Customer Auth ─────────────────────────────
+  // ── Customer Auth & Persistent Session Management ──────
   const CUST_KEY = 'tc_customers';
   const CUSER_KEY = 'tc_current_user';
+  const ADMIN_SESSION_KEY = 'tc_admin_session';
+  const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month) persistent login session
+
+  function setCustomerSession(userData) {
+    if (!userData) return null;
+    const sessionObj = {
+      id: userData.id,
+      name: userData.name,
+      email: userData.email || '',
+      phone: userData.phone || '',
+      profilePhoto: userData.profilePhoto || '',
+      provider: userData.provider || 'credentials',
+      role: userData.role || 'customer',
+      savedAt: Date.now(),
+      expiresAt: Date.now() + SESSION_TTL_MS
+    };
+
+    try {
+      localStorage.setItem(CUSER_KEY, JSON.stringify(sessionObj));
+    } catch (e) {
+      console.warn('[Store] localStorage write failed:', e);
+    }
+    try {
+      sessionStorage.setItem(CUSER_KEY, JSON.stringify(sessionObj));
+    } catch (e) {
+      console.warn('[Store] sessionStorage write failed:', e);
+    }
+
+    return sessionObj;
+  }
+
+  function getCurrentUser() {
+    try {
+      let raw = null;
+      const localRaw = localStorage.getItem(CUSER_KEY);
+      const sessionRaw = sessionStorage.getItem(CUSER_KEY);
+
+      if (localRaw) {
+        try { raw = JSON.parse(localRaw); } catch (_) {}
+      } else if (sessionRaw) {
+        try { raw = JSON.parse(sessionRaw); } catch (_) {}
+      }
+
+      if (!raw) return null;
+
+      // 30-day session expiry check
+      if (raw.expiresAt && Date.now() > raw.expiresAt) {
+        customerLogout();
+        return null;
+      }
+
+      // Sync across storages if needed
+      if (localRaw && !sessionRaw) {
+        try { sessionStorage.setItem(CUSER_KEY, localRaw); } catch (_) {}
+      }
+
+      return raw;
+    } catch {
+      return null;
+    }
+  }
+
+  function customerLogout() {
+    try {
+      sessionStorage.removeItem(CUSER_KEY);
+      localStorage.removeItem(CUSER_KEY);
+    } catch (_) {}
+  }
+
+  function setAdminSession(adminUser) {
+    if (!adminUser) return null;
+    const adminObj = {
+      ...adminUser,
+      role: 'admin',
+      savedAt: Date.now(),
+      expiresAt: Date.now() + SESSION_TTL_MS
+    };
+    try {
+      localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminObj));
+    } catch (_) {}
+    try {
+      sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminObj));
+    } catch (_) {}
+    return adminObj;
+  }
+
+  function isAdminLoggedIn() {
+    try {
+      let sess = null;
+      const localRaw = localStorage.getItem(ADMIN_SESSION_KEY);
+      const sessionRaw = sessionStorage.getItem(ADMIN_SESSION_KEY);
+
+      if (localRaw) {
+        try { sess = JSON.parse(localRaw); } catch (_) {}
+      } else if (sessionRaw) {
+        try { sess = JSON.parse(sessionRaw); } catch (_) {}
+      }
+
+      if (!sess || sess.role !== 'admin') return false;
+
+      if (sess.expiresAt && Date.now() > sess.expiresAt) {
+        adminLogout();
+        return false;
+      }
+
+      if (localRaw && !sessionRaw) {
+        try { sessionStorage.setItem(ADMIN_SESSION_KEY, localRaw); } catch (_) {}
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function adminLogout() {
+    try {
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+    } catch (_) {}
+  }
 
   function normalizeCustomer(user) {
     if (!user) return null;
@@ -756,14 +877,15 @@ const Store = (() => {
 
       const currentSession = getCurrentUser();
       if (currentSession && currentSession.id === userId) {
-        sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+        setCustomerSession({
           ...currentSession,
           id: next.id,
           name: next.name,
           email: next.email,
+          phone: next.phone || currentSession.phone || '',
           profilePhoto: next.profilePhoto || '',
           provider: currentSession.provider || 'email'
-        }));
+        });
       }
 
       return { ok: true, user: customers[index] };
@@ -818,74 +940,16 @@ const Store = (() => {
       localStorage.setItem(CUST_KEY, JSON.stringify(customers));
     }
 
-    sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+    const sessionUser = setCustomerSession({
       id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone || '',
       profilePhoto: user.profilePhoto || '',
       provider: 'google'
-    }));
+    });
 
-    return { ok: true, role: 'customer', user };
-  }
-
-  const ADMIN_SESSION_KEY = 'tc_admin_session';
-
-  function isAdminLoggedIn() {
-    try {
-      const sess = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || localStorage.getItem(ADMIN_SESSION_KEY));
-      return Boolean(sess && sess.role === 'admin');
-    } catch { return false; }
-  }
-
-  function adminLogout() {
-    sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    localStorage.removeItem(ADMIN_SESSION_KEY);
-  }
-
-  async function customerLogin(email, password) {
-    const cleanEmail = (email || '').trim().toLowerCase();
-    
-    // 1. Check Store Admin credentials
-    if (cleanEmail === 'admin@wavenexa.com' && password === 'admin123') {
-      const adminUser = {
-        id: 'admin_master',
-        name: 'Store Administrator',
-        email: 'admin@wavenexa.com',
-        role: 'admin'
-      };
-      sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-      localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-      return { ok: true, role: 'admin', user: adminUser };
-    }
-
-    // 2. Customer check
-    const customers = getCustomers();
-    const user = customers.find(c => c.email.toLowerCase() === cleanEmail && c.password === password);
-    if (user) {
-      const sess = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        profilePhoto: user.profilePhoto || '',
-        provider: 'email'
-      };
-      sessionStorage.setItem(CUSER_KEY, JSON.stringify(sess));
-      localStorage.setItem(CUSER_KEY, JSON.stringify(sess));
-      return { ok: true, role: 'customer', user };
-    }
-    return { ok: false, error: 'Invalid email or password.' };
-  }
-
-  function customerLogout() {
-    sessionStorage.removeItem(CUSER_KEY);
-    localStorage.removeItem(CUSER_KEY);
-  }
-
-  function getCurrentUser() {
-    try {
-      return JSON.parse(sessionStorage.getItem(CUSER_KEY) || localStorage.getItem(CUSER_KEY));
-    } catch { return null; }
+    return { ok: true, role: 'customer', user: sessionUser };
   }
 
   const OTP_KEY = 'tc_active_otp';
@@ -1123,8 +1187,7 @@ const Store = (() => {
           email: 'admin@wavenexa.com',
           role: 'admin'
         };
-        sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-        localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+        setAdminSession(adminUser);
         return { ok: true, role: 'admin', user: adminUser };
       }
 
@@ -1157,10 +1220,9 @@ const Store = (() => {
         profilePhoto: user.profilePhoto || '',
         provider: 'email_otp'
       };
-      sessionStorage.setItem(CUSER_KEY, JSON.stringify(sessionUser));
-      localStorage.setItem(CUSER_KEY, JSON.stringify(sessionUser));
+      const sessionObj = setCustomerSession(sessionUser);
 
-      return { ok: true, role: 'customer', user: sessionUser, isNew };
+      return { ok: true, role: 'customer', user: sessionObj, isNew };
     } catch (err) {
       console.error('[Store] OTP verification error:', err);
       return { ok: false, error: 'Verification error occurred. Please try again.' };
@@ -1201,7 +1263,7 @@ const Store = (() => {
         email: 'admin@wavenexa.com',
         role: 'admin'
       };
-      sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
+      setAdminSession(adminUser);
       return { ok: true, role: 'admin', user: adminUser };
     }
 
@@ -1214,28 +1276,17 @@ const Store = (() => {
     });
 
     if (user) {
-      sessionStorage.setItem(CUSER_KEY, JSON.stringify({
+      const sessionUser = setCustomerSession({
         id: user.id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || '',
         profilePhoto: user.profilePhoto || '',
         provider: 'credentials'
-      }));
-      return { ok: true, role: 'customer', user };
+      });
+      return { ok: true, role: 'customer', user: sessionUser };
     }
     return { ok: false, error: 'Invalid email/phone or password.' };
-  }
-
-  function customerLogout() {
-    sessionStorage.removeItem(CUSER_KEY);
-  }
-
-  function getCurrentUser() {
-    try {
-      const raw = JSON.parse(sessionStorage.getItem(CUSER_KEY));
-      return raw || null;
-    } catch { return null; }
   }
 
   // Public API
