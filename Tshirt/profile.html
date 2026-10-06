@@ -444,17 +444,38 @@
     .gender-option {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
+      gap: 10px;
+      font-size: 0.92rem;
       color: var(--text-main);
       cursor: pointer;
+      padding: 9px 18px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .gender-option:hover {
+      background: rgba(40, 116, 240, 0.08);
+      border-color: rgba(40, 116, 240, 0.4);
+    }
+
+    .gender-option.selected,
+    .gender-option:has(input[type="radio"]:checked) {
+      background: rgba(40, 116, 240, 0.16);
+      border-color: #2874f0;
+      color: #70adff;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(40, 116, 240, 0.25);
     }
 
     .gender-option input[type="radio"] {
       accent-color: #2874f0;
-      width: 16px;
-      height: 16px;
+      width: 17px;
+      height: 17px;
       cursor: pointer;
+      margin: 0;
     }
 
     /* Save button for Edit mode */
@@ -810,14 +831,553 @@
       margin-bottom: 18px;
     }
 
-    /* Responsive */
+    /* ── ORDER ACTIONS & MODALS ── */
+    .btn-orders-help {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(40, 116, 240, 0.1);
+      border: 1px solid rgba(40, 116, 240, 0.35);
+      color: #59a5ff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 7px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-orders-help:hover {
+      background: #2874f0;
+      color: #fff;
+      border-color: #2874f0;
+      box-shadow: 0 4px 14px rgba(40, 116, 240, 0.3);
+    }
+
+    .btn-order-cancel {
+      display: inline-block;
+      background: rgba(255, 75, 75, 0.12);
+      border: 1px solid rgba(255, 75, 75, 0.35);
+      color: #ff6584;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 6px;
+    }
+
+    .btn-order-cancel:hover {
+      background: #ff4757;
+      color: #fff;
+      border-color: #ff4757;
+    }
+
+    .cancel-timer-hint {
+      font-size: 0.72rem;
+      color: #ffd000;
+      margin-top: 4px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cancel-closed-hint {
+      font-size: 0.72rem;
+      color: var(--text-dimmed);
+      margin-top: 4px;
+    }
+
+    .order-actions-delivered-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-order-return {
+      background: rgba(40, 116, 240, 0.12);
+      border: 1px solid rgba(40, 116, 240, 0.35);
+      color: #59a5ff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-return:hover {
+      background: #2874f0;
+      color: #fff;
+    }
+
+    .btn-order-replace {
+      background: rgba(0, 229, 153, 0.12);
+      border: 1px solid rgba(0, 229, 153, 0.35);
+      color: #00e599;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-replace:hover {
+      background: #00e599;
+      color: #08080f;
+    }
+
+    .order-action-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .order-action-badge.return {
+      background: rgba(40, 116, 240, 0.18);
+      color: #70adff;
+      border: 1px solid rgba(40, 116, 240, 0.3);
+    }
+
+    .order-action-badge.replace {
+      background: rgba(0, 229, 153, 0.18);
+      color: #00e599;
+      border: 1px solid rgba(0, 229, 153, 0.3);
+    }
+
+    .order-action-badge.cancelled {
+      background: rgba(255, 75, 75, 0.18);
+      color: #ff6584;
+      border: 1px solid rgba(255, 75, 75, 0.3);
+    }
+
+    /* Modal Backdrop & Cards */
+    .order-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 5, 10, 0.82);
+      backdrop-filter: blur(8px);
+      z-index: 1050;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .order-modal-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .order-modal-card {
+      background: #10121d;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalSlideUp {
+      from { transform: translateY(20px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .order-modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .order-modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+    }
+
+    .btn-modal-close {
+      background: rgba(255, 255, 255, 0.06);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      transition: background 0.15s ease;
+    }
+
+    .btn-modal-close:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .order-modal-body {
+      padding: 24px;
+    }
+
+    .help-faq-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .help-faq-card h4 {
+      margin: 0 0 6px;
+      font-size: 0.92rem;
+      color: #59a5ff;
+      font-weight: 700;
+    }
+
+    .help-faq-card p {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: var(--text-sub);
+    }
+
+    .contact-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .contact-info-box {
+      background: rgba(40, 116, 240, 0.05);
+      border: 1px solid rgba(40, 116, 240, 0.15);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .contact-info-box strong {
+      display: block;
+      color: #fff;
+      font-size: 0.88rem;
+      margin-bottom: 4px;
+    }
+
+    .contact-info-box a, .contact-info-box span {
+      font-size: 0.82rem;
+      color: #70adff;
+      text-decoration: none;
+    }
+
+    /* ── MOBILE PROFILE BAR & DRAWER ── */
+    .profile-mobile-bar {
+      display: none;
+      background: rgba(18, 20, 32, 0.96);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 68px;
+      z-index: 95;
+      backdrop-filter: blur(12px);
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .btn-profile-mobile-menu {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .btn-profile-mobile-menu:hover,
+    .btn-profile-mobile-menu:active {
+      background: rgba(40, 116, 240, 0.15);
+      border-color: #2874f0;
+    }
+
+    .p-bars-icon {
+      display: flex;
+      flex-direction: column;
+      gap: 3.5px;
+      width: 18px;
+    }
+
+    .p-bars-icon span {
+      display: block;
+      height: 2px;
+      background: #59a5ff;
+      border-radius: 2px;
+    }
+
+    .p-active-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .p-menu-sub-text {
+      font-size: 0.65rem;
+      color: var(--text-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    .p-current-view-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .p-chevron-indicator {
+      font-size: 0.75rem;
+      color: var(--text-dimmed);
+      margin-left: 2px;
+    }
+
+    .profile-mobile-user-mini {
+      cursor: pointer;
+    }
+
+    .mobile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd000, #ff9f00);
+      color: #121420;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(255, 208, 0, 0.3);
+    }
+
+    .mobile-avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Mobile Drawer */
+    .profile-mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .profile-mobile-backdrop.open {
+      display: block;
+      opacity: 1;
+    }
+
+    .profile-mobile-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 320px;
+      max-width: 86vw;
+      background: #0d0f1a;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1001;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .profile-mobile-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 20px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drawer-user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .drawer-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd000, #ff9f00);
+      color: #121420;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      overflow: hidden;
+    }
+
+    .drawer-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .drawer-user-hello {
+      font-size: 0.72rem;
+      color: var(--text-dimmed);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .drawer-user-name {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .drawer-user-badge {
+      font-size: 0.68rem;
+      color: #ffd000;
+      font-weight: 700;
+    }
+
+    .btn-drawer-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .drawer-nav-list {
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .drawer-section-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-dimmed);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 12px 10px 4px;
+    }
+
+    .drawer-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border-radius: 8px;
+      color: var(--text-sub);
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .drawer-nav-item:hover,
+    .drawer-nav-item:active {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .drawer-nav-item.active {
+      background: rgba(40, 116, 240, 0.15);
+      color: #59a5ff;
+      font-weight: 700;
+    }
+
+    .drawer-nav-item .d-icon {
+      font-size: 1.05rem;
+      width: 22px;
+      text-align: center;
+    }
+
+    .drawer-nav-item .d-text {
+      flex: 1;
+    }
+
+    .drawer-nav-item .d-badge {
+      font-size: 0.72rem;
+      background: rgba(40, 116, 240, 0.25);
+      color: #70adff;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .drawer-nav-item.logout {
+      color: #ff6584;
+    }
+
+    /* ── RESPONSIVE BREAKPOINT ── */
     @media (max-width: 960px) {
       .profile-dashboard-layout {
         grid-template-columns: 1fr;
+        margin: 12px auto 60px;
+        padding: 0 12px;
       }
 
       .sidebar-column {
-        position: static;
+        display: none !important;
+      }
+
+      .profile-mobile-bar {
+        display: flex;
       }
 
       .order-ticket-fk {
@@ -825,6 +1385,10 @@
       }
 
       .fk-inputs-row {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-info-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -867,6 +1431,287 @@
 
   <!-- Hidden Photo Input -->
   <input type="file" id="profilePhotoFileInput" accept="image/*" style="display:none;" aria-hidden="true">
+
+  <!-- ── MOBILE PROFILE NAVIGATION BAR ── -->
+  <div class="profile-mobile-bar" id="profileMobileBar">
+    <button type="button" class="btn-profile-mobile-menu" id="profileMobileMenuBtn" onclick="openProfileMobileDrawer()" aria-label="Open Profile Navigation Menu">
+      <div class="p-bars-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="p-active-title-wrap">
+        <span class="p-menu-sub-text">PROFILE MENU</span>
+        <span class="p-current-view-title" id="mobileActiveViewTitle">Profile Information</span>
+      </div>
+      <span class="p-chevron-indicator">▾</span>
+    </button>
+
+    <div class="profile-mobile-user-mini" onclick="openProfileMobileDrawer()" title="Profile Menu">
+      <div class="mobile-avatar-circle" id="mobileAvatarCircle">WN</div>
+    </div>
+  </div>
+
+  <!-- ── MOBILE PROFILE DRAWER & BACKDROP ── -->
+  <div class="profile-mobile-backdrop" id="profileMobileBackdrop" onclick="closeProfileMobileDrawer()"></div>
+  <aside class="profile-mobile-drawer" id="profileMobileDrawer" aria-label="Profile navigation drawer">
+    <div class="drawer-header">
+      <div class="drawer-user-info">
+        <div class="drawer-avatar" id="drawerAvatarCircle">WN</div>
+        <div>
+          <div class="drawer-user-hello">Hello,</div>
+          <div class="drawer-user-name" id="drawerUserName">Customer</div>
+          <div class="drawer-user-badge">VIP Member ⚡</div>
+        </div>
+      </div>
+      <button type="button" class="btn-drawer-close" onclick="closeProfileMobileDrawer()" aria-label="Close menu">✕</button>
+    </div>
+
+    <div class="drawer-nav-list">
+      <!-- Section 1: MY ORDERS -->
+      <button type="button" class="drawer-nav-item" data-view="orders" onclick="selectMobileView('orders')">
+        <span class="d-icon">📦</span>
+        <span class="d-text">My Orders</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+
+      <!-- Section 2: ACCOUNT SETTINGS -->
+      <div class="drawer-section-label">Account Settings</div>
+      <button type="button" class="drawer-nav-item active" data-view="profile" onclick="selectMobileView('profile')">
+        <span class="d-icon">👤</span>
+        <span class="d-text">Profile Information</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="addresses" onclick="selectMobileView('addresses')">
+        <span class="d-icon">📍</span>
+        <span class="d-text">Manage Addresses</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="pan" onclick="selectMobileView('pan')">
+        <span class="d-icon">🪪</span>
+        <span class="d-text">PAN Card Information</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+
+      <!-- Section 3: PAYMENTS -->
+      <div class="drawer-section-label">Payments &amp; Wallet</div>
+      <button type="button" class="drawer-nav-item" data-view="wallet" onclick="selectMobileView('wallet')">
+        <span class="d-icon">💳</span>
+        <span class="d-text">Gift Cards &amp; Wallet</span>
+        <span class="d-badge" id="drawerWalletBal">₹0</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="upi" onclick="selectMobileView('upi')">
+        <span class="d-icon">⚡</span>
+        <span class="d-text">Saved UPI</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="cards" onclick="selectMobileView('cards')">
+        <span class="d-icon">💳</span>
+        <span class="d-text">Saved Cards</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+
+      <!-- Section 4: MY STUFF -->
+      <div class="drawer-section-label">My Stuff</div>
+      <button type="button" class="drawer-nav-item" data-view="coupons" onclick="selectMobileView('coupons')">
+        <span class="d-icon">🏷️</span>
+        <span class="d-text">My Coupons</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="reviews" onclick="selectMobileView('reviews')">
+        <span class="d-icon">⭐</span>
+        <span class="d-text">My Reviews &amp; Ratings</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="notifications" onclick="selectMobileView('notifications')">
+        <span class="d-icon">🔔</span>
+        <span class="d-text">All Notifications</span>
+        <span class="d-badge" id="drawerNotifCount" style="display:none;">0</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="wishlist" onclick="selectMobileView('wishlist')">
+        <span class="d-icon">🤍</span>
+        <span class="d-text">My Wishlist</span>
+        <span class="d-badge" id="drawerWishlistCount" style="display:none;">0</span>
+      </button>
+      <button type="button" class="drawer-nav-item" data-view="vip" onclick="selectMobileView('vip')">
+        <span class="d-icon">⚡</span>
+        <span class="d-text">VIP Member Zone</span>
+        <span class="d-arrow" style="font-size:0.8rem; color:var(--text-dimmed);">›</span>
+      </button>
+
+      <!-- Section 5: LOGOUT -->
+      <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
+        <button type="button" class="drawer-nav-item logout" onclick="closeProfileMobileDrawer(); Store.customerLogout(); window.location.href='index.html';">
+          <span class="d-icon">🚪</span>
+          <span class="d-text">Log Out</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── 1. MODAL: ORDER HELP & FAQS ── -->
+  <div class="order-modal-backdrop" id="ordersHelpModal" onclick="if(event.target===this)closeOrdersHelpModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">💬 Orders Help &amp; FAQs</h3>
+        <button type="button" class="btn-modal-close" onclick="closeOrdersHelpModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <div class="help-faq-card">
+          <h4>Can I cancel my order?</h4>
+          <p>Yes! You can cancel any order within <strong>42 hours</strong> of placing it directly by clicking "Cancel Order" on your order ticket. Once 42 hours elapse, your order enters print and courier processing.</p>
+        </div>
+        <div class="help-faq-card">
+          <h4>How do Returns and Replacements work?</h4>
+          <p>Once your order status changes to <strong>Delivered</strong>, dedicated "Return" and "Replace" buttons appear on the order card. We offer free 7-day doorstep pickup and size exchanges across India.</p>
+        </div>
+        <div class="help-faq-card">
+          <h4>When will my refund be processed?</h4>
+          <p>Cancellations and approved returns refunded to your WaveNexa Gift Wallet are instant. Refunds to original payment methods (UPI, Cards, Netbanking) typically reflect within 3 to 5 business days.</p>
+        </div>
+        <div class="help-faq-card">
+          <h4>How do I track my package?</h4>
+          <p>Each dispatched order has a dedicated Tracking ID on the order card. You will also receive live SMS and WhatsApp tracking updates.</p>
+        </div>
+
+        <h4 style="margin:20px 0 10px; font-size:0.95rem; color:#fff;">Need to reach our team directly?</h4>
+        <div class="contact-info-grid">
+          <div class="contact-info-box">
+            <strong>📞 Phone Helpline</strong>
+            <a href="tel:+919876543210">+91 98765 43210</a>
+            <div style="font-size:0.75rem; color:var(--text-dimmed); margin-top:2px;">Mon – Sat, 9 AM – 8 PM IST</div>
+          </div>
+          <div class="contact-info-box">
+            <strong>💬 WhatsApp Support</strong>
+            <a href="https://wa.me/919876543210?text=Hi%20WaveNexa%20Support%2C%20I%20need%20help%20with%20my%20order" target="_blank" rel="noopener">Chat on WhatsApp →</a>
+            <div style="font-size:0.75rem; color:var(--text-dimmed); margin-top:2px;">Quick reply within minutes</div>
+          </div>
+          <div class="contact-info-box">
+            <strong>✉️ Email Support</strong>
+            <a href="mailto:support@wavenexa.shop">support@wavenexa.shop</a>
+            <div style="font-size:0.75rem; color:var(--text-dimmed); margin-top:2px;">Replies within 4 business hours</div>
+          </div>
+          <div class="contact-info-box">
+            <strong>🏢 WaveNexa HQ</strong>
+            <span style="display:block; font-size:0.78rem; color:var(--text-sub);">WaveNexa Apparels Pvt Ltd, Surat, Gujarat 395007</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. MODAL: CANCEL ORDER (WITHIN 42 HOURS) ── -->
+  <div class="order-modal-backdrop" id="cancelOrderModal" onclick="if(event.target===this)closeCancelModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">Cancel Order</h3>
+        <button type="button" class="btn-modal-close" onclick="closeCancelModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <input type="hidden" id="cancelTargetOrderId" value="">
+        <p style="color:var(--text-sub); font-size:0.88rem; margin-bottom:14px;">
+          You are cancelling Order <strong id="cancelModalOrderNum" style="color:#fff;">#ORD...</strong>. Orders can be cancelled freely within 42 hours of placing them.
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Please choose a reason for cancellation:</label>
+          <select id="cancelReasonSelect" class="fk-input" style="background:#161928; color:#fff;">
+            <option value="Ordered by mistake">Ordered by mistake</option>
+            <option value="Need to change delivery address or phone number">Need to change delivery address or phone number</option>
+            <option value="Selected wrong size or color variant">Selected wrong size or color variant</option>
+            <option value="Found a better price or alternative">Found a better price or alternative</option>
+            <option value="Estimated delivery date is too late">Estimated delivery date is too late</option>
+            <option value="Other reason">Other reason</option>
+          </select>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Additional comments (optional):</label>
+          <textarea id="cancelCommentsInput" class="fk-input" rows="2" placeholder="Let us know how we can improve..." style="resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button type="button" class="btn-fk-cancel" onclick="closeCancelModal()">Keep Order</button>
+          <button type="button" class="btn-order-cancel" id="confirmCancelOrderBtn" style="padding:10px 20px; font-size:0.88rem; margin:0;" onclick="submitOrderCancellation()">Confirm Cancellation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. MODAL: RETURN ORDER (AFTER DELIVERY) ── -->
+  <div class="order-modal-backdrop" id="returnOrderModal" onclick="if(event.target===this)closeReturnModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">🔄 Request Order Return</h3>
+        <button type="button" class="btn-modal-close" onclick="closeReturnModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <input type="hidden" id="returnTargetOrderId" value="">
+        <p style="color:var(--text-sub); font-size:0.88rem; margin-bottom:14px;">
+          Return request for Order <strong id="returnModalOrderNum" style="color:#fff;">#ORD...</strong>. Our courier partner will arrive for doorstep pickup within 2 business days.
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Reason for Return:</label>
+          <select id="returnReasonSelect" class="fk-input" style="background:#161928; color:#fff;">
+            <option value="Size does not fit comfortably">Size does not fit comfortably</option>
+            <option value="Defective fabric, stitching, or print quality">Defective fabric, stitching, or print quality</option>
+            <option value="Received wrong design or color">Received wrong design or color</option>
+            <option value="Item not as pictured on website">Item not as pictured on website</option>
+            <option value="Quality not as expected">Quality not as expected</option>
+            <option value="Changed mind">Changed mind</option>
+          </select>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Details / Condition note:</label>
+          <textarea id="returnCommentsInput" class="fk-input" rows="2" placeholder="e.g. Unworn with original tags attached..." style="resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button type="button" class="btn-fk-cancel" onclick="closeReturnModal()">Cancel</button>
+          <button type="button" class="btn-fk-save" onclick="submitOrderReturn()">Submit Return Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. MODAL: REPLACE ORDER (AFTER DELIVERY) ── -->
+  <div class="order-modal-backdrop" id="replaceOrderModal" onclick="if(event.target===this)closeReplaceModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">🔁 Request Size Replacement</h3>
+        <button type="button" class="btn-modal-close" onclick="closeReplaceModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <input type="hidden" id="replaceTargetOrderId" value="">
+        <p style="color:var(--text-sub); font-size:0.88rem; margin-bottom:14px;">
+          Replacement request for Order <strong id="replaceModalOrderNum" style="color:#fff;">#ORD...</strong>. We will arrange a doorstep exchange.
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Desired Replacement Size:</label>
+          <div style="display:flex; gap:10px;" id="replaceSizePills">
+            <label class="gender-option" style="padding:6px 14px;"><input type="radio" name="replSize" value="S"> <span>S</span></label>
+            <label class="gender-option selected" style="padding:6px 14px;"><input type="radio" name="replSize" value="M" checked> <span>M</span></label>
+            <label class="gender-option" style="padding:6px 14px;"><input type="radio" name="replSize" value="L"> <span>L</span></label>
+            <label class="gender-option" style="padding:6px 14px;"><input type="radio" name="replSize" value="XL"> <span>XL</span></label>
+            <label class="gender-option" style="padding:6px 14px;"><input type="radio" name="replSize" value="XXL"> <span>XXL</span></label>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Reason for replacement:</label>
+          <select id="replaceReasonSelect" class="fk-input" style="background:#161928; color:#fff;">
+            <option value="Current size too small, need next size">Current size too small, need next size</option>
+            <option value="Current size too large, need smaller size">Current size too large, need smaller size</option>
+            <option value="Received incorrect size from order">Received incorrect size from order</option>
+            <option value="Fabric defect, requesting fresh replacement">Fabric defect, requesting fresh replacement</option>
+          </select>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.82rem; color:var(--text-sub); display:block; margin-bottom:6px;">Notes (optional):</label>
+          <textarea id="replaceCommentsInput" class="fk-input" rows="2" placeholder="Any specific instructions for delivery partner..." style="resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button type="button" class="btn-fk-cancel" onclick="closeReplaceModal()">Cancel</button>
+          <button type="button" class="btn-fk-save" style="background:#00e599; color:#08080f;" onclick="submitOrderReplacement()">Confirm Replacement</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Main Profile Dashboard (Photos 2 & 3) -->
   <main class="profile-dashboard-layout">
@@ -1025,12 +1870,12 @@
             <div class="gender-select-wrap">
               <div class="gender-label">Your Gender</div>
               <div class="gender-radios-row">
-                <label class="gender-option">
-                  <input type="radio" name="gender" value="male" id="genderMale" checked disabled>
+                <label class="gender-option selected" id="genderOptionMale" onclick="handleGenderSelect('Male')">
+                  <input type="radio" name="gender" value="Male" id="genderMale" checked>
                   <span>Male</span>
                 </label>
-                <label class="gender-option">
-                  <input type="radio" name="gender" value="female" id="genderFemale" disabled>
+                <label class="gender-option" id="genderOptionFemale" onclick="handleGenderSelect('Female')">
+                  <input type="radio" name="gender" value="Female" id="genderFemale">
                   <span>Female</span>
                 </label>
               </div>
@@ -1186,15 +2031,24 @@
       <div class="content-panel" id="view-orders">
         <div class="panel-card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <h2 class="block-title" style="margin:0;">My Orders</h2>
+            <button type="button" class="btn-orders-help" id="openOrdersHelpBtn" onclick="openOrdersHelpModal()">
+              <span>💬</span>
+              <span>Need Help? / Order FAQs &amp; Support</span>
+            </button>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
             <div class="orders-search-bar" style="margin-bottom:0; flex:1; min-width:240px;">
               <span class="orders-search-icon">🔍</span>
               <input type="text" class="orders-search-input" id="orderSearchInput" placeholder="Search your orders by product name or order ID...">
             </div>
-            <div style="display:flex; gap:6px;" id="orderFilterPills">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="orderFilterPills">
               <button type="button" class="btn-action-link active" data-filter="all" style="padding:6px 12px; border-radius:20px; font-size:0.78rem; background:rgba(255,255,255,0.06);">All</button>
               <button type="button" class="btn-action-link" data-filter="pending" style="padding:6px 12px; border-radius:20px; font-size:0.78rem; background:rgba(255,255,255,0.03);">Processing</button>
               <button type="button" class="btn-action-link" data-filter="shipped" style="padding:6px 12px; border-radius:20px; font-size:0.78rem; background:rgba(255,255,255,0.03);">On the way</button>
               <button type="button" class="btn-action-link" data-filter="delivered" style="padding:6px 12px; border-radius:20px; font-size:0.78rem; background:rgba(255,255,255,0.03);">Delivered</button>
+              <button type="button" class="btn-action-link" data-filter="cancelled" style="padding:6px 12px; border-radius:20px; font-size:0.78rem; background:rgba(255,255,255,0.03);">Cancelled</button>
             </div>
           </div>
 
@@ -1548,13 +2402,16 @@
       const profile = profileState.currentProfile || profileState.currentUser;
       if (!profile) return;
 
-      document.getElementById('sidebarUserName').textContent = profile.name || 'Customer';
+      const userName = profile.name || 'Customer';
+      const userInitials = getInitials(userName);
+
+      document.getElementById('sidebarUserName').textContent = userName;
 
       const avatarBox = document.getElementById('sidebarAvatarCircle');
       if (profile.profilePhoto) {
-        avatarBox.innerHTML = `<img src="${profile.profilePhoto}" alt="${profile.name}">`;
+        avatarBox.innerHTML = `<img src="${profile.profilePhoto}" alt="${userName}">`;
       } else {
-        avatarBox.textContent = getInitials(profile.name);
+        avatarBox.textContent = userInitials;
       }
 
       // Wallet Balance Pill
@@ -1578,6 +2435,31 @@
         notifPill.textContent = unreadCount;
         notifPill.style.display = unreadCount > 0 ? 'inline-block' : 'none';
       }
+
+      // Sync Mobile Drawer & Mobile Bar
+      const mobileAvatarBox = document.getElementById('mobileAvatarCircle');
+      const drawerAvatarBox = document.getElementById('drawerAvatarCircle');
+      const drawerUserEl = document.getElementById('drawerUserName');
+      if (drawerUserEl) drawerUserEl.textContent = userName;
+
+      const avatarContent = profile.profilePhoto ? `<img src="${profile.profilePhoto}" alt="${userName}">` : userInitials;
+      if (mobileAvatarBox) mobileAvatarBox.innerHTML = avatarContent;
+      if (drawerAvatarBox) drawerAvatarBox.innerHTML = avatarContent;
+
+      const drawerWallet = document.getElementById('drawerWalletBal');
+      if (drawerWallet) drawerWallet.textContent = formatPrice(profile.walletBalance || 0);
+
+      const drawerWish = document.getElementById('drawerWishlistCount');
+      if (drawerWish) {
+        drawerWish.textContent = wishCount;
+        drawerWish.style.display = wishCount > 0 ? 'inline-block' : 'none';
+      }
+
+      const drawerNotif = document.getElementById('drawerNotifCount');
+      if (drawerNotif) {
+        drawerNotif.textContent = unreadCount;
+        drawerNotif.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+      }
     }
 
     // ── 2. VIEW: PROFILE INFORMATION ───────────────
@@ -1595,9 +2477,39 @@
       document.getElementById('phoneValInput').value = profile.phone || '';
 
       const isFemale = (profile.gender === 'Female' || profile.gender === 'female');
-      document.getElementById('genderMale').checked = !isFemale;
-      document.getElementById('genderFemale').checked = isFemale;
+      const maleRadio = document.getElementById('genderMale');
+      const femaleRadio = document.getElementById('genderFemale');
+      const optMale = document.getElementById('genderOptionMale');
+      const optFemale = document.getElementById('genderOptionFemale');
+
+      if (maleRadio) maleRadio.checked = !isFemale;
+      if (femaleRadio) femaleRadio.checked = isFemale;
+      if (optMale) optMale.classList.toggle('selected', !isFemale);
+      if (optFemale) optFemale.classList.toggle('selected', isFemale);
     }
+
+    window.handleGenderSelect = function(genderVal) {
+      const profile = profileState.currentProfile || profileState.currentUser;
+      if (!profile) return;
+      const isFemale = (genderVal === 'Female' || genderVal === 'female');
+      const finalVal = isFemale ? 'Female' : 'Male';
+
+      const maleRadio = document.getElementById('genderMale');
+      const femaleRadio = document.getElementById('genderFemale');
+      const optMale = document.getElementById('genderOptionMale');
+      const optFemale = document.getElementById('genderOptionFemale');
+
+      if (maleRadio) maleRadio.checked = !isFemale;
+      if (femaleRadio) femaleRadio.checked = isFemale;
+      if (optMale) optMale.classList.toggle('selected', !isFemale);
+      if (optFemale) optFemale.classList.toggle('selected', isFemale);
+
+      const res = Store.updateCustomerProfile(profile.id, { gender: finalVal });
+      if (res.ok) {
+        profileState.currentProfile = res.user;
+        showBannerToast(`Gender updated to ${finalVal} ✓`);
+      }
+    };
 
     // ── 3. VIEW: MANAGE ADDRESSES ──────────────────
     function renderAddressesView() {
@@ -1769,10 +2681,69 @@
         } else if (rawStatus === 'delivered') {
           statusClass = 'delivered';
           statusLabel = 'Delivered';
+        } else if (rawStatus === 'cancelled') {
+          statusClass = 'pending';
+          statusLabel = 'Cancelled';
         }
 
         const itemsTitle = (order.items || []).map(i => `${i.title} (${i.qty})`).join(', ') || 'WaveNexa Streetwear';
         const firstImg = (order.items && order.items[0] && order.items[0].image) ? order.items[0].image : 'assets/tshirt_black.jpg';
+
+        // Order actions based on cancellation window & delivery status
+        const cancelCheck = Store.canCancelOrder ? Store.canCancelOrder(order) : { allowed: false };
+        let actionBadgesHtml = '';
+
+        if (rawStatus === 'cancelled') {
+          actionBadgesHtml = `
+            <div class="order-action-badge cancelled">
+              <span>🚫 Cancelled</span>
+            </div>
+            <div style="font-size:0.73rem; color:rgba(255,100,100,0.85); margin-top:3px;">
+              ${order.cancelReason || 'Cancelled by customer'}
+            </div>
+          `;
+        } else if (rawStatus === 'delivered') {
+          if (order.returnStatus) {
+            actionBadgesHtml = `
+              <div class="order-action-badge return">
+                <span>🔄 ${order.returnStatus}</span>
+              </div>
+              <div style="font-size:0.73rem; color:#70adff; margin-top:3px;">
+                ${order.returnReason || 'Doorstep pickup in progress'}
+              </div>
+            `;
+          } else if (order.replacementStatus) {
+            actionBadgesHtml = `
+              <div class="order-action-badge replace">
+                <span>🔁 ${order.replacementStatus}</span>
+              </div>
+              <div style="font-size:0.73rem; color:#00e599; margin-top:3px;">
+                Size: ${order.preferredReplacementSize || 'M'} • Exchange initiated
+              </div>
+            `;
+          } else {
+            actionBadgesHtml = `
+              <div class="order-actions-delivered-row">
+                <button type="button" class="btn-order-return" onclick="openReturnModal('${order.id}')">🔄 Return</button>
+                <button type="button" class="btn-order-replace" onclick="openReplaceModal('${order.id}')">🔁 Replace</button>
+              </div>
+            `;
+          }
+        } else {
+          // Status pending / processing / shipped
+          if (cancelCheck.allowed) {
+            actionBadgesHtml = `
+              <div>
+                <button type="button" class="btn-order-cancel" onclick="openCancelModal('${order.id}')">✕ Cancel Order</button>
+                <div class="cancel-timer-hint">⏱️ Can cancel (${cancelCheck.hoursLeft}h left)</div>
+              </div>
+            `;
+          } else {
+            actionBadgesHtml = `
+              <div class="cancel-closed-hint">🔒 Cancellation closed (>42h)</div>
+            `;
+          }
+        }
 
         return `
           <div class="order-ticket-fk">
@@ -1796,6 +2767,9 @@
                 <span class="ticket-status-dot"></span>
                 <span>${statusLabel}</span>
               </div>
+              <div style="margin-top:4px;">
+                ${actionBadgesHtml}
+              </div>
               <div style="margin-top:8px;">
                 <a href="orders.html?id=${order.id}" class="btn-action-link" style="font-size:0.8rem;">View Order →</a>
               </div>
@@ -1804,6 +2778,131 @@
         `;
       }).join('');
     }
+
+    // ── ORDERS HELP & ACTION MODALS HANDLERS ────────
+    window.openOrdersHelpModal = function() {
+      document.getElementById('ordersHelpModal')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeOrdersHelpModal = function() {
+      document.getElementById('ordersHelpModal')?.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    window.openCancelModal = function(orderId) {
+      const order = (profileState.allOrders || []).find(o => o.id === orderId) || Store.getOrder(orderId);
+      if (!order) return;
+      const check = Store.canCancelOrder ? Store.canCancelOrder(order) : { allowed: true };
+      if (!check.allowed) {
+        alert(check.reason || 'This order can no longer be cancelled.');
+        return;
+      }
+      document.getElementById('cancelTargetOrderId').value = orderId;
+      document.getElementById('cancelModalOrderNum').textContent = '#' + orderId;
+      document.getElementById('cancelCommentsInput').value = '';
+      document.getElementById('cancelOrderModal')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeCancelModal = function() {
+      document.getElementById('cancelOrderModal')?.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    window.submitOrderCancellation = function() {
+      const orderId = document.getElementById('cancelTargetOrderId').value;
+      const reason = document.getElementById('cancelReasonSelect').value;
+      const comment = document.getElementById('cancelCommentsInput').value.trim();
+      const fullReason = comment ? `${reason}: ${comment}` : reason;
+
+      const res = Store.cancelOrder(orderId, fullReason);
+      if (res.ok) {
+        closeCancelModal();
+        profileState.allOrders = Store.getCustomerOrders(profileState.currentUser);
+        renderOrdersView();
+        showBannerToast(`Order #${orderId} has been cancelled successfully.`);
+      } else {
+        alert(res.error || 'Failed to cancel order.');
+      }
+    };
+
+    window.openReturnModal = function(orderId) {
+      document.getElementById('returnTargetOrderId').value = orderId;
+      document.getElementById('returnModalOrderNum').textContent = '#' + orderId;
+      document.getElementById('returnCommentsInput').value = '';
+      document.getElementById('returnOrderModal')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeReturnModal = function() {
+      document.getElementById('returnOrderModal')?.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    window.submitOrderReturn = function() {
+      const orderId = document.getElementById('returnTargetOrderId').value;
+      const reason = document.getElementById('returnReasonSelect').value;
+      const details = document.getElementById('returnCommentsInput').value.trim();
+
+      const res = Store.requestReturn(orderId, { reason, details });
+      if (res.ok) {
+        closeReturnModal();
+        profileState.allOrders = Store.getCustomerOrders(profileState.currentUser);
+        renderOrdersView();
+        showBannerToast(`Return request registered for Order #${orderId}. Doorstep pickup will be scheduled.`);
+      } else {
+        alert(res.error || 'Failed to submit return request.');
+      }
+    };
+
+    window.openReplaceModal = function(orderId) {
+      document.getElementById('replaceTargetOrderId').value = orderId;
+      document.getElementById('replaceModalOrderNum').textContent = '#' + orderId;
+      document.getElementById('replaceCommentsInput').value = '';
+      document.getElementById('replaceOrderModal')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeReplaceModal = function() {
+      document.getElementById('replaceOrderModal')?.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    window.submitOrderReplacement = function() {
+      const orderId = document.getElementById('replaceTargetOrderId').value;
+      const reason = document.getElementById('replaceReasonSelect').value;
+      const checkedSize = document.querySelector('input[name="replSize"]:checked')?.value || 'M';
+      const details = document.getElementById('replaceCommentsInput').value.trim();
+
+      const res = Store.requestReplacement(orderId, { reason, preferredSize: checkedSize, details });
+      if (res.ok) {
+        closeReplaceModal();
+        profileState.allOrders = Store.getCustomerOrders(profileState.currentUser);
+        renderOrdersView();
+        showBannerToast(`Replacement request registered for Order #${orderId} (Size: ${checkedSize}).`);
+      } else {
+        alert(res.error || 'Failed to submit replacement request.');
+      }
+    };
+
+    // ── MOBILE PROFILE DRAWER HANDLERS ───────────────
+    window.openProfileMobileDrawer = function() {
+      document.getElementById('profileMobileDrawer')?.classList.add('open');
+      document.getElementById('profileMobileBackdrop')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeProfileMobileDrawer = function() {
+      document.getElementById('profileMobileDrawer')?.classList.remove('open');
+      document.getElementById('profileMobileBackdrop')?.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    window.selectMobileView = function(viewName) {
+      closeProfileMobileDrawer();
+      switchView(viewName);
+    };
 
     // ── 5. VIEW: PAN CARD ──────────────────────────
     function renderPanView() {
@@ -2245,13 +3344,37 @@
     }
 
     // ── SWITCH VIEW CONTROLLER ─────────────────────
+    // ── SWITCH VIEW CONTROLLER ─────────────────────
     function switchView(viewName) {
       profileState.activeView = viewName;
 
-      // Update sidebar links active class
+      // Update desktop sidebar links active class
       document.querySelectorAll('.menu-sub-link, .menu-link-single').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
       });
+
+      // Update mobile drawer links active class
+      document.querySelectorAll('.drawer-nav-item').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
+      });
+
+      // Update mobile bar title
+      const viewTitles = {
+        profile: 'Profile Information',
+        addresses: 'Manage Addresses',
+        orders: 'My Orders',
+        pan: 'PAN Card Information',
+        wallet: 'Gift Cards & Wallet',
+        upi: 'Saved UPI IDs',
+        cards: 'Saved Cards',
+        coupons: 'My Coupons',
+        reviews: 'My Reviews & Ratings',
+        notifications: 'All Notifications',
+        wishlist: 'My Wishlist',
+        vip: 'VIP Member Zone'
+      };
+      const titleEl = document.getElementById('mobileActiveViewTitle');
+      if (titleEl) titleEl.textContent = viewTitles[viewName] || 'Account Settings';
 
       // Update main panels
       document.querySelectorAll('.content-panel').forEach(panel => {
@@ -2296,21 +3419,21 @@
       const genderMale = document.getElementById('genderMale');
       const genderFemale = document.getElementById('genderFemale');
 
+      // Wire gender direct change events
+      genderMale?.addEventListener('change', () => window.handleGenderSelect('Male'));
+      genderFemale?.addEventListener('change', () => window.handleGenderSelect('Female'));
+
       editPersonalBtn?.addEventListener('click', () => {
         const isEditing = personalSaveRow.classList.contains('show');
         if (isEditing) {
           personalSaveRow.classList.remove('show');
           firstNameInp.disabled = true;
           lastNameInp.disabled = true;
-          genderMale.disabled = true;
-          genderFemale.disabled = true;
           renderProfileView();
         } else {
           personalSaveRow.classList.add('show');
           firstNameInp.disabled = false;
           lastNameInp.disabled = false;
-          genderMale.disabled = false;
-          genderFemale.disabled = false;
           firstNameInp.focus();
         }
       });
@@ -2319,8 +3442,6 @@
         personalSaveRow.classList.remove('show');
         firstNameInp.disabled = true;
         lastNameInp.disabled = true;
-        genderMale.disabled = true;
-        genderFemale.disabled = true;
         renderProfileView();
       });
 
@@ -2338,8 +3459,6 @@
           personalSaveRow.classList.remove('show');
           firstNameInp.disabled = true;
           lastNameInp.disabled = true;
-          genderMale.disabled = true;
-          genderFemale.disabled = true;
           renderSidebar();
           renderProfileView();
           showBannerToast('Personal Information updated successfully!');

@@ -229,6 +229,242 @@
         width: 100%;
       }
     }
+
+    /* ── Order Status & Actions ── */
+    .order-status-banner {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .order-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .order-status-badge.pending {
+      background: rgba(255, 208, 0, 0.15);
+      color: #ffd000;
+      border: 1px solid rgba(255, 208, 0, 0.3);
+    }
+
+    .order-status-badge.delivered {
+      background: rgba(0, 229, 153, 0.15);
+      color: #00e599;
+      border: 1px solid rgba(0, 229, 153, 0.3);
+    }
+
+    .order-status-badge.cancelled {
+      background: rgba(255, 75, 75, 0.15);
+      color: #ff6584;
+      border: 1px solid rgba(255, 75, 75, 0.3);
+    }
+
+    .btn-order-cancel-lg {
+      background: rgba(255, 75, 75, 0.12);
+      border: 1px solid rgba(255, 75, 75, 0.35);
+      color: #ff6584;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 9px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-cancel-lg:hover {
+      background: #ff4757;
+      color: #fff;
+    }
+
+    .btn-order-return-lg {
+      background: rgba(40, 116, 240, 0.12);
+      border: 1px solid rgba(40, 116, 240, 0.35);
+      color: #59a5ff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 9px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-return-lg:hover {
+      background: #2874f0;
+      color: #fff;
+    }
+
+    .btn-order-replace-lg {
+      background: rgba(0, 229, 153, 0.12);
+      border: 1px solid rgba(0, 229, 153, 0.35);
+      color: #00e599;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 9px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-replace-lg:hover {
+      background: #00e599;
+      color: #08080f;
+    }
+
+    .btn-orders-help-banner {
+      width: 100%;
+      background: rgba(40, 116, 240, 0.08);
+      border: 1px dashed rgba(40, 116, 240, 0.35);
+      color: #59a5ff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-orders-help-banner:hover {
+      background: rgba(40, 116, 240, 0.18);
+      border-color: #2874f0;
+    }
+
+    /* Modal styles */
+    .order-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 5, 10, 0.82);
+      backdrop-filter: blur(8px);
+      z-index: 1050;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .order-modal-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .order-modal-card {
+      background: #10121d;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      text-align: left;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    .order-modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .order-modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+    }
+
+    .btn-modal-close {
+      background: rgba(255, 255, 255, 0.06);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    .order-modal-body {
+      padding: 24px;
+    }
+
+    .help-faq-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .help-faq-card h4 {
+      margin: 0 0 6px;
+      font-size: 0.92rem;
+      color: #59a5ff;
+      font-weight: 700;
+    }
+
+    .help-faq-card p {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .contact-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 540px) {
+      .contact-info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .contact-info-box {
+      background: rgba(40, 116, 240, 0.05);
+      border: 1px solid rgba(40, 116, 240, 0.15);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .contact-info-box strong {
+      display: block;
+      color: #fff;
+      font-size: 0.88rem;
+      margin-bottom: 4px;
+    }
+
+    .contact-info-box a, .contact-info-box span {
+      font-size: 0.82rem;
+      color: #70adff;
+      text-decoration: none;
+    }
   </style>
 </head>
 
@@ -250,10 +486,21 @@
         <div class="order-id-val" id="orderIdDisplay">—</div>
       </div>
 
+      <!-- Live Status & Action Banner -->
+      <div class="order-status-banner" id="orderStatusBanner">
+        <!-- Dynamically populated -->
+      </div>
+
       <div class="order-items-title">Items Ordered</div>
       <div id="orderItemsList" style="margin-bottom:24px"></div>
 
       <table class="order-details-table" id="orderDetailsTable"></table>
+
+      <!-- Order Help Button Banner -->
+      <button type="button" class="btn-orders-help-banner" onclick="openOrdersHelpModal()">
+        <span>💬</span>
+        <span>Need Help with this Order? View FAQs &amp; Support Info</span>
+      </button>
 
       <div class="whatsapp-hint">
         📲 Save your Order ID. We'll contact you on WhatsApp/Phone to confirm delivery.
@@ -261,48 +508,289 @@
 
       <div class="confirm-actions">
         <a href="shop.html" class="btn btn-primary">🛍 Shop More</a>
-        <a href="index.html" class="btn btn-outline">🏠 Home</a>
+        <a href="profile.html" class="btn btn-outline">👤 View My Account</a>
       </div>
     </div>
   </div>
+
+  <!-- ── 1. MODAL: ORDER HELP & FAQS ── -->
+  <div class="order-modal-backdrop" id="ordersHelpModal" onclick="if(event.target===this)closeOrdersHelpModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">💬 Orders Help &amp; FAQs</h3>
+        <button type="button" class="btn-modal-close" onclick="closeOrdersHelpModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <div class="help-faq-card">
+          <h4>Can I cancel my order?</h4>
+          <p>Yes! You can cancel your order within <strong>42 hours</strong> of placing it directly on this page or from your Profile. After 42 hours, orders enter courier fulfillment.</p>
+        </div>
+        <div class="help-faq-card">
+          <h4>How do Returns and Replacements work?</h4>
+          <p>Once your order is marked <strong>Delivered</strong>, return and size exchange buttons become active. We provide free 7-day doorstep pickup across India.</p>
+        </div>
+        <div class="help-faq-card">
+          <h4>When will my refund be processed?</h4>
+          <p>Wallet refunds are instant. UPI or card payment refunds take 3 to 5 business days to credit back to your bank account.</p>
+        </div>
+        <h4 style="margin:20px 0 10px; font-size:0.95rem; color:#fff;">Direct Customer Support:</h4>
+        <div class="contact-info-grid">
+          <div class="contact-info-box">
+            <strong>📞 Phone Helpline</strong>
+            <a href="tel:+919876543210">+91 98765 43210</a>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Mon – Sat, 9 AM – 8 PM</div>
+          </div>
+          <div class="contact-info-box">
+            <strong>💬 WhatsApp Support</strong>
+            <a href="https://wa.me/919876543210?text=Hi%20WaveNexa%2C%20I%20need%20help%20with%20my%20order" target="_blank" rel="noopener">Chat on WhatsApp →</a>
+          </div>
+          <div class="contact-info-box">
+            <strong>✉️ Email Support</strong>
+            <a href="mailto:support@wavenexa.shop">support@wavenexa.shop</a>
+          </div>
+          <div class="contact-info-box">
+            <strong>🏢 WaveNexa HQ</strong>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Surat, Gujarat 395007</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. MODAL: CANCEL ORDER (WITHIN 42 HOURS) ── -->
+  <div class="order-modal-backdrop" id="cancelOrderModal" onclick="if(event.target===this)closeCancelModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">Cancel Order</h3>
+        <button type="button" class="btn-modal-close" onclick="closeCancelModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:14px;">
+          You can freely cancel your order within 42 hours of placing it.
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Reason for cancellation:</label>
+          <select id="cancelReasonSelect" class="input" style="width:100%; padding:10px; background:#161928; color:#fff; border:1px solid var(--border); border-radius:6px;">
+            <option value="Ordered by mistake">Ordered by mistake</option>
+            <option value="Need to change delivery address or phone number">Need to change delivery address or phone number</option>
+            <option value="Selected wrong size or color variant">Selected wrong size or color variant</option>
+            <option value="Found a better price or alternative">Found a better price or alternative</option>
+            <option value="Other reason">Other reason</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeCancelModal()">Keep Order</button>
+          <button type="button" class="btn btn-sm" style="background:#ff4757; color:#fff;" onclick="submitOrderCancellation()">Confirm Cancellation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. MODAL: RETURN ORDER (AFTER DELIVERY) ── -->
+  <div class="order-modal-backdrop" id="returnOrderModal" onclick="if(event.target===this)closeReturnModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">🔄 Request Order Return</h3>
+        <button type="button" class="btn-modal-close" onclick="closeReturnModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:14px;">
+          Our courier partner will arrange doorstep pickup within 2 business days.
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Reason for Return:</label>
+          <select id="returnReasonSelect" class="input" style="width:100%; padding:10px; background:#161928; color:#fff; border:1px solid var(--border); border-radius:6px;">
+            <option value="Size does not fit comfortably">Size does not fit comfortably</option>
+            <option value="Defective fabric or print quality">Defective fabric or print quality</option>
+            <option value="Received wrong design or color">Received wrong design or color</option>
+            <option value="Quality not as expected">Quality not as expected</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeReturnModal()">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="submitOrderReturn()">Submit Return Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. MODAL: REPLACE ORDER (AFTER DELIVERY) ── -->
+  <div class="order-modal-backdrop" id="replaceOrderModal" onclick="if(event.target===this)closeReplaceModal()">
+    <div class="order-modal-card">
+      <div class="order-modal-header">
+        <h3 class="order-modal-title">🔁 Request Size Replacement</h3>
+        <button type="button" class="btn-modal-close" onclick="closeReplaceModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="order-modal-body">
+        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:14px;">
+          Choose your desired replacement size for doorstep exchange.
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Desired Size:</label>
+          <select id="replaceSizeSelect" class="input" style="width:100%; padding:10px; background:#161928; color:#fff; border:1px solid var(--border); border-radius:6px;">
+            <option value="S">S - Small</option>
+            <option value="M" selected>M - Medium</option>
+            <option value="L">L - Large</option>
+            <option value="XL">XL - Extra Large</option>
+            <option value="XXL">XXL - Double Large</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeReplaceModal()">Cancel</button>
+          <button type="button" class="btn btn-sm" style="background:#00e599; color:#08080f;" onclick="submitOrderReplacement()">Confirm Replacement</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/shopify-config.js"></script>
   <script src="js/shopify.js"></script>
   <script src="js/store.js"></script>
   <script>
+    let currentOrder = null;
+
+    function renderOrderStatusBanner() {
+      if (!currentOrder) return;
+      const banner = document.getElementById('orderStatusBanner');
+      if (!banner) return;
+
+      const rawStatus = (currentOrder.status || 'pending').toLowerCase();
+      let badgeClass = 'pending';
+      let badgeText = 'Processing (Order Placed)';
+
+      if (rawStatus === 'shipped') {
+        badgeClass = 'pending';
+        badgeText = 'On the way 🚚';
+      } else if (rawStatus === 'delivered') {
+        badgeClass = 'delivered';
+        badgeText = 'Delivered ✅';
+      } else if (rawStatus === 'cancelled') {
+        badgeClass = 'cancelled';
+        badgeText = 'Cancelled 🚫';
+      }
+
+      let actionsHtml = '';
+      if (rawStatus === 'cancelled') {
+        actionsHtml = `<div style="font-size:0.82rem; color:#ff6584;">Reason: ${currentOrder.cancelReason || 'Cancelled by customer'}</div>`;
+      } else if (rawStatus === 'delivered') {
+        if (currentOrder.returnStatus) {
+          actionsHtml = `<div style="font-size:0.85rem; color:#59a5ff;">🔄 Return Status: <strong>${currentOrder.returnStatus}</strong></div>`;
+        } else if (currentOrder.replacementStatus) {
+          actionsHtml = `<div style="font-size:0.85rem; color:#00e599;">🔁 Replacement Status: <strong>${currentOrder.replacementStatus} (${currentOrder.preferredReplacementSize || 'M'})</strong></div>`;
+        } else {
+          actionsHtml = `
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:4px;">
+              <button type="button" class="btn-order-return-lg" onclick="openReturnModal()">🔄 Return Item</button>
+              <button type="button" class="btn-order-replace-lg" onclick="openReplaceModal()">🔁 Replace Size</button>
+            </div>
+          `;
+        }
+      } else {
+        // Pending / processing / shipped
+        const cancelCheck = Store.canCancelOrder ? Store.canCancelOrder(currentOrder) : { allowed: true, hoursLeft: 42 };
+        if (cancelCheck.allowed) {
+          actionsHtml = `
+            <div>
+              <button type="button" class="btn-order-cancel-lg" onclick="openCancelModal()">✕ Cancel Order</button>
+              <div style="font-size:0.75rem; color:#ffd000; margin-top:6px;">⏱️ Can be cancelled for the next ${cancelCheck.hoursLeft} hours</div>
+            </div>
+          `;
+        } else {
+          actionsHtml = `
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">🔒 42-hour cancellation window has passed. Shipment is in transit.</div>
+          `;
+        }
+      }
+
+      banner.innerHTML = `
+        <div class="order-status-badge ${badgeClass}">${badgeText}</div>
+        ${actionsHtml}
+      `;
+    }
+
+    // Modal helpers
+    window.openOrdersHelpModal = () => document.getElementById('ordersHelpModal')?.classList.add('open');
+    window.closeOrdersHelpModal = () => document.getElementById('ordersHelpModal')?.classList.remove('open');
+
+    window.openCancelModal = () => document.getElementById('cancelOrderModal')?.classList.add('open');
+    window.closeCancelModal = () => document.getElementById('cancelOrderModal')?.classList.remove('open');
+    window.submitOrderCancellation = () => {
+      const reason = document.getElementById('cancelReasonSelect').value;
+      const res = Store.cancelOrder(currentOrder.id, reason);
+      if (res.ok) {
+        currentOrder = res.order;
+        closeCancelModal();
+        renderOrderStatusBanner();
+        alert('Order cancelled successfully.');
+      } else {
+        alert(res.error || 'Failed to cancel order.');
+      }
+    };
+
+    window.openReturnModal = () => document.getElementById('returnOrderModal')?.classList.add('open');
+    window.closeReturnModal = () => document.getElementById('returnOrderModal')?.classList.remove('open');
+    window.submitOrderReturn = () => {
+      const reason = document.getElementById('returnReasonSelect').value;
+      const res = Store.requestReturn(currentOrder.id, { reason });
+      if (res.ok) {
+        currentOrder = res.order;
+        closeReturnModal();
+        renderOrderStatusBanner();
+        alert('Return request registered! Doorstep pickup will be arranged.');
+      } else {
+        alert(res.error || 'Failed to submit return request.');
+      }
+    };
+
+    window.openReplaceModal = () => document.getElementById('replaceOrderModal')?.classList.add('open');
+    window.closeReplaceModal = () => document.getElementById('replaceOrderModal')?.classList.remove('open');
+    window.submitOrderReplacement = () => {
+      const size = document.getElementById('replaceSizeSelect').value;
+      const res = Store.requestReplacement(currentOrder.id, { preferredSize: size });
+      if (res.ok) {
+        currentOrder = res.order;
+        closeReplaceModal();
+        renderOrderStatusBanner();
+        alert('Replacement request registered! Doorstep exchange will be arranged.');
+      } else {
+        alert(res.error || 'Failed to submit replacement request.');
+      }
+    };
+
     (function () {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       if (!id) { window.location.href = 'index.html'; return; }
-      const order = Store.getOrder(id);
-      if (!order) { window.location.href = 'index.html'; return; }
+      currentOrder = Store.getOrder(id);
+      if (!currentOrder) { window.location.href = 'index.html'; return; }
 
-      document.getElementById('orderIdDisplay').textContent = order.id;
+      document.getElementById('orderIdDisplay').textContent = currentOrder.id;
+      renderOrderStatusBanner();
 
       // Items
       const itemsList = document.getElementById('orderItemsList');
-      itemsList.innerHTML = order.items.map(item => `
-    <div class="order-item-row">
-      <div class="order-item-img"><img src="${item.image}" alt="${item.title}"></div>
-      <div class="order-item-info">
-        <strong>${item.title}</strong>
-        <small>Size: ${item.size} · Qty: ${item.qty}</small>
-      </div>
-      <div class="order-item-price">${formatPrice(item.price * item.qty)}</div>
-    </div>
-  `).join('');
+      itemsList.innerHTML = currentOrder.items.map(item => `
+        <div class="order-item-row">
+          <div class="order-item-img"><img src="${item.image}" alt="${item.title}"></div>
+          <div class="order-item-info">
+            <strong>${item.title}</strong>
+            <small>Size: ${item.size} · Qty: ${item.qty}</small>
+          </div>
+          <div class="order-item-price">${formatPrice(item.price * item.qty)}</div>
+        </div>
+      `).join('');
 
       // Details table
       const table = document.getElementById('orderDetailsTable');
-      const settings = Store.getSettings();
       table.innerHTML = `
-    <tr><td>Customer</td><td>${order.customer.name}</td></tr>
-    <tr><td>Phone</td><td>${order.customer.phone}</td></tr>
-    <tr><td>Address</td><td>${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pin}</td></tr>
-    <tr><td>Payment</td><td>💵 Cash on Delivery</td></tr>
-    <tr><td>Subtotal</td><td>${formatPrice(order.subtotal)}</td></tr>
-    <tr><td>Shipping</td><td>${order.shipping === 0 ? 'FREE 🎉' : formatPrice(order.shipping)}</td></tr>
-    <tr><td><strong>Total Paid</strong></td><td><strong style="color:var(--primary);font-size:1.05rem">${formatPrice(order.total)}</strong></td></tr>
-  `;
+        <tr><td>Customer</td><td>${currentOrder.customer.name}</td></tr>
+        <tr><td>Phone</td><td>${currentOrder.customer.phone}</td></tr>
+        <tr><td>Address</td><td>${currentOrder.customer.address}, ${currentOrder.customer.city}, ${currentOrder.customer.state} - ${currentOrder.customer.pin}</td></tr>
+        <tr><td>Payment</td><td>💵 Cash on Delivery</td></tr>
+        <tr><td>Subtotal</td><td>${formatPrice(currentOrder.subtotal)}</td></tr>
+        <tr><td>Shipping</td><td>${currentOrder.shipping === 0 ? 'FREE 🎉' : formatPrice(currentOrder.shipping)}</td></tr>
+        <tr><td><strong>Total Paid</strong></td><td><strong style="color:var(--primary);font-size:1.05rem">${formatPrice(currentOrder.total)}</strong></td></tr>
+      `;
 
       // Confetti
       const canvas = document.getElementById('confetti');

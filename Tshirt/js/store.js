@@ -605,6 +605,89 @@ const Store = (() => {
     set(KEYS.orders, orders);
   }
 
+  function canCancelOrder(order) {
+    if (!order) return { allowed: false, reason: 'Order not found' };
+    const rawStatus = (order.status || 'pending').toLowerCase();
+    if (rawStatus === 'cancelled') return { allowed: false, reason: 'Order is already cancelled' };
+    if (rawStatus === 'delivered') return { allowed: false, reason: 'Delivered orders cannot be cancelled. You can request a Return or Replacement.' };
+
+    const createdTime = new Date(order.createdAt || order.date || Date.now()).getTime();
+    if (isNaN(createdTime)) return { allowed: true, hoursLeft: 42, elapsedHours: 0 };
+    const elapsedHours = (Date.now() - createdTime) / (1000 * 60 * 60);
+
+    if (elapsedHours > 42) {
+      return { allowed: false, reason: 'Cancellation window (42 hours) has expired', hoursLeft: 0, elapsedHours };
+    }
+
+    const hoursLeft = Math.max(0, Math.round((42 - elapsedHours) * 10) / 10);
+    return { allowed: true, hoursLeft, elapsedHours };
+  }
+
+  function cancelOrder(id, reason = '') {
+    const orders = getOrders();
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx === -1) return { ok: false, error: 'Order not found' };
+    const order = orders[idx];
+
+    const check = canCancelOrder(order);
+    if (!check.allowed) return { ok: false, error: check.reason };
+
+    order.status = 'cancelled';
+    order.cancelReason = reason || 'Cancelled by customer';
+    order.cancelledAt = new Date().toISOString();
+    order.updatedAt = new Date().toISOString();
+
+    set(KEYS.orders, orders);
+    return { ok: true, order };
+  }
+
+  function canReturnOrReplace(order) {
+    if (!order) return false;
+    const rawStatus = (order.status || '').toLowerCase();
+    return rawStatus === 'delivered';
+  }
+
+  function requestReturn(id, { reason = '', details = '' } = {}) {
+    const orders = getOrders();
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx === -1) return { ok: false, error: 'Order not found' };
+    const order = orders[idx];
+
+    if (!canReturnOrReplace(order)) {
+      return { ok: false, error: 'Return can only be requested after the order has been delivered.' };
+    }
+
+    order.returnStatus = 'Return Requested';
+    order.returnReason = reason || 'Customer return request';
+    order.returnDetails = details || '';
+    order.returnRequestedAt = new Date().toISOString();
+    order.updatedAt = new Date().toISOString();
+
+    set(KEYS.orders, orders);
+    return { ok: true, order };
+  }
+
+  function requestReplacement(id, { reason = '', preferredSize = '', details = '' } = {}) {
+    const orders = getOrders();
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx === -1) return { ok: false, error: 'Order not found' };
+    const order = orders[idx];
+
+    if (!canReturnOrReplace(order)) {
+      return { ok: false, error: 'Replacement can only be requested after the order has been delivered.' };
+    }
+
+    order.replacementStatus = 'Replacement Requested';
+    order.replacementReason = reason || 'Customer replacement request';
+    order.preferredReplacementSize = preferredSize || '';
+    order.replacementDetails = details || '';
+    order.replacementRequestedAt = new Date().toISOString();
+    order.updatedAt = new Date().toISOString();
+
+    set(KEYS.orders, orders);
+    return { ok: true, order };
+  }
+
   // ── Settings ──────────────────────────────────
   function getSettings() {
     const s = localStorage.getItem(KEYS.settings);
@@ -1435,6 +1518,7 @@ const Store = (() => {
     getCartCount, getCartTotal,
     getWishlist, isInWishlist, addToWishlist, removeFromWishlist, toggleWishlist, getWishlistCount, clearWishlist,
     getOrders, getOrder, addOrder, updateOrderStatus,
+    canCancelOrder, cancelOrder, canReturnOrReplace, requestReturn, requestReplacement,
     getSettings, updateSettings,
     syncShopifyProducts, openShopifyAdmin,
     isSyncing: () => isSyncing,
